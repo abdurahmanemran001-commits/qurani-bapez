@@ -1,0 +1,27 @@
+name: Extract quran_android ZIP
+on:
+  push:
+    branches: [main]
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Extract ZIP
+        shell: bash
+        run: |
+          set -e
+          if [ -f quran_android-master.zip ] && [ ! -f quran_android-master/README.md ]; then
+            unzip -q quran_android-master.zip
+            rm quran_android-master.zip
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Extract quran_android-master ZIP"
+            git push
+          else
+            echo "Already extracted or ZIP missing; nothing to do."
+          fi
