@@ -1,0 +1,149 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'io.fabric'
+apply plugin: 'net.ltgt.errorprone'
+
+android {
+  compileSdkVersion 26
+  buildToolsVersion '26.0.2'
+
+  lintOptions {
+    checkReleaseBuilds true
+    lintConfig file("lint.xml")
+  }
+
+  defaultConfig {
+    minSdkVersion 14
+    targetSdkVersion 26
+    versionCode 2801
+    versionName "2.8.0-p1"
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  }
+
+  signingConfigs {
+    release {
+      storeFile file(STORE_FILE)
+      storePassword STORE_PASSWORD
+      keyAlias KEY_ALIAS
+      keyPassword KEY_PASSWORD
+    }
+  }
+
+  flavorDimensions "pageType"
+  productFlavors {
+    madani {
+      applicationId "com.quran.labs.androidquran"
+    }
+
+    qaloon {
+      applicationId "com.quran.labs.androidquran.qaloon"
+      versionCode 1100
+      versionName "1.1.0"
+    }
+
+    naskh {
+      applicationId "com.quran.labs.androidquran.naskh"
+      versionCode 1100
+      versionName "1.1.0"
+    }
+
+    shemerly {
+      applicationId "com.quran.labs.androidquran.shemerly"
+      versionCode 1100
+      versionName "1.1.0"
+    }
+
+    warsh {
+      applicationId "com.quran.labs.androidquran.warsh"
+      versionCode 1100
+      versionName "1.1.0"
+    }
+  }
+
+  buildTypes {
+    beta {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard.cfg'
+      signingConfig signingConfigs.release
+      versionNameSuffix "-beta"
+      if (project.hasProperty('disableCrashlytics')) {
+        ext.enableCrashlytics = false
+      }
+    }
+
+    debug {
+      ext.enableCrashlytics = false
+      ext.alwaysUpdateBuildId = false
+      applicationIdSuffix ".debug"
+      versionNameSuffix "-debug"
+    }
+
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard.cfg'
+      signingConfig signingConfigs.release
+      if (project.hasProperty('disableCrashlytics')) {
+        ext.enableCrashlytics = false
+      }
+    }
+  }
+
+  applicationVariants.all { variant ->
+    resValue "string", "authority", applicationId + '.data.QuranDataProvider'
+    resValue "string", "file_authority", applicationId + '.fileprovider'
+    if (applicationId.endsWith("debug")) {
+      mergedFlavor.manifestPlaceholders = [app_debug_label: "Quran " + flavorName.capitalize()]
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  testOptions.unitTests.all {
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+      outputs.upToDateWhen { false }
+      showStandardStreams true
+      exceptionFormat "full"
+    }
+  }
+}
+
+ext {
+  supportLibVersion = '26.1.0'
+  espressoVersion = '2.2.2'
+  okhttpVersion = '3.9.0'
+  daggerVersion = '2.13'
+}
+
+dependencies {
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "com.android.support:support-v4:${supportLibVersion}"
+  implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+  implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+  implementation "com.android.support:design:${supportLibVersion}"
+  implementation 'io.reactivex.rxjava2:rxjava:2.1.5'
+  implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+  annotationProcessor "com.google.dagger:dagger-compiler:${daggerVersion}"
+  implementation "com.google.dagger:dagger:${daggerVersion}"
+  implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+  implementation 'com.squareup.moshi:moshi:1.5.0'
+  implementation 'com.jakewharton.timber:timber:4.5.1'
+  implementation 'com.jakewharton:butterknife:8.8.1'
+  annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+  debugImplementation 'com.facebook.stetho:stetho:1.5.0'
+  debugImplementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+  debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'com.google.truth:truth:0.36'
+  testImplementation "org.mockito:mockito-core:2.10.0"
+  testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
+  androidTestImplementation "com.android.support.test.espresso:espresso-core:${espressoVersion}"
+  androidTestImplementation "com.android.support.test.espresso:espresso-intents:${espressoVersion}"
+  androidTestImplementation "com.android.support:support-annotations:${supportLibVersion}"
+  implementation('com.crashlytics.sdk.android:crashlytics:2.7.1@aar') {
+    transitive = true
+  }
+}
