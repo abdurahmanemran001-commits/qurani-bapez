@@ -38,6 +38,7 @@ jobs:
           distribution: temurin
           java-version: '8'
 
+      # Build after replacing the retired Fabric/Crashlytics dependency with local no-op shims.
       - name: Build Madani debug APK
         run: |
           chmod +x ./gradlew
