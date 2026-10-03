@@ -121,8 +121,14 @@ public class AudioUtils {
     }
 
     QariItem item = request.getQariItem();
-    String dbname = item.getDatabaseName() + ZIP_EXTENSION;
-    return QuranFileUtils.getGaplessDatabaseRootUrl() + "/" + dbname;
+    String dbname = item.getDatabaseName() + DB_EXTENSION;
+    // Hiwaselah's Kurdish gapless releases publish the timing DB directly
+    // beside the 114 surah MP3 files. Existing Quran Android readers still
+    // use the legacy android.quran.com ZIP database endpoint.
+    if (item.getUrl().contains("github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/")) {
+      return item.getUrl() + dbname;
+    }
+    return QuranFileUtils.getGaplessDatabaseRootUrl() + "/" + item.getDatabaseName() + ZIP_EXTENSION;
   }
 
   public static SuraAyah getLastAyahToPlay(SuraAyah startAyah,
