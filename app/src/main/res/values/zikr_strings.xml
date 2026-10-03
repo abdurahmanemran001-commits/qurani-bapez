@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="menu_zikr">زیکرەکانم</string>
+  <string name="zikr_title">زیکرەکانم</string>
+  <string name="zikr_all_sections">هەموو بەشەکان</string>
+  <string name="zikr_number">زیکری ژمارە %1$d</string>
+  <string name="zikr_count">%1$d / %2$d</string>
+  <string name="zikr_load_error">نەتوانرا زیکرەکان بار بکرێن. تکایە ئینتەرنێت بپشکنە و دووبارە هەوڵ بدە.</string>
+  <string name="zikr_source_note">زیکرەکان لە سەرچاوەی «حصن المسلم» ـەوە ڕێکخراون.</string>
+</resources>
