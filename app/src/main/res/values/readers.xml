@@ -21,9 +21,167 @@
     <item>@string/qari_badr_turki</item>
     <item>@string/qari_alijon_qari</item>
     <item>@string/qari_abdulhadi_kurdi</item>
+    <item>@string/qari_abdulrahman_aloosi</item>
+    <item>@string/qari_ali_hudhayfi</item>
+    <item>@string/qari_alzain_mohammad_ahmad</item>
+    <item>@string/qari_dr_ayman_suwaid</item>
+    <item>@string/qari_hady_toure</item>
+    <item>@string/qari_husary_muallim</item>
+    <item>@string/qari_ibrahim_alakhdar</item>
+    <item>@string/qari_khaled_almuhanna</item>
+    <item>@string/qari_khalid_alqahtani</item>
+    <item>@string/qari_khalid_jalil</item>
+    <item>@string/qari_minshawi_mujawwad</item>
+    <item>@string/qari_mokhtasar_asmari</item>
+    <item>@string/qari_muaiqly_kfgqpc</item>
+    <item>@string/qari_muhammad_rashad_shereef</item>
+    <item>@string/qari_nabil_rifa3i</item>
+    <item>@string/qari_noreen_siddiq</item>
+    <item>@string/qari_tawfeeq_as_sawaigh</item>
+    <item>@string/qari_wadee3_alyamani</item>
+    <item>@string/qari_yasser_salama_hadr</item>
+    <item>@string/qari_abdul_muhsin_alqasim</item>
+    <item>@string/qari_abdullah_juhany</item>
+    <item>@string/qari_abdullah_matroud</item>
+    <item>@string/qari_ahmed_alajamy</item>
+    <item>@string/qari_ali_jaber</item>
+    <item>@string/qari_fares_abbad</item>
+    <item>@string/qari_khalifa_taniji</item>
+    <item>@string/qari_maher_al_muaiqly</item>
+    <item>@string/qari_mishari_cali</item>
+    <item>@string/qari_mishari_walk</item>
+    <item>@string/qari_salah_bukhatir</item>
+    <item>@string/qari_peshawa</item>
+    <item>@string/qari_rzgar</item>
+    <item>@string/qari_Tahsin_doski_sanahi</item>
+    <item>@string/qari_d_mhamad_sa3id</item>
+    <item>@string/qari_Mhamad_ayub</item>
+    <item>@string/qari_Sa3d_ghamdi</item>
+    <item>@string/qari_abdulaziz_zahrani</item>
+    <item>@string/qari_abdullah_basfar</item>
+    <item>@string/qari_abdurlrahman_alshahat</item>
+    <item>@string/qari_abdurrashid_sufi</item>
+    <item>@string/qari_bandar_baleela</item>
+    <item>@string/qari_hani_rifai</item>
+    <item>@string/qari_husary_iza3a</item>
+    <item>@string/qari_ibrahim_walk</item>
+    <item>@string/qari_mahmoud_ali_albana</item>
+    <item>@string/qari_mhamad_jibreel</item>
+    <item>@string/qari_mishari_alafasy</item>
+    <item>@string/qari_mostafa_ismaeel</item>
+    <item>@string/qari_ahmad_xzr</item>
+    <item>@string/qari_ibrahim_al_dosari</item>
+    <item>@string/qari_ibrahim_axzar</item>
+    <item>@string/qari_tofiq_alsaigh</item>
+    <item>@string/qari_xalid_almhna</item>
+    <item>@string/qari_xalid_alqahtani</item>
+    <item>@string/qari_selah_alhashm</item>
+    <item>@string/qari_shahrayar</item>
+    <item>@string/qari_xalifa_tunaiji</item>
+    <item>@string/qari_abdulla_almatrud</item>
+    <item>@string/qari_abdulmuhsin_alqasm</item>
+    <item>@string/qari_selah_buxatr</item>
+    <item>@string/qari_karim_mansury</item>
+    <item>@string/qari_tarjma_azariya</item>
+    <item>@string/qari_yasr_salamat</item>
+    <item>@string/qari_mhamad_abdulkarim</item>
+    <item>@string/qari_mtarjm_farsi</item>
+    <item>@string/qari_abdulla_aljuhainy</item>
+    <item>@string/qari_manshawi_m3_atfal</item>
+    <item>@string/qari_yasin_jazairy</item>
+    <item>@string/qari_ali_abdulla_jabr</item>
+    <item>@string/qari_fuad_alxamri</item>
+    <item>@string/qari_mahr_shaxashir</item>
+    <item>@string/qari_mftah_alsaltani</item>
+    <item>@string/qari_mhamad_rashad</item>
+    <item>@string/qari_handren_tanha_tafser</item>
+    <item>@string/qari_m_ramazan_shkur</item>
+    <item>@string/qari_ra3d</item>
+    <item>@string/qari_ajami</item>
+    <item>@string/qari_ayman_swidy</item>
+    <item>@string/qari_ghamdi</item>
   </string-array>
 
   <integer-array translatable="false" name="quran_readers_have_gapless_equivalents">
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>1</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
     <item>0</item>
     <item>0</item>
     <item>0</item>
@@ -67,6 +225,85 @@
     <item>badr_al_turki</item>
     <item>alijon_qari</item>
     <item>abdulhadi_kurdi_mutasil</item>
+    <item>abdulrahman_aloosi</item>
+    <item>ali_hudhayfi</item>
+    <item>alzain_mohammad_ahmad</item>
+    <item>dr_ayman_suwaid</item>
+    <item>hady_toure</item>
+    <item>husary_muallim</item>
+    <item>ibrahim_alakhdar</item>
+    <item>khaled_almuhanna</item>
+    <item>khalid_alqahtani</item>
+    <item>khalid_jalil</item>
+    <item>minshawi_mujawwad</item>
+    <item>mokhtasar_asmari</item>
+    <item>muaiqly_kfgqpc</item>
+    <item>muhammad_rashad_shereef</item>
+    <item>nabil_rifa3i</item>
+    <item>noreen_siddiq</item>
+    <item>tawfeeq_as_sawaigh</item>
+    <item>wadee3_alyamani</item>
+    <item>yasser_salama_hadr</item>
+    <item>abdul_muhsin_alqasim</item>
+    <item>abdullah_juhany</item>
+    <item>abdullah_matroud</item>
+    <item>ahmed_alajamy</item>
+    <item>ali_jaber</item>
+    <item>fares_abbad</item>
+    <item>khalifa_taniji</item>
+    <item>maher_al_muaiqly</item>
+    <item>mishari_cali</item>
+    <item>mishari_walk</item>
+    <item>salah_bukhatir</item>
+    <item>peshawa</item>
+    <item>rzgar</item>
+    <item>Tahsin_doski_sanahi</item>
+    <item>d_mhamad_sa3id</item>
+    <item>Mhamad_ayub</item>
+    <item>Sa3d_ghamdi</item>
+    <item>abdulaziz_zahrani</item>
+    <item>abdullah_basfar</item>
+    <item>abdurlrahman_alshahat</item>
+    <item>abdurrashid_sufi</item>
+    <item>bandar_baleela</item>
+    <item>hani_rifai</item>
+    <item>husary_iza3a</item>
+    <item>ibrahim_walk</item>
+    <item>mahmoud_ali_albana</item>
+    <item>mhamad_jibreel</item>
+    <item>mishari_alafasy</item>
+    <item>mostafa_ismaeel</item>
+    <item>ahmad_xzr</item>
+    <item>ibrahim_al_dosari</item>
+    <item>ibrahim_axzar</item>
+    <item>tofiq_alsaigh</item>
+    <item>xalid_almhna</item>
+    <item>xalid_alqahtani</item>
+    <item>selah_alhashm</item>
+    <item>shahrayar</item>
+    <item>xalifa_tunaiji</item>
+    <item>abdulla_almatrud</item>
+    <item>abdulmuhsin_alqasm</item>
+    <item>selah_buxatr</item>
+    <item>karim_mansury</item>
+    <item>tarjma_azariya</item>
+    <item>yasr_salamat</item>
+    <item>mhamad_abdulkarim</item>
+    <item>mtarjm_farsi</item>
+    <item>abdulla_aljuhainy</item>
+    <item>manshawi_m3_atfal</item>
+    <item>yasin_jazairy</item>
+    <item>ali_abdulla_jabr</item>
+    <item>fuad_alxamri</item>
+    <item>mahr_shaxashir</item>
+    <item>mftah_alsaltani</item>
+    <item>mhamad_rashad</item>
+    <item>handren_tanha_tafser</item>
+    <item>m_ramazan_shkur</item>
+    <item>ra3d</item>
+    <item>ajami</item>
+    <item>ayman_swidy</item>
+    <item>ghamdi</item>
   </string-array>
 
   <string-array translatable="false" name="quran_readers_db_name">
@@ -90,6 +327,85 @@
     <item>badr_al_turki</item>
     <item>alijon_qari</item>
     <item>abdulhadi_kurdi_mutasil</item>
+    <item>abdulrahman_aloosi</item>
+    <item>ali_hudhayfi</item>
+    <item>alzain_mohammad_ahmad</item>
+    <item>dr_ayman_suwaid</item>
+    <item>hady_toure</item>
+    <item>husary_muallim</item>
+    <item>ibrahim_alakhdar</item>
+    <item>khaled_almuhanna</item>
+    <item>khalid_alqahtani</item>
+    <item>khalid_jalil</item>
+    <item>minshawi_mujawwad</item>
+    <item>mokhtasar_asmari</item>
+    <item>muaiqly_kfgqpc</item>
+    <item>muhammad_rashad_shereef</item>
+    <item>nabil_rifa3i</item>
+    <item>noreen_siddiq</item>
+    <item>tawfeeq_as_sawaigh</item>
+    <item>wadee3_alyamani</item>
+    <item>yasser_salama_hadr</item>
+    <item>abdul_muhsin_alqasim</item>
+    <item>abdullah_juhany</item>
+    <item>abdullah_matroud</item>
+    <item>ahmed_alajamy</item>
+    <item>ali_jaber</item>
+    <item>fares_abbad</item>
+    <item>khalifa_taniji</item>
+    <item>maher_al_muaiqly</item>
+    <item>mishari_cali</item>
+    <item>mishari_walk</item>
+    <item>salah_bukhatir</item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
+    <item></item>
   </string-array>
 
   <string-array translatable="false" name="quran_readers_urls">
@@ -113,6 +429,85 @@
     <item>https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/badr_al_turki/</item>
     <item>https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/alijon_qari/</item>
     <item>https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/abdulhadi_kurdi_mutasil/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/abdulrahman_aloosi/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/ali_hudhayfi/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/alzain_mohammad_ahmad/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/dr_ayman_suwaid/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/hady_toure/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/husary_muallim/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/ibrahim_alakhdar/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/khaled_almuhanna/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/khalid_alqahtani/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/khalid_jalil/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/minshawi_mujawwad/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/mokhtasar_asmari/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/muaiqly_kfgqpc/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/muhammad_rashad_shereef/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/nabil_rifa3i/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/noreen_siddiq/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/tawfeeq_as_sawaigh/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/wadee3_alyamani/</item>
+    <item>https://github.com/Hiwaselah/19_xatm_mutasl_2024/releases/download/yasser_salama_hadr/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/abdul_muhsin_alqasim/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/abdullah_juhany/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/abdullah_matroud/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/ahmed_alajamy/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/ali_jaber/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/fares_abbad/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/khalifa_taniji/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/maher_al_muaiqly/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/mishari_cali/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/mishari_walk/</item>
+    <item>https://github.com/Hiwaselah/sounds011_11qari3_gapless/releases/download/salah_bukhatir/</item>
+    <item>https://github.com/Hiwaselah/audio001/releases/download/peshawa/</item>
+    <item>https://github.com/Hiwaselah/audio001/releases/download/rzgar/</item>
+    <item>https://github.com/Hiwaselah/audio002/releases/download/Tahsin_doski_sanahi/</item>
+    <item>https://github.com/Hiwaselah/audio002/releases/download/d_mhamad_sa3id/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/Mhamad_ayub/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/Sa3d_ghamdi/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/abdulaziz_zahrani/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/abdullah_basfar/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/abdurlrahman_alshahat/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/abdurrashid_sufi/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/bandar_baleela/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/hani_rifai/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/husary_iza3a/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/ibrahim_walk/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/mahmoud_ali_albana/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/mhamad_jibreel/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/mishari_alafasy/</item>
+    <item>https://github.com/Hiwaselah/audio003/releases/download/mostafa_ismaeel/</item>
+    <item>https://github.com/Hiwaselah/sounds001/releases/download/ahmad_xzr/</item>
+    <item>https://github.com/Hiwaselah/sounds001/releases/download/ibrahim_al_dosari/</item>
+    <item>https://github.com/Hiwaselah/sounds001/releases/download/ibrahim_axzar/</item>
+    <item>https://github.com/Hiwaselah/sounds002/releases/download/tofiq_alsaigh/</item>
+    <item>https://github.com/Hiwaselah/sounds002/releases/download/xalid_almhna/</item>
+    <item>https://github.com/Hiwaselah/sounds002/releases/download/xalid_alqahtani/</item>
+    <item>https://github.com/Hiwaselah/sounds003/releases/download/selah_alhashm/</item>
+    <item>https://github.com/Hiwaselah/sounds003/releases/download/shahrayar/</item>
+    <item>https://github.com/Hiwaselah/sounds003/releases/download/xalifa_tunaiji/</item>
+    <item>https://github.com/Hiwaselah/sounds004/releases/download/abdulla_almatrud/</item>
+    <item>https://github.com/Hiwaselah/sounds004/releases/download/abdulmuhsin_alqasm/</item>
+    <item>https://github.com/Hiwaselah/sounds004/releases/download/selah_buxatr/</item>
+    <item>https://github.com/Hiwaselah/sounds005/releases/download/karim_mansury/</item>
+    <item>https://github.com/Hiwaselah/sounds005/releases/download/tarjma_azariya/</item>
+    <item>https://github.com/Hiwaselah/sounds005/releases/download/yasr_salamat/</item>
+    <item>https://github.com/Hiwaselah/sounds006/releases/download/mhamad_abdulkarim/</item>
+    <item>https://github.com/Hiwaselah/sounds006/releases/download/mtarjm_farsi/</item>
+    <item>https://github.com/Hiwaselah/sounds007/releases/download/abdulla_aljuhainy/</item>
+    <item>https://github.com/Hiwaselah/sounds007/releases/download/manshawi_m3_atfal/</item>
+    <item>https://github.com/Hiwaselah/sounds007/releases/download/yasin_jazairy/</item>
+    <item>https://github.com/Hiwaselah/sounds008/releases/download/ali_abdulla_jabr/</item>
+    <item>https://github.com/Hiwaselah/sounds008/releases/download/fuad_alxamri/</item>
+    <item>https://github.com/Hiwaselah/sounds008/releases/download/mahr_shaxashir/</item>
+    <item>https://github.com/Hiwaselah/sounds009/releases/download/mftah_alsaltani/</item>
+    <item>https://github.com/Hiwaselah/sounds009/releases/download/mhamad_rashad/</item>
+    <item>https://github.com/Hiwaselah/sounds010/releases/download/handren_tanha_tafser/</item>
+    <item>https://github.com/Hiwaselah/sounds010/releases/download/m_ramazan_shkur/</item>
+    <item>https://github.com/Hiwaselah/sounds010/releases/download/ra3d/</item>
+    <item>https://github.com/Hiwaselah/audio/releases/download/ajami/</item>
+    <item>https://github.com/Hiwaselah/audio/releases/download/ayman_swidy/</item>
+    <item>https://github.com/Hiwaselah/audio/releases/download/ghamdi/</item>
   </string-array>
 
   <!-- actual qari names -->
@@ -176,4 +571,86 @@
   <string name="qari_badr_turki">Badr Al-Turki (gapless)</string>
   <string name="qari_alijon_qari">Alijon Qari (gapless)</string>
   <string name="qari_abdulhadi_kurdi">Abdulhadi Kurdi (gapless)</string>
+
+  <!-- Additional reciters discovered from the Hiwaselah APK catalog -->
+  <string name="qari_abdulrahman_aloosi">Abdulrahman Aloosi</string>
+  <string name="qari_ali_hudhayfi">Ali Hudhayfi</string>
+  <string name="qari_alzain_mohammad_ahmad">Alzain Mohammad Ahmad</string>
+  <string name="qari_dr_ayman_suwaid">Dr Ayman Suwaid</string>
+  <string name="qari_hady_toure">Hady Toure</string>
+  <string name="qari_husary_muallim">Husary Muallim</string>
+  <string name="qari_ibrahim_alakhdar">Ibrahim Alakhdar</string>
+  <string name="qari_khaled_almuhanna">Khaled Almuhanna</string>
+  <string name="qari_khalid_alqahtani">Khalid Alqahtani</string>
+  <string name="qari_khalid_jalil">Khalid Jalil</string>
+  <string name="qari_minshawi_mujawwad">Minshawi Mujawwad</string>
+  <string name="qari_mokhtasar_asmari">Mokhtasar Asmari</string>
+  <string name="qari_muaiqly_kfgqpc">Muaiqly KFGQPC</string>
+  <string name="qari_muhammad_rashad_shereef">Muhammad Rashad Shereef</string>
+  <string name="qari_nabil_rifa3i">Nabil Rifa3i</string>
+  <string name="qari_noreen_siddiq">Noreen Siddiq</string>
+  <string name="qari_tawfeeq_as_sawaigh">Tawfeeq As-Sawaigh</string>
+  <string name="qari_wadee3_alyamani">Wadee3 Alyamani</string>
+  <string name="qari_yasser_salama_hadr">Yasser Salama Hadr</string>
+  <string name="qari_abdul_muhsin_alqasim">Abdul Muhsin Alqasim</string>
+  <string name="qari_abdullah_juhany">Abdullah Juhany</string>
+  <string name="qari_abdullah_matroud">Abdullah Matroud</string>
+  <string name="qari_ahmed_alajamy">Ahmed Alajamy</string>
+  <string name="qari_ali_jaber">Ali Jaber</string>
+  <string name="qari_fares_abbad">Fares Abbad</string>
+  <string name="qari_khalifa_taniji">Khalifa Taniji</string>
+  <string name="qari_maher_al_muaiqly">Maher Al Muaiqly</string>
+  <string name="qari_mishari_cali">Mishari Cali</string>
+  <string name="qari_mishari_walk">Mishari Walk</string>
+  <string name="qari_salah_bukhatir">Salah Bukhatir</string>
+  <string name="qari_peshawa">Peshawa</string>
+  <string name="qari_rzgar">Rizgar</string>
+  <string name="qari_Tahsin_doski_sanahi">Tahsin Doski Sanahi</string>
+  <string name="qari_d_mhamad_sa3id">D. Mhamad Sa3id</string>
+  <string name="qari_Mhamad_ayub">Mhamad Ayub</string>
+  <string name="qari_Sa3d_ghamdi">Sa3d Ghamdi</string>
+  <string name="qari_abdulaziz_zahrani">Abdulaziz Zahrani</string>
+  <string name="qari_abdullah_basfar">Abdullah Basfar</string>
+  <string name="qari_abdurlrahman_alshahat">Abdurlrahman Alshahat</string>
+  <string name="qari_abdurrashid_sufi">Abdurrashid Sufi</string>
+  <string name="qari_bandar_baleela">Bandar Baleela</string>
+  <string name="qari_hani_rifai">Hani Rifai</string>
+  <string name="qari_husary_iza3a">Husary Iza3a</string>
+  <string name="qari_ibrahim_walk">Ibrahim Walk</string>
+  <string name="qari_mahmoud_ali_albana">Mahmoud Ali Albana</string>
+  <string name="qari_mhamad_jibreel">Mhamad Jibreel</string>
+  <string name="qari_mishari_alafasy">Mishari Alafasy</string>
+  <string name="qari_mostafa_ismaeel">Mostafa Ismaeel</string>
+  <string name="qari_ahmad_xzr">Ahmad Xzr</string>
+  <string name="qari_ibrahim_al_dosari">Ibrahim Al Dosari</string>
+  <string name="qari_ibrahim_axzar">Ibrahim Axzar</string>
+  <string name="qari_tofiq_alsaigh">Tofiq Alsaigh</string>
+  <string name="qari_xalid_almhna">Xalid Almhna</string>
+  <string name="qari_xalid_alqahtani">Xalid Alqahtani</string>
+  <string name="qari_selah_alhashm">Selah Alhashm</string>
+  <string name="qari_shahrayar">Shahrayar</string>
+  <string name="qari_xalifa_tunaiji">Xalifa Tunaiji</string>
+  <string name="qari_abdulla_almatrud">Abdulla Almatrud</string>
+  <string name="qari_abdulmuhsin_alqasm">Abdulmuhsin Alqasm</string>
+  <string name="qari_selah_buxatr">Selah Buxatr</string>
+  <string name="qari_karim_mansury">Karim Mansury</string>
+  <string name="qari_tarjma_azariya">Tarjma Azariya</string>
+  <string name="qari_yasr_salamat">Yasr Salamat</string>
+  <string name="qari_mhamad_abdulkarim">Mhamad Abdulkarim</string>
+  <string name="qari_mtarjm_farsi">Mtarjm Farsi</string>
+  <string name="qari_abdulla_aljuhainy">Abdulla Aljuhainy</string>
+  <string name="qari_manshawi_m3_atfal">Manshawi M3 Atfal</string>
+  <string name="qari_yasin_jazairy">Yasin Jazairy</string>
+  <string name="qari_ali_abdulla_jabr">Ali Abdulla Jabr</string>
+  <string name="qari_fuad_alxamri">Fuad Alxamri</string>
+  <string name="qari_mahr_shaxashir">Mahr Shaxashir</string>
+  <string name="qari_mftah_alsaltani">Mftah Alsaltani</string>
+  <string name="qari_mhamad_rashad">Mhamad Rashad</string>
+  <string name="qari_handren_tanha_tafser">Handren Tanha Tafser</string>
+  <string name="qari_m_ramazan_shkur">ڕەمەزان شکوور کوردی</string>
+  <string name="qari_ra3d">رائد محمد کوردی</string>
+  <string name="qari_ajami">Ajami</string>
+  <string name="qari_ayman_swidy">Ayman Swidy</string>
+  <string name="qari_ghamdi">Ghamdi</string>
+
 </resources>
