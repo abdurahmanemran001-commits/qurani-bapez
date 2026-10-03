@@ -22,4 +22,22 @@
    <string name="qari_jibreel">محەمەد جبریل</string>
    <string name="qari_shuraym">سعود شورەیم</string>
    <string name="qari_dussary">ياسر الدوسري</string>
+   <string name="qari_ubeda_kurdi">عوبەید کوردی (مورەتەل)</string>
+   <string name="qari_sherzad_kurdi">شێرزاد کوردی (مورەتەل)</string>
+   <string name="qari_shekh_reza">شێخ ڕەزا محەمەدیان (مورەتەل)</string>
+   <string name="qari_shahriar">شەهریار پەرھیزگار (مورەتەل)</string>
+   <string name="qari_rizgar_kurdi">ڕزگار کوردی (مورەتەل)</string>
+   <string name="qari_raad_kurdi">ڕەعد کوردی (مورەتەل)</string>
+   <string name="qari_peshawa_kurdi">پێشەوا کوردی (مورەتەل)</string>
+   <string name="qari_muhammad_luhaidan">محەمەد اللەحیدان (مورەتەل)</string>
+   <string name="qari_idrees_abkar">ئیدریس ئەبکەر (مورەتەل)</string>
+   <string name="qari_husary_mujawwad_hiwaselah">حوساری موجەوەد (مورەتەل)</string>
+   <string name="qari_hamza_barznji">حەمزە بارزنجی (مورەتەل)</string>
+   <string name="qari_ghamdi_handren_kurdi">غامدی هەندرێن کوردی (مورەتەل)</string>
+   <string name="qari_fatih_seferagic">فاتح سیفەرەگیچ (مورەتەل)</string>
+   <string name="qari_farman_shwani">فەرمان شوانی (مورەتەل)</string>
+   <string name="qari_dlshad_kurdi">دڵشاد کوردی (مورەتەل)</string>
+   <string name="qari_badr_turki">بەدر تورکی (مورەتەل)</string>
+   <string name="qari_alijon_qari">عەلیجان قاری (مورەتەل)</string>
+   <string name="qari_abdulhadi_kurdi">عەبدولهادی کوردی (مورەتەل)</string>
 </resources>
