@@ -144,7 +144,7 @@ public class ZikrActivity extends AppCompatActivity {
     list.setOrientation(LinearLayout.VERTICAL);
     list.setPadding(16, 0, 16, 24);
 
-    JSONObject object = new JSONObject(json);
+    JSONObject object = new JSONObject(json.replace("\uFEFF", ""));
     Iterator<String> keys = object.keys();
     if (!keys.hasNext()) throw new IllegalStateException("Empty section");
     JSONArray items = object.getJSONArray(keys.next());
