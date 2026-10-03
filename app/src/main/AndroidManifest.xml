@@ -41,6 +41,9 @@
         android:name=".ui.QuranActivity"
         android:theme="@style/QuranToolBar"/>
     <activity
+        android:name=".ui.ZikrActivity"
+        android:theme="@style/QuranToolBar"/>
+    <activity
         android:name=".AboutUsActivity"
         android:theme="@style/QuranToolBar"/>
     <activity android:name=".HelpActivity"/>
