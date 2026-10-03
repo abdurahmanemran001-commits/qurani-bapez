@@ -125,7 +125,7 @@ public class AudioUtils {
     // Hiwaselah's Kurdish gapless releases publish the timing DB directly
     // beside the 114 surah MP3 files. Existing Quran Android readers still
     // use the legacy android.quran.com ZIP database endpoint.
-    if (item.getUrl().contains("github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/")) {
+    if (item.getUrl().contains("github.com/Hiwaselah/") && item.getUrl().contains("/releases/download/")) {
       return item.getUrl() + dbname;
     }
     return QuranFileUtils.getGaplessDatabaseRootUrl() + "/" + item.getDatabaseName() + ZIP_EXTENSION;
