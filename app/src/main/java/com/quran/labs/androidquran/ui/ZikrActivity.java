@@ -79,7 +79,7 @@ public class ZikrActivity extends AppCompatActivity {
 
   private void parseIndex(String json) throws Exception {
     categories.clear();
-    JSONObject object = new JSONObject(json);
+    JSONObject object = new JSONObject(json.replace("\uFEFF", ""));
     JSONArray array = object.getJSONArray(object.keys().next());
 
     for (int i = 0; i < array.length(); i++) {
