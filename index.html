@@ -2,66 +2,106 @@
 <html lang="ku" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>قرآن الکریم(قورئانی پیرۆز) — Preview</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>قرآن الکریم(قورئانی پیرۆز)</title>
 <style>
-:root{--bg:#eef2f1;--card:#fff;--ink:#17221f;--muted:#6c7773;--green:#176b4b;--green2:#e8f3ee;--line:#dfe6e3}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Tahoma,Arial,sans-serif;color:var(--ink)}
-.wrap{max-width:1050px;margin:auto;padding:24px}.head{text-align:center;margin:8px 0 24px}.head h1{margin:0 0 8px;font-size:28px}.head p{margin:0;color:var(--muted)}
-.phone{width:min(390px,100%);min-height:700px;margin:0 auto;background:#fafcfb;border:10px solid #202624;border-radius:34px;box-shadow:0 18px 50px #0002;overflow:hidden}
-.status{height:28px;background:#202624;color:#fff;font-size:11px;padding:7px 14px;text-align:left;direction:ltr}
-.appbar{background:var(--green);color:#fff;padding:18px 18px 15px;display:flex;justify-content:space-between;align-items:center}
-.appbar strong{font-size:18px}.menu{font-size:25px}
-.body{padding:18px}.hero{background:var(--green2);border:1px solid #cfe2d9;border-radius:18px;padding:20px;text-align:center}.hero h2{margin:0 0 8px;font-size:22px}.hero p{margin:0;color:#52635c}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:14px;padding:16px}.card b{display:block;margin-bottom:8px}.ayah{font-family:serif;font-size:25px;line-height:2;text-align:center}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.btn{border:0;border-radius:12px;padding:12px;background:#f1f5f3;color:var(--ink);font-weight:bold;cursor:pointer}.btn.primary{background:var(--green);color:white}
-.footer{margin-top:22px;text-align:center;color:var(--muted);font-size:13px}.links{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}.links a{color:var(--green);text-decoration:none;font-weight:bold}
-.zikr{display:none}.list{display:grid;gap:9px}.item{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}.item:hover{background:var(--green2)}
-.back{color:var(--green);font-weight:bold;cursor:pointer;margin-bottom:12px}
-.badge{display:inline-block;background:#fff;border:1px solid var(--line);padding:5px 9px;border-radius:20px;font-size:12px;color:var(--muted)}
+:root{--green:#176b4b;--green2:#e8f3ee;--gold:#b48a3c;--bg:#eef2f1;--card:#fff;--ink:#18231f;--muted:#6d7975;--line:#dce5e1}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{text-align:center;margin-bottom:15px}.top h1{margin:0 0 5px;font-size:25px}.top p{margin:0;color:var(--muted);font-size:13px}
+.phone{width:min(430px,100%);height:min(860px,calc(100vh - 90px));min-height:680px;margin:auto;background:#f9fbfa;border:8px solid #202624;border-radius:30px;overflow:hidden;box-shadow:0 18px 50px #0002;position:relative}
+.status{height:25px;background:#202624;color:#fff;font-size:10px;padding:6px 12px;direction:ltr}
+.appbar{height:58px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;z-index:3}.appbar b{font-size:17px}.icon{border:0;background:transparent;color:#fff;font-size:23px;cursor:pointer;padding:4px}
+.main{height:calc(100% - 129px);overflow:auto;padding:14px}.view{display:none}.view.active{display:block}
+.hero{background:linear-gradient(135deg,#f4fbf7,#e7f3ed);border:1px solid #cfe1d9;border-radius:18px;padding:17px;text-align:center}.hero h2{margin:0 0 6px;font-size:21px}.hero p{margin:0;color:#566660;font-size:13px}
+.search{display:flex;gap:7px;margin:12px 0}.search input{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;outline:none}.search button,.primary{background:var(--green);color:#fff;border:0;border-radius:12px;padding:10px 13px;cursor:pointer}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.tab{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px;cursor:pointer}.tab.on{background:var(--green2);border-color:#b8d6c9;color:var(--green);font-weight:bold}
+.list{display:grid;gap:8px}.surah{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px;cursor:pointer}.num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--green2);color:var(--green);font-weight:bold;font-size:12px}.surah .name{flex:1}.surah b{display:block}.surah small{color:var(--muted)}.arrow{color:#94a09b}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin-top:11px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.muted{color:var(--muted);font-size:13px}
+.bottom{height:71px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);position:absolute;bottom:0;left:0;right:0;z-index:4}.nav{border:0;background:#fff;color:#73807b;font-size:11px;cursor:pointer}.nav span{display:block;font-size:20px;margin-bottom:3px}.nav.on{color:var(--green);font-weight:bold}
+.mushaf{background:#eeeae0;border-radius:10px;padding:7px;min-height:530px;display:flex;align-items:center;justify-content:center;overflow:hidden}.mushaf img{width:100%;height:auto;display:block;max-height:610px;object-fit:contain;background:#fff;box-shadow:0 4px 16px #0002}.mushaf-fallback{padding:30px;text-align:center;color:#6c716e}.readerbar{display:grid;grid-template-columns:45px 1fr 45px;gap:7px;align-items:center;margin-top:9px}.readerbar button{border:0;background:#fff;border:1px solid var(--line);border-radius:11px;height:42px;cursor:pointer}.readerbar input{width:100%;border:1px solid var(--line);border-radius:11px;height:42px;text-align:center}.readerhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.readerhead button{border:0;background:var(--green2);color:var(--green);border-radius:10px;padding:8px 10px;cursor:pointer}
+.settings .option{padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff;cursor:pointer}.settings .option.on{border-color:#a8cbbd;background:var(--green2)}
+.modal{position:absolute;inset:0;background:#0007;z-index:20;display:none;padding:14px;overflow:auto}.modal.open{display:block}.sheet{background:#f9fbfa;border-radius:20px;padding:16px;max-width:390px;margin:18px auto}.sheet h3{margin:0 0 12px}.close{float:left;border:0;background:#e8eeeb;border-radius:9px;padding:6px 9px;cursor:pointer}
+.zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
+.commit{font-family:monospace;font-size:11px;direction:ltr;text-align:left;word-break:break-all;background:#f3f6f5;padding:9px;border-radius:9px}
+@media(max-width:500px){.wrap{padding:0}.top{display:none}.phone{width:100%;height:100vh;min-height:0;border:0;border-radius:0}.main{height:calc(100% - 129px)}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="head"><h1>قرآن الکریم(قورئانی پیرۆز)</h1><p>پێشبینینی Web ـی پڕۆژە — بۆ بینینی گۆڕانکارییەکانی ڕووکاری ئەپ</p></div>
+<div class="top"><h1>قرآن الکریم(قورئانی پیرۆز)</h1><p>Web Preview ـی تەواو بۆ بینینی گۆڕانکارییەکانی پڕۆژە</p></div>
 <div class="phone">
 <div class="status">9:41 &nbsp; 4G</div>
-<div class="appbar"><strong>قرآن الکریم</strong><span class="menu">⋮</span></div>
-<div class="body">
-<section id="home">
-<div class="hero"><h2>قورئانی پیرۆز</h2><p>خوێندنەوەی قورئان و دەستگەیشتن بە تایبەتمەندییەکان</p></div>
-<div class="card"><b>نمونەی ئایەت</b><div class="ayah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div></div>
-<div class="actions">
-<button class="btn primary" onclick="showZikr()">زیکرەکانم</button>
-<button class="btn" onclick="alert('ئەمە پێشبینینی Web ـە؛ خودی APK نییە.')">پەڕەی قورئان</button>
+<div class="appbar"><button class="icon" onclick="openSettings()">☰</button><b id="barTitle">قرآن الکریم</b><button class="icon" onclick="showSearch()">⌕</button></div>
+<div class="main">
+<section id="home" class="view active">
+<div class="hero"><h2>قورئانی پیرۆز</h2><p>ئەمە پێشبینینی وێبی پڕۆژەکەیە؛ گۆڕانکارییەکانت لێرە بە شێوەی ئەپ دەبینیت.</p></div>
+<div class="search"><input id="surahSearch" placeholder="گەڕان بە ناوی سورەت..." oninput="filterSurahs()"><button onclick="openPage(1)">موسحەف</button></div>
+<div class="tabs"><button id="tabSurah" class="tab on" onclick="setHomeTab('surah')">سورەتەکان</button><button id="tabJuz" class="tab" onclick="setHomeTab('juz')">جوز</button><button id="tabBookmark" class="tab" onclick="setHomeTab('bookmark')">نیشانکراوەکان</button></div>
+<div id="surahList" class="list"><div class="card muted">لیستی سورەتەکان بار دەکرێت...</div></div>
+<div class="card"><div class="row"><b>دۆخی پڕۆژە</b><span id="version" class="badge">...</span></div><div id="commit" class="muted" style="margin-top:8px">نوێترین commit...</div></div>
+</section>
+
+<section id="reader" class="view">
+<div class="readerhead"><button onclick="goHome()">‹ فهرست</button><b id="pageTitle">پەڕەی 1</b><span class="badge">604</span></div>
+<div class="mushaf" id="mushaf"><img id="pageImg" alt="پەڕەی موسحەف" onerror="imageFailed()"></div>
+<div class="readerbar"><button onclick="changePage(-1)">›</button><input id="pageInput" type="number" min="1" max="604" value="1" onchange="openPage(this.value)"><button onclick="changePage(1)">‹</button></div>
+<div class="card"><div class="row"><b>پەڕەی موسحەف</b><span id="pageStatus" class="muted">بارکردن...</span></div><div class="muted" style="margin-top:7px">ئەم Viewer ـە بۆ ئەوەیە هەر گۆڕانکارییەکی ڕووکاری/پەڕەیی لە لینکەکەدا ڕاستەوخۆ ببینیت.</div></div>
+</section>
+
+<section id="zikr" class="view">
+<div class="row"><div><h2 style="margin:0">زیکرەکانم</h2><span class="muted">بەشەکانی ئەذکار</span></div><button class="readerhead" onclick="goHome()">‹</button></div>
+<div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
+</section>
+
+<section id="detail" class="view">
+<div class="row"><button onclick="showZikr()">‹ هەموو بەشەکان</button><span id="zikrCount" class="badge"></span></div>
+<h2 id="detailTitle"></h2><div id="detailList" class="list"></div>
+</section>
 </div>
-<div class="card"><b>دۆخی پڕۆژە</b><span class="badge" id="version">بارکردن...</span><div id="commit" style="margin-top:9px;color:#6c7773;font-size:13px">نوێترین گۆڕانکاری لە GitHub دەخوێنرێتەوە.</div></div>
-</section>
-<section id="zikr" class="zikr">
-<div class="back" onclick="showHome()">‹ گەڕانەوە</div>
-<h2 style="margin-top:0">زیکرەکانم</h2>
-<p style="color:#6c7773">بەشەکانی زیکر و ئەذکار</p>
-<div id="zikrList" class="list"><div class="item">بارکردنی زیکرەکان...</div></div>
-</section>
+<div class="bottom">
+<button id="navHome" class="nav on" onclick="showView('home','قرآن الکریم')"><span>⌂</span>سەرەتا</button>
+<button id="navReader" class="nav" onclick="openPage(currentPage)"><span>📖</span>قورئان</button>
+<button id="navZikr" class="nav" onclick="showZikr()"><span>☀</span>زیکر</button>
+<button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
+</div>
+
+<div id="settingsModal" class="modal"><div class="sheet settings"><button class="close" onclick="closeSettings()">×</button><h3>ڕێکخستنەکان</h3><p class="muted">ئەم بەشە بۆ تاقیکردنەوەی ڕووکاری Preview ـە و لە APK جیاوازە.</p>
+<b>شێوازی موسحەف</b>
+<div class="option on" data-style="normal" onclick="setStyle(this)">موسحەفی ئاسایی</div>
+<div class="option" data-style="warm" onclick="setStyle(this)">ڕەنگی گەرم</div>
+<div class="option" data-style="night" onclick="setStyle(this)">شەو</div>
+<div class="card"><b>هایلایت</b><p class="muted">هایلایتی دەنگ و ئایەت لە APK بە سیستەمی خۆیە؛ ئەم Preview ـە کۆدی Android ـی دەنگ دەستکاری ناکات.</p></div>
+<div class="card"><b>نوێترین گۆڕانکاری</b><div id="settingsCommit" class="commit">...</div></div>
 </div></div>
-<div class="footer">ئەم پەڕەیە Web Preview ـە، نەخۆی ئەپی Android.</div>
-<div class="links">
-<a href="https://github.com/abdurahmanemran001-commits/qurani-bapez/actions" target="_blank">Build ـی APK</a>
-<a href="https://github.com/abdurahmanemran001-commits/qurani-bapez" target="_blank">GitHub</a>
-</div>
-</div>
+</div></div>
 <script>
 const repo='abdurahmanemran001-commits/qurani-bapez';
-function showZikr(){document.getElementById('home').style.display='none';document.getElementById('zikr').style.display='block';loadZikr()}
-function showHome(){document.getElementById('zikr').style.display='none';document.getElementById('home').style.display='block'}
-async function loadZikr(){
- const box=document.getElementById('zikrList');
- try{
-  const r=await fetch('https://www.hisnmuslim.com/api/ar/husn_ar.json'); const j=await r.json();
-  const cats=(j['العربية']||[]).slice(0,40);
-  box.innerHTML=cats.map(x=>'<div class="item"><b>'+escapeHtml(x.TITLE||'زیکر')+'</b></div>').join('');
- }catch(e){box.innerHTML='<div class="item">نەتوانرا زیکرەکان بار بکرێن.</div>'}
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-(async()=>{try{const r=await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1');const j=await r.json();if(j[0]){document.getElementById('version').textContent=j[0].sha.slice(0,7);document.getElementById('commit').textContent=j[0].commit.message.split('\n')[0]}}catch(e){document.getElementById('version').textContent='GitHub'}})();
+let currentPage=Number(localStorage.getItem('preview_page')||1);
+let homeTab='surah';
+let style=localStorage.getItem('preview_style')||'normal';
+const fallbackSurahs=[
+['الفاتحة',1,7,1],['البقرة',2,286,2],['آل عمران',3,200,50],['النساء',4,176,77],['المائدة',5,120,106],['الأنعام',6,165,128],['الأعراف',7,206,151],['الأنفال',8,75,177],['التوبة',9,129,187],['يونس',10,109,208],['هود',11,123,221],['يوسف',12,111,235],['الرعد',13,43,249],['إبراهيم',14,52,255],['الحجر',15,99,262],['النحل',16,128,267],['الإسراء',17,111,282],['الكهف',18,110,293],['مريم',19,98,305],['طه',20,135,312],['الأنبياء',21,112,322],['الحج',22,78,332],['المؤمنون',23,118,342],['النور',24,64,350],['الفرقان',25,77,359],['الشعراء',26,227,367],['النمل',27,93,377],['القصص',28,88,385],['العنكبوت',29,69,396],['الروم',30,60,404],['لقمان',31,34,411],['السجدة',32,30,415],['الأحزاب',33,73,418],['سبأ',34,54,428],['فاطر',35,45,434],['يس',36,83,440],['الصافات',37,182,446],['ص',38,88,453],['الزمر',39,75,458],['غافر',40,85,467],['فصلت',41,54,477],['الشورى',42,53,483],['الزخرف',43,89,489],['الدخان',44,59,496],['الجاثية',45,37,499],['الأحقاف',46,35,502],['محمد',47,38,507],['الفتح',48,29,511],['الحجرات',49,18,515],['ق',50,45,518],['الذاريات',51,60,520],['الطور',52,49,523],['النجم',53,62,526],['القمر',54,55,528],['الرحمن',55,78,531],['الواقعة',56,96,534],['الحديد',57,29,537],['المجادلة',58,22,542],['الحشر',59,24,545],['الممتحنة',60,13,549],['الصف',61,14,551],['الجمعة',62,11,553],['المنافقون',63,11,554],['التغابن',64,18,556],['الطلاق',65,12,558],['التحريم',66,12,560],['الملك',67,30,562],['القلم',68,52,564],['الحاقة',69,52,566],['المعارج',70,44,568],['نوح',71,28,570],['الجن',72,28,572],['المزمل',73,20,574],['المدثر',74,56,575],['القيامة',75,40,577],['الإنسان',76,31,578],['المرسلات',77,50,580],['النبأ',78,40,582],['النازعات',79,46,583],['عبس',80,42,585],['التكوير',81,29,586],['الانفطار',82,19,587],['المطففين',83,36,587],['الانشقاق',84,25,589],['البروج',85,22,590],['الطارق',86,17,591],['الأعلى',87,19,591],['الغاشية',88,26,592],['الفجر',89,30,593],['البلد',90,20,594],['الشمس',91,15,595],['الليل',92,21,595],['الضحى',93,11,596],['الشرح',94,8,596],['التين',95,8,597],['العلق',96,19,597],['القدر',97,5,598],['البينة',98,8,598],['الزلزلة',99,8,599],['العاديات',100,11,599],['القارعة',101,11,600],['التكاثر',102,8,600],['العصر',103,3,601],['الهمزة',104,9,601],['الفيل',105,5,601],['قريش',106,4,602],['الماعون',107,7,602],['الكوثر',108,3,602],['الكافرون',109,6,603],['النصر',110,3,603],['المسد',111,5,603],['الإخلاص',112,4,604],['الفلق',113,5,604],['الناس',114,6,604]
+];
+let surahs=fallbackSurahs;
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on');if(id==='zikr'||id==='detail')navZikr.classList.add('on')}
+function goHome(){showView('home','قرآن الکریم');renderSurahs()}
+function renderSurahs(){const q=(document.getElementById('surahSearch').value||'').trim();let a=surahs.filter(x=>!q||x[0].includes(q)||String(x[1])===q);if(homeTab==='juz'){a=Array.from({length:30},(_,i)=>['جوزی '+(i+1),i+1,0,Math.min(604,1+i*20)]);}if(homeTab==='bookmark'){a=[];try{const b=JSON.parse(localStorage.getItem('preview_bookmarks')||'[]');a=b.map(p=>['پەڕەی '+p,0,0,p])}catch{}}document.getElementById('surahList').innerHTML=a.length?a.map(x=>'<div class="surah" onclick="openPage('+x[3]+')"><span class="num">'+x[1]+'</span><div class="name"><b>'+esc(x[0])+'</b><small>'+x[2]+' ئایەت · پەڕە '+x[3]+'</small></div><span class="arrow">‹</span></div>').join(''):'<div class="card muted">هیچ شتێک نەدۆزرایەوە.</div>'}
+function setHomeTab(t){homeTab=t;['surah','juz','bookmark'].forEach(x=>document.getElementById('tab'+x[0].toUpperCase()+x.slice(1)).classList.toggle('on',x===t));renderSurahs()}
+function filterSurahs(){homeTab='surah';renderSurahs()}
+function openPage(p){p=Math.max(1,Math.min(604,Number(p)||1));currentPage=p;localStorage.setItem('preview_page',String(p));showView('reader','موسحەف');document.getElementById('pageInput').value=p;document.getElementById('pageTitle').textContent='پەڕەی '+p;document.getElementById('pageStatus').textContent='بارکردن...';const img=document.getElementById('pageImg');img.style.display='block';img.src='https://android.quran.com/data/width_1260/page'+String(p).padStart(3,'0')+'.png';try{let b=JSON.parse(localStorage.getItem('preview_bookmarks')||'[]');if(!b.includes(p))b.push(p);localStorage.setItem('preview_bookmarks',JSON.stringify(b.slice(-20)))}catch{}}
+function changePage(d){openPage(currentPage+d)}
+function imageFailed(){const m=document.getElementById('mushaf');document.getElementById('pageImg').style.display='none';document.getElementById('pageStatus').textContent='سەرچاوەی وێنەکە لەم کاتەدا بەردەست نییە';if(!m.querySelector('.mushaf-fallback')){const x=document.createElement('div');x.className='mushaf-fallback';x.innerHTML='<b>پەڕەی '+currentPage+'</b><p>Viewer ـەکە ئامادەیە، بەڵام سێرڤەری وێنەی موسحەف وەڵامی نەدا.</p><p class="muted">دووبارە Refresh بکە یان پەڕەیەکی تر هەڵبژێرە.</p>';m.appendChild(x)}}
+document.getElementById('pageImg').onload=()=>{document.getElementById('pageStatus').textContent='ئامادە';const f=document.querySelector('.mushaf-fallback');if(f)f.remove()}
+function showSearch(){showView('home','گەڕانی سورەتەکان');document.getElementById('surahSearch').focus()}
+function openSettings(){document.getElementById('settingsModal').classList.add('open');applyStyle()}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
+function setStyle(el){style=el.dataset.style;localStorage.setItem('preview_style',style);document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x===el));applyStyle()}
+function applyStyle(){document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x.dataset.style===style));document.querySelector('.phone').style.filter=style==='night'?'brightness(.78)':style==='warm'?'sepia(.08)':'none'}
+async function loadZikr(){const box=document.getElementById('zikrList');try{const r=await fetch('https://www.hisnmuslim.com/api/ar/husn_ar.json');const j=await r.json();const cats=(j['العربية']||[]);box.innerHTML=cats.map((x,i)=>'<div class="zikr-item" onclick="loadZikrDetail('+i+')"><b>'+esc(x.TITLE||'زیکر')+'</b></div>').join('')}catch(e){box.innerHTML='<div class="card muted">نەتوانرا زیکرەکان بار بکرێن.</div>'}}
+async function loadZikrDetail(i){showView('detail','زیکرەکانم');const box=document.getElementById('detailList');box.innerHTML='<div class="card muted">بارکردن...</div>';try{const j=await (await fetch('https://www.hisnmuslim.com/api/ar/'+(i+1)+'.json')).json();const arr=j['العربية']||j;document.getElementById('detailTitle').textContent=(arr[0]&&arr[0].TITLE)||'زیکر';document.getElementById('zikrCount').textContent=arr.length+' دانە';box.innerHTML=arr.map((x,k)=>'<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(x.ARABIC_TEXT||x.TEXT||'')+'</div>'+(x.REPEAT?'<div class="counter"><span class="badge">دووبارەکردنەوە: '+x.REPEAT+'</span></div>':'')+'</div>').join('')}catch(e){box.innerHTML='<div class="card muted">وردەکارییەکانی زیکر بار نەکران.</div>'}}
+function showZikr(){showView('zikr','زیکرەکانم');loadZikr()}
+async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
+(async()=>{renderSurahs();applyStyle();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
 </script>
 </body></html>
