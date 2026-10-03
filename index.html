@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>قرآن الکریم(قورئانی پیرۆز) — Preview</title>
+<style>
+:root{--bg:#eef2f1;--card:#fff;--ink:#17221f;--muted:#6c7773;--green:#176b4b;--green2:#e8f3ee;--line:#dfe6e3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Tahoma,Arial,sans-serif;color:var(--ink)}
+.wrap{max-width:1050px;margin:auto;padding:24px}.head{text-align:center;margin:8px 0 24px}.head h1{margin:0 0 8px;font-size:28px}.head p{margin:0;color:var(--muted)}
+.phone{width:min(390px,100%);min-height:700px;margin:0 auto;background:#fafcfb;border:10px solid #202624;border-radius:34px;box-shadow:0 18px 50px #0002;overflow:hidden}
+.status{height:28px;background:#202624;color:#fff;font-size:11px;padding:7px 14px;text-align:left;direction:ltr}
+.appbar{background:var(--green);color:#fff;padding:18px 18px 15px;display:flex;justify-content:space-between;align-items:center}
+.appbar strong{font-size:18px}.menu{font-size:25px}
+.body{padding:18px}.hero{background:var(--green2);border:1px solid #cfe2d9;border-radius:18px;padding:20px;text-align:center}.hero h2{margin:0 0 8px;font-size:22px}.hero p{margin:0;color:#52635c}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:14px;padding:16px}.card b{display:block;margin-bottom:8px}.ayah{font-family:serif;font-size:25px;line-height:2;text-align:center}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.btn{border:0;border-radius:12px;padding:12px;background:#f1f5f3;color:var(--ink);font-weight:bold;cursor:pointer}.btn.primary{background:var(--green);color:white}
+.footer{margin-top:22px;text-align:center;color:var(--muted);font-size:13px}.links{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}.links a{color:var(--green);text-decoration:none;font-weight:bold}
+.zikr{display:none}.list{display:grid;gap:9px}.item{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}.item:hover{background:var(--green2)}
+.back{color:var(--green);font-weight:bold;cursor:pointer;margin-bottom:12px}
+.badge{display:inline-block;background:#fff;border:1px solid var(--line);padding:5px 9px;border-radius:20px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="head"><h1>قرآن الکریم(قورئانی پیرۆز)</h1><p>پێشبینینی Web ـی پڕۆژە — بۆ بینینی گۆڕانکارییەکانی ڕووکاری ئەپ</p></div>
+<div class="phone">
+<div class="status">9:41 &nbsp; 4G</div>
+<div class="appbar"><strong>قرآن الکریم</strong><span class="menu">⋮</span></div>
+<div class="body">
+<section id="home">
+<div class="hero"><h2>قورئانی پیرۆز</h2><p>خوێندنەوەی قورئان و دەستگەیشتن بە تایبەتمەندییەکان</p></div>
+<div class="card"><b>نمونەی ئایەت</b><div class="ayah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div></div>
+<div class="actions">
+<button class="btn primary" onclick="showZikr()">زیکرەکانم</button>
+<button class="btn" onclick="alert('ئەمە پێشبینینی Web ـە؛ خودی APK نییە.')">پەڕەی قورئان</button>
+</div>
+<div class="card"><b>دۆخی پڕۆژە</b><span class="badge" id="version">بارکردن...</span><div id="commit" style="margin-top:9px;color:#6c7773;font-size:13px">نوێترین گۆڕانکاری لە GitHub دەخوێنرێتەوە.</div></div>
+</section>
+<section id="zikr" class="zikr">
+<div class="back" onclick="showHome()">‹ گەڕانەوە</div>
+<h2 style="margin-top:0">زیکرەکانم</h2>
+<p style="color:#6c7773">بەشەکانی زیکر و ئەذکار</p>
+<div id="zikrList" class="list"><div class="item">بارکردنی زیکرەکان...</div></div>
+</section>
+</div></div>
+<div class="footer">ئەم پەڕەیە Web Preview ـە، نەخۆی ئەپی Android.</div>
+<div class="links">
+<a href="https://github.com/abdurahmanemran001-commits/qurani-bapez/actions" target="_blank">Build ـی APK</a>
+<a href="https://github.com/abdurahmanemran001-commits/qurani-bapez" target="_blank">GitHub</a>
+</div>
+</div>
+<script>
+const repo='abdurahmanemran001-commits/qurani-bapez';
+function showZikr(){document.getElementById('home').style.display='none';document.getElementById('zikr').style.display='block';loadZikr()}
+function showHome(){document.getElementById('zikr').style.display='none';document.getElementById('home').style.display='block'}
+async function loadZikr(){
+ const box=document.getElementById('zikrList');
+ try{
+  const r=await fetch('https://www.hisnmuslim.com/api/ar/husn_ar.json'); const j=await r.json();
+  const cats=(j['العربية']||[]).slice(0,40);
+  box.innerHTML=cats.map(x=>'<div class="item"><b>'+escapeHtml(x.TITLE||'زیکر')+'</b></div>').join('');
+ }catch(e){box.innerHTML='<div class="item">نەتوانرا زیکرەکان بار بکرێن.</div>'}
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+(async()=>{try{const r=await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1');const j=await r.json();if(j[0]){document.getElementById('version').textContent=j[0].sha.slice(0,7);document.getElementById('commit').textContent=j[0].commit.message.split('\n')[0]}}catch(e){document.getElementById('version').textContent='GitHub'}})();
+</script>
+</body></html>
