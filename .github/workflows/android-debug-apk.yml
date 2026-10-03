@@ -50,3 +50,5 @@ jobs:
           name: qurani-bapez-debug-apk
           path: app/build/outputs/apk/madani/debug/*.apk
           if-no-files-found: error
+
+# retry after Crashlytics compatibility fix
