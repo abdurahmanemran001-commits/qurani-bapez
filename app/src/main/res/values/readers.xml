@@ -123,36 +123,36 @@
     <item>0</item>
     <item>0</item>
     <item>0</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
-    <item>1</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
+    <item>0</item>
     <item>0</item>
     <item>0</item>
     <item>0</item>
@@ -310,20 +310,20 @@
     <item>minshawi_murattal</item>
     <item>husary</item>
     <item>ubeda_kurdi_mutasil</item>
-    <item>sherzad_kurdi_mutasil</item>
-    <item>shekh_reza_mohammadian</item>
-    <item>shahriar_parhizgar</item>
+    <item>sherzad</item>
+    <item>shekh_reza</item>
+    <item>shahriar</item>
     <item>rzgar_kurdi_mutasil</item>
-    <item>raad_al_kurdi</item>
+    <item>Raad</item>
     <item>peshawa_kurdi_mutasil</item>
     <item>muhammad_al_luhaidan</item>
     <item>idrees_abkar</item>
     <item>husary_mujawwad</item>
-    <item>hamza_barznji_mutasil</item>
+    <item>hamza</item>
     <item>ghamdi_handren_kurdi</item>
     <item>fatih_seferagic</item>
-    <item>farman_shwani_mutasil</item>
-    <item>dlshad_kurdi_mutasil</item>
+    <item>farman</item>
+    <item>dlshad</item>
     <item>badr_al_turki</item>
     <item>alijon_qari</item>
     <item>abdulhadi_kurdi_mutasil</item>
@@ -354,58 +354,58 @@
     <item>fares_abbad</item>
     <item>khalifa_taniji</item>
     <item>maher_al_muaiqly</item>
-    <item>mishari_cali</item>
+    <item>mishari_alafasy_cali</item>
     <item>mishari_walk</item>
     <item>salah_bukhatir</item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
-    <item></item>
+    <item>peshawa</item>
+    <item>rzgar</item>
+    <item>Tahsin_doski_sanahi</item>
+    <item>d_mhamad_sa3id</item>
+    <item>Mhamad_ayub</item>
+    <item>Sa3d_ghamdi</item>
+    <item>abdulaziz_zahrani</item>
+    <item>abdullah_basfar</item>
+    <item>abdurlrahman_alshahat</item>
+    <item>abdurrashid_sufi</item>
+    <item>bandar_baleela</item>
+    <item>hani_rifai</item>
+    <item>husary_iza3a</item>
+    <item>ibrahim_walk</item>
+    <item>mahmoud_ali_albana</item>
+    <item>mhamad_jibreel</item>
+    <item>mishari_alafasy</item>
+    <item>mostafa_ismaeel</item>
+    <item>ahmad_xzr</item>
+    <item>ibrahim_al_dosari</item>
+    <item>ibrahim_axzar</item>
+    <item>tofiq_alsaigh</item>
+    <item>xalid_almhna</item>
+    <item>xalid_alqahtani</item>
+    <item>selah_alhashm</item>
+    <item>shahrayar</item>
+    <item>xalifa_tunaiji</item>
+    <item>abdulla_almatrud</item>
+    <item>abdulmuhsin_alqasm</item>
+    <item>selah_buxatr</item>
+    <item>karim_mansury</item>
+    <item>tarjma_azariya</item>
+    <item>yasr_salamat</item>
+    <item>mhamad_abdulkarim</item>
+    <item>mtarjm_farsi</item>
+    <item>abdulla_aljuhainy</item>
+    <item>manshawi_m3_atfal</item>
+    <item>yasin_jazairy</item>
+    <item>ali_abdulla_jabr</item>
+    <item>fuad_alxamri</item>
+    <item>mahr_shaxashir</item>
+    <item>mftah_alsaltani</item>
+    <item>mhamad_rashad</item>
+    <item>handren_tanha_tafser</item>
+    <item>m_ramazan_shkur</item>
+    <item>ra3d</item>
+    <item>ajami</item>
+    <item>ayman_swidy</item>
+    <item>ghamdi</item>
   </string-array>
 
   <string-array translatable="false" name="quran_readers_urls">
