@@ -196,7 +196,11 @@ public class QuranActivity extends QuranActionBarActivity
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
-      case R.id.zikr: {\n        Intent i = new Intent(this, ZikrActivity.class);\n        startActivity(i);\n        return true;\n      }\n      case R.id.settings: {
+      case R.id.zikr: {
+        Intent i = new Intent(this, ZikrActivity.class);
+        startActivity(i);
+        return true;
+      }\n      case R.id.settings: {
         Intent i = new Intent(this, QuranPreferenceActivity.class);
         startActivity(i);
         return true;
