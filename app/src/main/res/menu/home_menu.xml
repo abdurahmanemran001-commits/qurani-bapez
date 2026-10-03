@@ -11,27 +11,12 @@
       tools:visible="true"
       app:showAsAction="ifRoom">
     <menu>
-      <group
-          android:checkableBehavior="single">
-        <item
-            android:id="@+id/sort_date"
-            android:title="@string/menu_sort_date"
-            app:showAsAction="withText" />
-        <item
-            android:id="@+id/sort_location"
-            android:title="@string/menu_sort_location"
-            app:showAsAction="withText" />
+      <group android:checkableBehavior="single">
+        <item android:id="@+id/sort_date" android:title="@string/menu_sort_date" app:showAsAction="withText" />
+        <item android:id="@+id/sort_location" android:title="@string/menu_sort_location" app:showAsAction="withText" />
       </group>
-      <item
-          android:id="@+id/group_by_tags"
-          android:checkable="true"
-          android:title="@string/menu_sort_group_by_tags"
-          app:showAsAction="withText" />
-      <item
-          android:id="@+id/show_recents"
-          android:checkable="true"
-          android:title="@string/menu_show_recents"
-          app:showAsAction="withText" />
+      <item android:id="@+id/group_by_tags" android:checkable="true" android:title="@string/menu_sort_group_by_tags" app:showAsAction="withText" />
+      <item android:id="@+id/show_recents" android:checkable="true" android:title="@string/menu_show_recents" app:showAsAction="withText" />
     </menu>
   </item>
   <item
@@ -45,25 +30,10 @@
       android:title="@string/menu_search"
       app:actionViewClass="android.support.v7.widget.SearchView"
       app:showAsAction="ifRoom|collapseActionView" />
-  <item
-      android:id="@+id/jump"
-      android:title="@string/menu_jump"
-      app:showAsAction="never" />
-  <item
-      android:id="@+id/settings"
-      android:icon="@drawable/ic_action_settings"
-      android:title="@string/menu_settings"
-      app:showAsAction="never" />
-  <item
-      android:id="@+id/help"
-      android:title="@string/menu_help"
-      app:showAsAction="never" />
-  <item
-      android:id="@+id/about"
-      android:title="@string/menu_about"
-      app:showAsAction="never" />
-  <item
-      android:id="@+id/other_apps"
-      android:title="@string/menu_other_apps"
-      app:showAsAction="never" />
+  <item android:id="@+id/jump" android:title="@string/menu_jump" app:showAsAction="never" />
+  <item android:id="@+id/zikr" android:title="@string/menu_zikr" app:showAsAction="never" />
+  <item android:id="@+id/settings" android:icon="@drawable/ic_action_settings" android:title="@string/menu_settings" app:showAsAction="never" />
+  <item android:id="@+id/help" android:title="@string/menu_help" app:showAsAction="never" />
+  <item android:id="@+id/about" android:title="@string/menu_about" app:showAsAction="never" />
+  <item android:id="@+id/other_apps" android:title="@string/menu_other_apps" app:showAsAction="never" />
 </menu>
