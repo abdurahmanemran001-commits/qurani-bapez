@@ -13,13 +13,17 @@ import android.widget.FrameLayout;
 import com.quran.labs.androidquran.data.SuraAyah;
 
 public class ColorMushafPageLayout extends FrameLayout {
-  private static final String CDN =
-      "https://raw.githubusercontent.com/quran-ws/quran-svg/v1.1.1/mushafs/hafs/kfqc/svg/%03d.svg";
+  private static final String[] PAGE_SOURCES = {
+      "https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/%03d.svg",
+      "https://cdn.jsdelivr.net/gh/quran-ws/quran-svg@v1.1.1/mushafs/hafs/kfqc/svg/%03d.svg",
+      "https://raw.githubusercontent.com/quran-ws/quran-svg/v1.1.1/mushafs/hafs/kfqc/svg/%03d.svg"
+  };
 
   private final WebView webView;
   private final Handler handler = new Handler();
   private AyahClickListener ayahClickListener;
   private int page;
+  private int sourceIndex;
   private int activeSura = -1;
   private int activeAyah = -1;
 
@@ -48,10 +52,22 @@ public class ColorMushafPageLayout extends FrameLayout {
     webView.setWebViewClient(new WebViewClient() {
       @Override
       public void onPageFinished(WebView view, String url) {
-        installStyleAndTouchLayer();
-        if (activeSura >= 0) {
-          webView.evaluateJavascript("javascript:highlightAyah(" + activeSura + "," + activeAyah + ");", null);
-        }
+        view.evaluateJavascript(
+            "(document.querySelector('svg .ayahPolygon') ? 'ok' : 'bad')",
+            result -> {
+              if (!"\"ok\"".equals(result)) {
+                if (sourceIndex + 1 < PAGE_SOURCES.length) {
+                  sourceIndex++;
+                  loadCurrentSource();
+                }
+                return;
+              }
+              installStyleAndTouchLayer();
+              if (activeSura >= 0) {
+                webView.evaluateJavascript(
+                    "javascript:highlightAyah(" + activeSura + "," + activeAyah + ");", null);
+              }
+            });
       }
     });
     addView(webView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -63,7 +79,12 @@ public class ColorMushafPageLayout extends FrameLayout {
 
   public void setPage(int page) {
     this.page = page;
-    webView.loadUrl(String.format(CDN, page));
+    this.sourceIndex = 0;
+    loadCurrentSource();
+  }
+
+  private void loadCurrentSource() {
+    webView.loadUrl(String.format(PAGE_SOURCES[sourceIndex], page));
   }
 
   public void highlightAyah(final int sura, final int ayah) {
