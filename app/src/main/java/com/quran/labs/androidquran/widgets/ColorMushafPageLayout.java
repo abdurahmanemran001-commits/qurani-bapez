@@ -87,6 +87,8 @@ public class ColorMushafPageLayout extends FrameLayout {
         " + 'svg path:not(.ayahPolygon){fill:#173f35 !important;}'" +
         " + 'svg text{fill:#8a6b24 !important;}';" +
         "s.id='quranColorStyle';document.head.appendChild(s);" +
+        "window.highlightAyah=function(s,a){clearAudioHighlight();var e=document.querySelector('.ayahPolygon[surah=\\\"'+s+'\\\"][ayah=\\\"'+a+'\\\"]');if(e)e.classList.add('audioActive');};" +
+        "window.clearAudioHighlight=function(){document.querySelectorAll('.ayahPolygon.audioActive').forEach(function(e){e.classList.remove('audioActive');});}" +
         "document.querySelectorAll('.ayahPolygon').forEach(function(el){" +
         "el.style.pointerEvents='auto';" +
         "el.addEventListener('click',function(){" +
