@@ -154,6 +154,9 @@
   <string name="prefs_use_arabic_title">Arabic mode</string>
   <string name="prefs_use_arabic_summary_on">Use Arabic for application interface</string>
   <string name="prefs_new_background_title">New background</string>
+  <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
+  <string name="prefs_color_mushaf_title">Clean Color Mushaf</string>
+  <string name="prefs_color_mushaf_summary">Use the clean green and gold Madani Mushaf style</string>
   <string name="prefs_lock_orientation_title">Lock screen orientation</string>
   <string name="prefs_lock_orientation_summary_on">Use fixed orientation mode</string>
   <string name="prefs_lock_orientation_summary_off">Adaptive to current orientation mode</string>
