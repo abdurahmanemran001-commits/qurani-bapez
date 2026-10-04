@@ -1,6 +1,7 @@
 package com.quran.labs.androidquran.widgets;
 
 import android.content.Context;
+import android.support.v7.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
