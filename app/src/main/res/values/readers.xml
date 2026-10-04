@@ -86,6 +86,7 @@
     <item>@string/qari_yasr_salamat</item>
     <item>@string/qari_mhamad_abdulkarim</item>
     <item>@string/qari_mtarjm_farsi</item>
+    <item>@string/qari_mtarjm_urdo</item>
     <item>@string/qari_abdulla_aljuhainy</item>
     <item>@string/qari_manshawi_m3_atfal</item>
     <item>@string/qari_yasin_jazairy</item>
@@ -103,6 +104,7 @@
   </string-array>
 
   <integer-array translatable="false" name="quran_readers_have_gapless_equivalents">
+    <item>0</item>
     <item>0</item>
     <item>0</item>
     <item>0</item>
@@ -290,6 +292,7 @@
     <item>yasr_salamat</item>
     <item>mhamad_abdulkarim</item>
     <item>mtarjm_farsi</item>
+    <item>mtarjm_urdo</item>
     <item>abdulla_aljuhainy</item>
     <item>manshawi_m3_atfal</item>
     <item>yasin_jazairy</item>
@@ -375,6 +378,7 @@
     <item>mjibreel</item>
     <item>mishari_alafasy</item>
     <item>mostafa_ismaeel</item>
+    <item></item>
     <item></item>
     <item></item>
     <item></item>
@@ -494,6 +498,7 @@
     <item>https://github.com/Hiwaselah/sounds005/releases/download/yasr_salamat/</item>
     <item>https://github.com/Hiwaselah/sounds006/releases/download/mhamad_abdulkarim/</item>
     <item>https://github.com/Hiwaselah/sounds006/releases/download/mtarjm_farsi/</item>
+    <item>https://github.com/Hiwaselah/sounds006/releases/download/mtarjm_urdo/</item>
     <item>https://github.com/Hiwaselah/sounds007/releases/download/abdulla_aljuhainy/</item>
     <item>https://github.com/Hiwaselah/sounds007/releases/download/manshawi_m3_atfal/</item>
     <item>https://github.com/Hiwaselah/sounds007/releases/download/yasin_jazairy/</item>
@@ -637,6 +642,7 @@
   <string name="qari_yasr_salamat">Yasr Salamat</string>
   <string name="qari_mhamad_abdulkarim">Mhamad Abdulkarim</string>
   <string name="qari_mtarjm_farsi">Mtarjm Farsi</string>
+  <string name="qari_mtarjm_urdo">Mtarjm Urdo</string>
   <string name="qari_abdulla_aljuhainy">Abdulla Aljuhainy</string>
   <string name="qari_manshawi_m3_atfal">Manshawi M3 Atfal</string>
   <string name="qari_yasin_jazairy">Yasin Jazairy</string>
@@ -649,3 +655,7 @@
   <string name="qari_m_ramazan_shkur">ڕەمەزان شکوور کوردی</string>
   <string name="qari_ra3d">رائد محمد کوردی</string>
   <string name="qari_ajami">Ajami</string>
+  <string name="qari_ayman_swidy">Ayman Swidy</string>
+  <string name="qari_ghamdi">Ghamdi</string>
+
+</resources>
