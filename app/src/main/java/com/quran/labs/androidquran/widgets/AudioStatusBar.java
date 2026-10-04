@@ -525,9 +525,9 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     }
     for (int i = 0; i < text.length(); i++) {
       char c = text.charAt(i);
-      if ((c >= '\\u0600' && c <= '\\u06FF')
-          || (c >= '\\u0750' && c <= '\\u077F')
-          || (c >= '\\u08A0' && c <= '\\u08FF')) {
+      if ((c >= 0x0600 && c <= 0x06FF)
+          || (c >= 0x0750 && c <= 0x077F)
+          || (c >= 0x08A0 && c <= 0x08FF)) {
         return true;
       }
     }
