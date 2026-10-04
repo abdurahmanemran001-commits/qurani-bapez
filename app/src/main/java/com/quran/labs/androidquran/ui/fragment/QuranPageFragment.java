@@ -22,6 +22,7 @@ import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahImageTrackerI
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahScrollableImageTrackerItem;
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahTrackerItem;
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahTrackerPresenter;
+import com.quran.labs.androidquran.presenter.quran.ayahtracker.ColorMushafTrackerItem;
 import com.quran.labs.androidquran.ui.PagerActivity;
 import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener;
 import com.quran.labs.androidquran.ui.helpers.AyahTracker;
@@ -29,6 +30,8 @@ import com.quran.labs.androidquran.ui.helpers.HighlightType;
 import com.quran.labs.androidquran.ui.helpers.QuranPage;
 import com.quran.labs.androidquran.ui.util.PageController;
 import com.quran.labs.androidquran.util.QuranSettings;
+import com.quran.labs.androidquran.data.SuraAyah;
+import com.quran.labs.androidquran.widgets.ColorMushafPageLayout;
 import com.quran.labs.androidquran.widgets.HighlightingImageView;
 import com.quran.labs.androidquran.widgets.QuranImagePageLayout;
 
@@ -55,6 +58,7 @@ public class QuranPageFragment extends Fragment implements PageController,
 
   private HighlightingImageView imageView;
   private QuranImagePageLayout quranPageLayout;
+  private ColorMushafPageLayout colorMushafPageLayout;
   private boolean ayahCoordinatesError;
 
   public static QuranPageFragment newInstance(int page) {
@@ -81,6 +85,18 @@ public class QuranPageFragment extends Fragment implements PageController,
   public View onCreateView(LayoutInflater inflater,
                            ViewGroup container, Bundle savedInstanceState) {
     final Context context = getActivity();
+    if (quranSettings.useColorMushaf()) {
+      colorMushafPageLayout = new ColorMushafPageLayout(context);
+      colorMushafPageLayout.setAyahClickListener(new ColorMushafPageLayout.AyahClickListener() {
+        @Override
+        public void onAyahClicked(SuraAyah suraAyah) {
+          ayahSelectedListener.onAyahSelected(
+              EventType.SINGLE_TAP, suraAyah, ayahTrackerPresenter);
+        }
+      });
+      colorMushafPageLayout.setPage(pageNumber);
+      return colorMushafPageLayout;
+    }
     quranPageLayout = new QuranImagePageLayout(context);
     quranPageLayout.setPageController(this, pageNumber);
     imageView = quranPageLayout.getImageView();
@@ -90,6 +106,9 @@ public class QuranPageFragment extends Fragment implements PageController,
   @Override
   public void updateView() {
     if (isAdded()) {
+      if (quranSettings.useColorMushaf()) {
+        return;
+      }
       quranPageLayout.updateView(quranSettings);
       if (!quranSettings.highlightBookmarks()) {
         imageView.unHighlight(HighlightType.BOOKMARK);
@@ -106,11 +125,17 @@ public class QuranPageFragment extends Fragment implements PageController,
   @Override
   public AyahTrackerItem[] getAyahTrackerItems() {
     if (ayahTrackerItems == null) {
-      ayahTrackerItems = new AyahTrackerItem[]{
-        quranPageLayout.canScroll() ?
+      if (quranSettings.useColorMushaf()) {
+        ayahTrackerItems = new AyahTrackerItem[]{
+            new ColorMushafTrackerItem(pageNumber, colorMushafPageLayout)
+        };
+      } else {
+        ayahTrackerItems = new AyahTrackerItem[]{
+          quranPageLayout.canScroll() ?
             new AyahScrollableImageTrackerItem(pageNumber, quranPageLayout, imageView) :
             new AyahImageTrackerItem(pageNumber, imageView)
-      };
+        };
+      }
     }
     return ayahTrackerItems;
   }
@@ -153,6 +178,10 @@ public class QuranPageFragment extends Fragment implements PageController,
       imageView.setImageDrawable(null);
       quranPageLayout = null;
     }
+    if (colorMushafPageLayout != null) {
+      colorMushafPageLayout.setAyahClickListener(null);
+      colorMushafPageLayout = null;
+    }
   }
 
   @Override
@@ -186,17 +215,21 @@ public class QuranPageFragment extends Fragment implements PageController,
 
   @Override
   public void setPageDownloadError(@StringRes int errorMessage) {
+    if (quranSettings.useColorMushaf()) return;
     quranPageLayout.showError(errorMessage);
     quranPageLayout.setOnClickListener(v -> ayahSelectedListener.onClick(EventType.SINGLE_TAP));
   }
 
   @Override
   public void setPageBitmap(int page, @NonNull Bitmap pageBitmap) {
-    imageView.setImageDrawable(new BitmapDrawable(getResources(), pageBitmap));
+    if (!quranSettings.useColorMushaf()) {
+      imageView.setImageDrawable(new BitmapDrawable(getResources(), pageBitmap));
+    }
   }
 
   @Override
   public void hidePageDownloadError() {
+    if (quranSettings.useColorMushaf()) return;
     quranPageLayout.hideError();
     quranPageLayout.setOnClickListener(null);
     quranPageLayout.setClickable(false);
@@ -204,12 +237,14 @@ public class QuranPageFragment extends Fragment implements PageController,
 
   @Override
   public void handleRetryClicked() {
+    if (quranSettings.useColorMushaf()) return;
     hidePageDownloadError();
     quranPagePresenter.downloadImages();
   }
 
   @Override
   public boolean handleTouchEvent(MotionEvent event, EventType eventType, int page) {
+    if (quranSettings.useColorMushaf()) return true;
     return isVisible() && ayahTrackerPresenter.handleTouchEvent(getActivity(), event, eventType,
         page, ayahSelectedListener, ayahCoordinatesError);
   }
