@@ -270,6 +270,9 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     private void rebuildRows(String query) {
       String q = query.trim().toLowerCase(Locale.US);
       List<QariItem> kurdish = new ArrayList<>();
+      List<QariItem> persian = new ArrayList<>();
+      List<QariItem> urdu = new ArrayList<>();
+      List<QariItem> russian = new ArrayList<>();
       List<QariItem> english = new ArrayList<>();
       List<QariItem> arabic = new ArrayList<>();
 
@@ -285,6 +288,12 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
 
         if (isKurdishReciter(original)) {
           kurdish.add(item);
+        } else if (isPersianTranslation(original)) {
+          persian.add(item);
+        } else if (isUrduTranslation(original)) {
+          urdu.add(item);
+        } else if (isRussianTranslation(original)) {
+          russian.add(item);
         } else if (containsArabicText(display)) {
           arabic.add(item);
         } else {
@@ -294,6 +303,9 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
 
       rows.clear();
       addSection("کوردەکان", kurdish);
+      addSection("فارسی", persian);
+      addSection("اردو", urdu);
+      addSection("Русский", russian);
       addSection("English", english);
       addSection("العربية", arabic);
     }
@@ -534,6 +546,24 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     return false;
   }
 
+  private static boolean isPersianTranslation(String name) {
+    if (name == null) return false;
+    String lower = name.trim().toLowerCase(Locale.US);
+    return lower.contains("farsi") || lower.contains("persian");
+  }
+
+  private static boolean isUrduTranslation(String name) {
+    if (name == null) return false;
+    String lower = name.trim().toLowerCase(Locale.US);
+    return lower.contains("urdo") || lower.contains("urdu");
+  }
+
+  private static boolean isRussianTranslation(String name) {
+    if (name == null) return false;
+    String lower = name.trim().toLowerCase(Locale.US);
+    return lower.contains("russian") || lower.contains("russia") || lower.contains("рус");
+  }
+
   private static boolean isKurdishReciter(String name) {
     if (name == null) {
       return false;
@@ -567,6 +597,30 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     }
     String n = name.trim();
     String lower = n.toLowerCase(Locale.US);
+
+    // Kurdish reciters: keep their identity in Kurdish script.
+    if (lower.contains("ubeda kurdi")) return "عوبەیدە کوردی";
+    if (lower.contains("sherzad kurdi")) return "شێرزاد کوردی";
+    if (lower.contains("shekh reza")) return "شێخ ڕەزا محەمەدیان";
+    if (lower.contains("shahriar")) return "شەهریار پەرهیزگار";
+    if (lower.contains("rizgar kurdi") || lower.equals("rizgar")) return "ڕزگار کوردی";
+    if (lower.contains("raad al-kurdi") || lower.contains("raad kurdi")) return "ڕەعد کوردی";
+    if (lower.contains("peshawa kurdi")) return "پێشەوا کوردی";
+    if (lower.equals("peshawa")) return "پێشەوا کوردی";
+    if (lower.contains("hamza barznji")) return "حەمزە بەرزنجی";
+    if (lower.contains("ghamdi handren kurdi")) return "غەمیدی هەندرێن کوردی";
+    if (lower.contains("farman shwani")) return "فەرمان شوانی";
+    if (lower.contains("dlshad kurdi")) return "دڵشاد کوردی";
+    if (lower.contains("abdulhadi kurdi")) return "عەبدولهادی کوردی";
+    if (lower.contains("tahsin doski")) return "تحسین دۆسکی";
+    if (lower.contains("d. mhamad sa3id")) return "د. محەمەد سەعید";
+    if (lower.contains("mhamad abdulkarim")) return "محەمەد عەبدولکەریم";
+    if (lower.contains("ramazan shkur")) return "ڕەمەزان شکوور کوردی";
+    if (lower.contains("ra3d")) return "ڕەعد کوردی";
+
+    // Translation entries are shown under their actual language.
+    if (lower.contains("mtarjm farsi")) return "فارسی";
+    if (lower.contains("mtarjm urdo")) return "ئوردو";
 
     if (lower.contains("minshawi") || lower.contains("manshawi")) return "محمد صديق المنشاوي";
     if (lower.contains("husary") || lower.contains("husary")) return "محمود خليل الحصري";
