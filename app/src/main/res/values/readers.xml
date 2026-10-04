@@ -354,7 +354,7 @@
     <item>fares_abbad</item>
     <item>khalifa_taniji</item>
     <item>maher_al_muaiqly</item>
-    <item>mishari_cali</item>
+    <item>mishari_alafasy_cali</item>
     <item>mishari_walk</item>
     <item>salah_bukhatir</item>
     <item></item>
@@ -509,3 +509,143 @@
     <item>https://github.com/Hiwaselah/audio/releases/download/ayman_swidy/</item>
     <item>https://github.com/Hiwaselah/audio/releases/download/ghamdi/</item>
   
+</string-array>
+
+  <!-- actual qari names -->
+  <string name="qari_minshawi_murattal_gapless">Minshawi Murattal (gapless)</string>
+  <string name="qari_husary_gapless">Husary (gapless)</string>
+  <string name="qari_sudais_gapless">Abdurrahman As-Sudais (gapless)</string>
+  <string name="qari_qatami_gapless">Nasser Al Qatami (gapless)</string>
+  <string name="qari_abdulbaset">Abd Al-Basit</string>
+  <string name="qari_abdulbaset_mujawwad">Abd Al-Basit Mujawwad</string>
+  <string name="qari_basfar">Abdullah Basfar</string>
+  <string name="qari_suadis">Abdurrahmaan As-Sudais</string>
+  <string name="qari_shatri">Abu Bakr Ash-Shatri</string>
+  <string name="qari_afasy">Mishary Al-Afasy</string>
+  <string name="qari_saad_al_ghamdi">Saad Al-Ghamdi</string>
+  <string name="qari_walk">Ibrahim Walk (English Trans.)</string>
+  <string name="qari_hani_rifai">Hani Ar-Rifai</string>
+  <string name="qari_husary_mujawwad">Husary Mujawwad</string>
+  <string name="qari_hudhayfi">Ali Al-Hudhaify</string>
+  <string name="qari_muaiqly">Maher Al Muaiqly</string>
+  <string name="qari_minshawi_mujawwad">Minshawy Mujawwad</string>
+  <string name="qari_tablawy">Mohammad al Tablaway</string>
+  <string name="qari_ayyoub">Muhammad Ayyoub</string>
+  <string name="qari_jibreel">Muhammad Jibreel</string>
+  <string name="qari_shuraym">Saood Ash-Shuraym</string>
+  <string name="qari_dussary">Yasser Ad-Dussary</string>
+  <string name="qari_abdulbaset_gapless">Abd Al-Basit (gapless)</string>
+  <string name="qari_abdulbaset_mujawwad_gapless">Abd Al-Basit Mujawwad (gapless)</string>
+  <string name="qari_aziz_alili_gapless">Aziz Alili (gapless)</string>
+  <string name="qari_salah_budair_gapless">Salah Budair (gapless)</string>
+  <string name="qari_shuraym_gapless">Saood Ash-Shuraym (gapless)</string>
+  <string name="qari_yasser_dussary_gapless">Yasser Ad-Dussary (gapless)</string>
+  <string name="qari_mohammad_altablawi_gapless">Mohammad al Tablawy (gapless)</string>
+  <string name="qari_sahl_yaseen_gapless">Sahl Yaseen (gapless)</string>
+  <string name="qari_shatri_gapless">Abu Bakr Ash-Shatri (gapless)</string>
+  <string name="qari_ahmad_nauina_gapless">Ahmad Nauina (gapless)</string>
+  <string name="qari_akram_al_alaqmi">Akram Al-Alaqmi (gapless)</string>
+  <string name="qari_ali_hajjaj_alsouasi_gapless">Ali Hajjaj Alsouasi (gapless)</string>
+  <string name="qari_saad_al_ghamidi_gapless">Saad Al-Ghamdi (gapless)</string>
+  <string name="qari_bandar_baleela_gapless">Bandar Baleela (gapless)</string>
+  <string name="qari_mahmoud_ali_albana_gapless">Mahmoud Ali al Bana (gapless)</string>
+  <string name="qari_abdulrahman_alshahat_gapless">Abdulrahman Al-Shahat (gapless)</string>
+  <string name="qari_abdurrashid_sufi_gapless">Abdur-Rashid Sufi (gapless)</string>
+  <string name="qari_mostafa_ismaeel_gapless">Mostafa Ismaeel (gapless)</string>
+  <string name="qari_husary_iza3a_gapless">Husary Broadcast (gapless)</string>
+  <string name="qari_abdulaziz_zahrani_gapless">Abdulaziz Az-Zahrani (gapless)</string>
+  <string name="qari_ubeda_kurdi">Ubeda Kurdi (gapless)</string>
+  <string name="qari_sherzad_kurdi">Sherzad Kurdi (gapless)</string>
+  <string name="qari_shekh_reza">Shekh Reza Mohammadian (gapless)</string>
+  <string name="qari_shahriar">Shahriar Parhizgar (gapless)</string>
+  <string name="qari_rizgar_kurdi">Rizgar Kurdi (gapless)</string>
+  <string name="qari_raad_kurdi">Raad Al-Kurdi (gapless)</string>
+  <string name="qari_peshawa_kurdi">Peshawa Kurdi (gapless)</string>
+  <string name="qari_muhammad_luhaidan">Muhammad Al-Luhaidan (gapless)</string>
+  <string name="qari_idrees_abkar">Idrees Abkar (gapless)</string>
+  <string name="qari_husary_mujawwad_hiwaselah">Husary Mujawwad (gapless)</string>
+  <string name="qari_hamza_barznji">Hamza Barznji (gapless)</string>
+  <string name="qari_ghamdi_handren_kurdi">Ghamdi Handren Kurdi (gapless)</string>
+  <string name="qari_fatih_seferagic">Fatih Seferagic (gapless)</string>
+  <string name="qari_farman_shwani">Farman Shwani (gapless)</string>
+  <string name="qari_dlshad_kurdi">Dlshad Kurdi (gapless)</string>
+  <string name="qari_badr_turki">Badr Al-Turki (gapless)</string>
+  <string name="qari_alijon_qari">Alijon Qari (gapless)</string>
+  <string name="qari_abdulhadi_kurdi">Abdulhadi Kurdi (gapless)</string>
+
+  <!-- Additional reciters discovered from the Hiwaselah APK catalog -->
+  <string name="qari_abdulrahman_aloosi">Abdulrahman Aloosi</string>
+  <string name="qari_ali_hudhayfi">Ali Hudhayfi</string>
+  <string name="qari_alzain_mohammad_ahmad">Alzain Mohammad Ahmad</string>
+  <string name="qari_dr_ayman_suwaid">Dr Ayman Suwaid</string>
+  <string name="qari_hady_toure">Hady Toure</string>
+  <string name="qari_husary_muallim">Husary Muallim</string>
+  <string name="qari_ibrahim_alakhdar">Ibrahim Alakhdar</string>
+  <string name="qari_khaled_almuhanna">Khaled Almuhanna</string>
+  <string name="qari_khalid_alqahtani">Khalid Alqahtani</string>
+  <string name="qari_khalid_jalil">Khalid Jalil</string>
+  <string name="qari_mokhtasar_asmari">Mokhtasar Asmari</string>
+  <string name="qari_muaiqly_kfgqpc">Muaiqly KFGQPC</string>
+  <string name="qari_muhammad_rashad_shereef">Muhammad Rashad Shereef</string>
+  <string name="qari_nabil_rifa3i">Nabil Rifa3i</string>
+  <string name="qari_noreen_siddiq">Noreen Siddiq</string>
+  <string name="qari_tawfeeq_as_sawaigh">Tawfeeq As-Sawaigh</string>
+  <string name="qari_wadee3_alyamani">Wadee3 Alyamani</string>
+  <string name="qari_yasser_salama_hadr">Yasser Salama Hadr</string>
+  <string name="qari_abdul_muhsin_alqasim">Abdul Muhsin Alqasim</string>
+  <string name="qari_abdullah_juhany">Abdullah Juhany</string>
+  <string name="qari_abdullah_matroud">Abdullah Matroud</string>
+  <string name="qari_ahmed_alajamy">Ahmed Alajamy</string>
+  <string name="qari_ali_jaber">Ali Jaber</string>
+  <string name="qari_fares_abbad">Fares Abbad</string>
+  <string name="qari_khalifa_taniji">Khalifa Taniji</string>
+  <string name="qari_maher_al_muaiqly">Maher Al Muaiqly</string>
+  <string name="qari_mishari_cali">Mishari Cali</string>
+  <string name="qari_mishari_walk">Mishari Walk</string>
+  <string name="qari_salah_bukhatir">Salah Bukhatir</string>
+  <string name="qari_peshawa">Peshawa</string>
+  <string name="qari_rzgar">Rizgar</string>
+  <string name="qari_Tahsin_doski_sanahi">Tahsin Doski Sanahi</string>
+  <string name="qari_d_mhamad_sa3id">D. Mhamad Sa3id</string>
+  <string name="qari_Mhamad_ayub">Mhamad Ayub</string>
+  <string name="qari_Sa3d_ghamdi">Sa3d Ghamdi</string>
+  <string name="qari_abdulaziz_zahrani">Abdulaziz Zahrani</string>
+  <string name="qari_abdullah_basfar">Abdullah Basfar</string>
+  <string name="qari_abdurlrahman_alshahat">Abdurlrahman Alshahat</string>
+  <string name="qari_abdurrashid_sufi">Abdurrashid Sufi</string>
+  <string name="qari_bandar_baleela">Bandar Baleela</string>
+  <string name="qari_husary_iza3a">Husary Iza3a</string>
+  <string name="qari_ibrahim_walk">Ibrahim Walk</string>
+  <string name="qari_mahmoud_ali_albana">Mahmoud Ali Albana</string>
+  <string name="qari_mhamad_jibreel">Mhamad Jibreel</string>
+  <string name="qari_mishari_alafasy">Mishari Alafasy</string>
+  <string name="qari_mostafa_ismaeel">Mostafa Ismaeel</string>
+  <string name="qari_ahmad_xzr">Ahmad Xzr</string>
+  <string name="qari_ibrahim_al_dosari">Ibrahim Al Dosari</string>
+  <string name="qari_ibrahim_axzar">Ibrahim Axzar</string>
+  <string name="qari_tofiq_alsaigh">Tofiq Alsaigh</string>
+  <string name="qari_xalid_almhna">Xalid Almhna</string>
+  <string name="qari_xalid_alqahtani">Xalid Alqahtani</string>
+  <string name="qari_selah_alhashm">Selah Alhashm</string>
+  <string name="qari_shahrayar">Shahrayar</string>
+  <string name="qari_xalifa_tunaiji">Xalifa Tunaiji</string>
+  <string name="qari_abdulla_almatrud">Abdulla Almatrud</string>
+  <string name="qari_abdulmuhsin_alqasm">Abdulmuhsin Alqasm</string>
+  <string name="qari_selah_buxatr">Selah Buxatr</string>
+  <string name="qari_karim_mansury">Karim Mansury</string>
+  <string name="qari_tarjma_azariya">Tarjma Azariya</string>
+  <string name="qari_yasr_salamat">Yasr Salamat</string>
+  <string name="qari_mhamad_abdulkarim">Mhamad Abdulkarim</string>
+  <string name="qari_mtarjm_farsi">Mtarjm Farsi</string>
+  <string name="qari_abdulla_aljuhainy">Abdulla Aljuhainy</string>
+  <string name="qari_manshawi_m3_atfal">Manshawi M3 Atfal</string>
+  <string name="qari_yasin_jazairy">Yasin Jazairy</string>
+  <string name="qari_ali_abdulla_jabr">Ali Abdulla Jabr</string>
+  <string name="qari_fuad_alxamri">Fuad Alxamri</string>
+  <string name="qari_mahr_shaxashir">Mahr Shaxashir</string>
+  <string name="qari_mftah_alsaltani">Mftah Alsaltani</string>
+  <string name="qari_mhamad_rashad">Mhamad Rashad</string>
+  <string name="qari_handren_tanha_tafser">Handren Tanha Tafser</string>
+  <string name="qari_m_ramazan_shkur">ڕەمەزان شکوور کوردی</string>
+  <string name="qari_ra3d">رائد محمد کوردی</string>
+  <string name="qari_ajami">Ajami</string>
