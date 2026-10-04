@@ -187,6 +187,9 @@ public class QuranPagePresenter implements Presenter<QuranPageScreen> {
   @Override
   public void bind(QuranPageScreen screen) {
     this.screen = screen;
+    if (quranSettings.useColorMushaf()) {
+      return;
+    }
     if (!didDownloadImages) {
       downloadImages();
     }
