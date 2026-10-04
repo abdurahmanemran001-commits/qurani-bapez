@@ -229,61 +229,149 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     }
   }
 
+  private static class QariSearchRow {
+    final String header;
+    final QariItem item;
+
+    private QariSearchRow(String header, QariItem item) {
+      this.header = header;
+      this.item = item;
+    }
+
+    static QariSearchRow header(String title) {
+      return new QariSearchRow(title, null);
+    }
+
+    static QariSearchRow item(QariItem item) {
+      return new QariSearchRow(null, item);
+    }
+
+    boolean isHeader() {
+      return item == null;
+    }
+  }
+
   private static class QariSearchAdapter extends BaseAdapter {
     @NonNull private final Context mContext;
     @NonNull private final List<QariItem> allItems;
-    @NonNull private final List<QariItem> filteredItems = new ArrayList<>();
+    @NonNull private final List<QariSearchRow> rows = new ArrayList<>();
 
     QariSearchAdapter(@NonNull Context context, @NonNull List<QariItem> items) {
       mContext = context;
       allItems = items;
-      filteredItems.addAll(items);
+      rebuildRows("");
     }
 
     void filter(String query) {
-      String q = query == null ? "" : query.trim().toLowerCase(Locale.US);
-      filteredItems.clear();
+      rebuildRows(query == null ? "" : query);
+      notifyDataSetChanged();
+    }
+
+    private void rebuildRows(String query) {
+      String q = query.trim().toLowerCase(Locale.US);
+      List<QariItem> kurdish = new ArrayList<>();
+      List<QariItem> english = new ArrayList<>();
+      List<QariItem> arabic = new ArrayList<>();
+
       for (QariItem item : allItems) {
         String original = item.getName() == null ? "" : item.getName();
         String display = getDisplayName(original);
-        if (q.isEmpty()
-            || original.toLowerCase(Locale.US).contains(q)
-            || display.toLowerCase(Locale.US).contains(q)) {
-          filteredItems.add(item);
+
+        if (!q.isEmpty()
+            && !original.toLowerCase(Locale.US).contains(q)
+            && !display.toLowerCase(Locale.US).contains(q)) {
+          continue;
+        }
+
+        if (isKurdishReciter(original)) {
+          kurdish.add(item);
+        } else if (containsArabicText(display)) {
+          arabic.add(item);
+        } else {
+          english.add(item);
         }
       }
-      notifyDataSetChanged();
+
+      rows.clear();
+      addSection("کوردەکان", kurdish);
+      addSection("English", english);
+      addSection("العربية", arabic);
+    }
+
+    private void addSection(String title, List<QariItem> items) {
+      if (items.isEmpty()) {
+        return;
+      }
+      rows.add(QariSearchRow.header(title));
+      for (QariItem item : items) {
+        rows.add(QariSearchRow.item(item));
+      }
     }
 
     @Override
     public int getCount() {
-      return filteredItems.size();
+      return rows.size();
     }
 
     @Override
     public QariItem getItem(int position) {
-      return filteredItems.get(position);
+      return rows.get(position).item;
     }
 
     @Override
     public long getItemId(int position) {
-      return getItem(position).getId();
+      QariSearchRow row = rows.get(position);
+      return row.isHeader() ? Long.MIN_VALUE + position : row.item.getId();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+      return rows.get(position).isHeader() ? 1 : 0;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+      return 2;
+    }
+
+    @Override
+    public boolean isEnabled(int position) {
+      return !rows.get(position).isHeader();
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+      QariSearchRow row = rows.get(position);
+
+      if (row.isHeader()) {
+        TextView header;
+        if (convertView == null || !(convertView instanceof TextView)) {
+          header = new TextView(mContext);
+        } else {
+          header = (TextView) convertView;
+        }
+        header.setText(row.header);
+        header.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        header.setTextColor(Color.DKGRAY);
+        header.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
+        int horizontal = (int) (12 * mContext.getResources().getDisplayMetrics().density);
+        int vertical = (int) (8 * mContext.getResources().getDisplayMetrics().density);
+        header.setPadding(horizontal, vertical, horizontal, vertical);
+        header.setBackgroundColor(Color.LTGRAY);
+        return header;
+      }
+
       TextView textView;
-      if (convertView == null) {
+      if (convertView == null || !(convertView instanceof TextView)) {
         textView = (TextView) LayoutInflater.from(mContext)
             .inflate(R.layout.sherlock_spinner_dropdown_item, parent, false);
       } else {
         textView = (TextView) convertView;
       }
-      textView.setText(getDisplayName(getItem(position).getName()));
+      textView.setText(getDisplayName(row.item.getName()));
       return textView;
     }
   }
-
   private static class QariAdapter extends BaseAdapter {
     @NonNull LayoutInflater mInflater;
     @NonNull private final List<QariItem> mItems;
@@ -393,6 +481,9 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
 
     listView.setOnItemClickListener((parent, view, position, id) -> {
       QariItem item = searchAdapter.getItem(position);
+      if (item == null) {
+        return;
+      }
       int itemId = item.getId();
       sharedPreferences.edit().putInt(Constants.PREF_DEFAULT_QARI, itemId).apply();
 
@@ -426,6 +517,48 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
 
     dialog.setOnShowListener(d -> searchView.requestFocus());
     dialog.show();
+  }
+
+  private static boolean containsArabicText(String text) {
+    if (text == null) {
+      return false;
+    }
+    for (int i = 0; i < text.length(); i++) {
+      char c = text.charAt(i);
+      if ((c >= '\\u0600' && c <= '\\u06FF')
+          || (c >= '\\u0750' && c <= '\\u077F')
+          || (c >= '\\u08A0' && c <= '\\u08FF')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean isKurdishReciter(String name) {
+    if (name == null) {
+      return false;
+    }
+    String lower = name.trim().toLowerCase(Locale.US);
+
+    return lower.contains("kurdi")
+        || lower.contains("kurdish")
+        || lower.contains("ubeda kurdi")
+        || lower.contains("sherzad kurdi")
+        || lower.contains("shekh reza")
+        || lower.contains("shahriar")
+        || lower.contains("rizgar")
+        || lower.contains("raad")
+        || lower.contains("peshawa")
+        || lower.contains("hamza barznji")
+        || lower.contains("ghamdi handren")
+        || lower.contains("farman shwani")
+        || lower.contains("dlshad")
+        || lower.contains("abdulhadi kurdi")
+        || lower.contains("tahsin doski")
+        || lower.contains("d. mhamad sa3id")
+        || lower.contains("mhamad abdulkarim")
+        || lower.contains("ramazan shkur")
+        || lower.contains("ra3d");
   }
 
   private static String getDisplayName(String name) {
@@ -491,6 +624,44 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     if (lower.equals("ajami")) return "أحمد العجمي";
     if (lower.contains("ayman swidy")) return "أيمن سويد";
     if (lower.equals("ghamdi")) return "سعد الغامدي";
+
+    if (lower.contains("abdullah basfar")) return "عبد الله بصفر";
+    if (lower.contains("abdurlrahman alshahat")) return "عبد الرحمن الشحات";
+    if (lower.contains("abdurrashid sufi")) return "عبد الرشيد صوفي";
+    if (lower.contains("bandar baleela")) return "بندر بليلة";
+    if (lower.contains("hani rifai")) return "هاني الرفاعي";
+    if (lower.contains("husary iza3a")) return "محمود خليل الحصري";
+    if (lower.contains("ibrahim walk")) return "إبراهيم واك";
+    if (lower.contains("mahmoud ali albana")) return "محمود علي البنا";
+    if (lower.contains("mhamad jibreel")) return "محمد جبريل";
+    if (lower.contains("mostafa ismaeel")) return "مصطفى إسماعيل";
+    if (lower.contains("ahmad xzr")) return "أحمد خضر";
+    if (lower.contains("ibrahim al dosari")) return "إبراهيم الدوسري";
+    if (lower.contains("ibrahim axzar")) return "إبراهيم الأخضر";
+    if (lower.contains("xalid almhna") || lower.contains("xalid alqahtani")) return "خالد المهنا";
+    if (lower.contains("selah alhashm")) return "صلاح الهاشم";
+    if (lower.contains("xalifa tunaiji")) return "خليفة الطنيجي";
+    if (lower.contains("abdulla almatrud")) return "عبد الله المطرود";
+    if (lower.contains("abdulmuhsin alqasm")) return "عبد المحسن القاسم";
+    if (lower.contains("selah buxatr")) return "صلاح بو خاطر";
+    if (lower.contains("yasr salamat")) return "ياسر سلامة";
+    if (lower.contains("abdulla aljuhainy")) return "عبد الله الجهني";
+    if (lower.contains("yasin jazairy")) return "ياسين الجزائري";
+    if (lower.contains("ali abdulla jabr")) return "علي عبد الله جابر";
+    if (lower.contains("fuad alxamri")) return "فؤاد الشمري";
+    if (lower.contains("mahr shaxashir")) return "ماهر شخاشير";
+    if (lower.contains("mftah alsaltani")) return "مفتاح السلطاني";
+    if (lower.contains("mhamad rashad")) return "محمد رشاد";
+    if (lower.contains("karim mansury")) return "كريم منصوري";
+    if (lower.contains("mishari walk")) return "مشاري واك";
+    if (lower.contains("mishari alafasy")) return "مشاري راشد العفاسي";
+    if (lower.contains("ajami")) return "أحمد العجمي";
+    if (lower.contains("mhamad ayub") || lower.contains("mhamad_ayub")) return "محمد أيوب";
+    if (lower.contains("d. mhamad sa3id")) return n;
+    if (lower.contains("tarjma azariya")) return "ترجمة أزارية";
+    if (lower.contains("mhamad abdulkarim")) return "محمد عبد الكريم";
+    if (lower.contains("mftah")) return "مفتاح السلطاني";
+    if (lower.contains("handren tanha tafser")) return "هندرین تەفسیر";
 
     return n;
   }
