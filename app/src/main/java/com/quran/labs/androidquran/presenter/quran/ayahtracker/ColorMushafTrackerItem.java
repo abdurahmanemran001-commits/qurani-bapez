@@ -1,0 +1,66 @@
+package com.quran.labs.androidquran.presenter.quran.ayahtracker;
+
+import android.graphics.RectF;
+import android.support.annotation.NonNull;
+
+import com.quran.labs.androidquran.common.AyahBounds;
+import com.quran.labs.androidquran.dao.Bookmark;
+import com.quran.labs.androidquran.data.SuraAyah;
+import com.quran.labs.androidquran.ui.helpers.HighlightType;
+import com.quran.labs.androidquran.widgets.ColorMushafPageLayout;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class ColorMushafTrackerItem extends AyahTrackerItem<ColorMushafPageLayout> {
+  public ColorMushafTrackerItem(int page, @NonNull ColorMushafPageLayout view) {
+    super(page, view);
+  }
+
+  @Override
+  boolean onHighlightAyah(int page, int sura, int ayah, HighlightType type, boolean scrollToAyah) {
+    if (this.page == page && type == HighlightType.AUDIO) {
+      ayahView.clearAudioHighlight();
+      ayahView.highlightAyah(sura, ayah);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  void onUnHighlightAyah(int page, int sura, int ayah, HighlightType type) {
+    if (this.page == page && type == HighlightType.AUDIO) {
+      ayahView.clearAudioHighlight();
+    }
+  }
+
+  @Override
+  void onUnHighlightAyahType(HighlightType type) {
+    if (type == HighlightType.AUDIO) {
+      ayahView.clearAudioHighlight();
+    }
+  }
+
+  @Override
+  void onSetAyahBookmarks(@NonNull List<Bookmark> bookmarks) {
+    // Keep bookmark rendering unchanged in the original Mushaf mode.
+  }
+
+  @Override
+  void onSetPageBounds(int page, @NonNull RectF bounds) {
+  }
+
+  @Override
+  void onSetAyahCoordinates(int page, @NonNull Map<String, List<AyahBounds>> coordinates) {
+  }
+
+  @Override
+  void onHighlightAyat(int page, Set<String> ayahKeys, HighlightType type) {
+  }
+
+  @Override
+  SuraAyah getAyahForPosition(int page, float x, float y) {
+    return null;
+  }
+}
