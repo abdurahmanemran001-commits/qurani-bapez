@@ -20,6 +20,8 @@ public class ColorMushafPageLayout extends FrameLayout {
   private final Handler handler = new Handler();
   private AyahClickListener ayahClickListener;
   private int page;
+  private int activeSura = -1;
+  private int activeAyah = -1;
 
   public interface AyahClickListener {
     void onAyahClicked(SuraAyah suraAyah);
@@ -62,11 +64,16 @@ public class ColorMushafPageLayout extends FrameLayout {
   }
 
   public void highlightAyah(final int sura, final int ayah) {
-    runJs("highlightAyah(" + sura + "," + ayah + ");");
+    activeSura = sura;
+    activeAyah = ayah;
+    runJs("window._quranActiveSura=" + sura + ";window._quranActiveAyah=" + ayah +
+        ";highlightAyah(" + sura + "," + ayah + ");");
   }
 
   public void clearAudioHighlight() {
-    runJs("clearAudioHighlight();");
+    activeSura = -1;
+    activeAyah = -1;
+    runJs("window._quranActiveSura=-1;window._quranActiveAyah=-1;clearAudioHighlight();");
   }
 
   private void installStyleAndTouchLayer() {
@@ -85,6 +92,7 @@ public class ColorMushafPageLayout extends FrameLayout {
         "el.addEventListener('click',function(){" +
         "QuranBridge.ayah(" +
         "el.getAttribute('surah'),el.getAttribute('ayah'));});});" +
+        "if(window._quranActiveSura>=0){highlightAyah(window._quranActiveSura,window._quranActiveAyah);}" +
         "})();";
     webView.evaluateJavascript("javascript:" + js, null);
   }
