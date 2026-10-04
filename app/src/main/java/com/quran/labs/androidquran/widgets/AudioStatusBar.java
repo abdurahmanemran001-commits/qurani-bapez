@@ -1,6 +1,8 @@
 package com.quran.labs.androidquran.widgets;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -21,8 +23,10 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.support.v7.widget.SearchView;
 
 import com.quran.labs.androidquran.R;
 import com.quran.labs.androidquran.common.QariItem;
@@ -32,7 +36,9 @@ import com.quran.labs.androidquran.util.QuranScreenInfo;
 import com.quran.labs.androidquran.util.QuranSettings;
 import com.quran.labs.androidquran.util.QuranUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class AudioStatusBar extends LeftToRightLinearLayout {
 
@@ -224,6 +230,61 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     }
   }
 
+  private static class QariSearchAdapter extends BaseAdapter {
+    @NonNull private final Context mContext;
+    @NonNull private final List<QariItem> allItems;
+    @NonNull private final List<QariItem> filteredItems = new ArrayList<>();
+
+    QariSearchAdapter(@NonNull Context context, @NonNull List<QariItem> items) {
+      mContext = context;
+      allItems = items;
+      filteredItems.addAll(items);
+    }
+
+    void filter(String query) {
+      String q = query == null ? "" : query.trim().toLowerCase(Locale.US);
+      filteredItems.clear();
+      for (QariItem item : allItems) {
+        String original = item.getName() == null ? "" : item.getName();
+        String display = getDisplayName(original);
+        if (q.isEmpty()
+            || original.toLowerCase(Locale.US).contains(q)
+            || display.toLowerCase(Locale.US).contains(q)) {
+          filteredItems.add(item);
+        }
+      }
+      notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+      return filteredItems.size();
+    }
+
+    @Override
+    public QariItem getItem(int position) {
+      return filteredItems.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+      return getItem(position).getId();
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+      TextView textView;
+      if (convertView == null) {
+        textView = (TextView) LayoutInflater.from(mContext)
+            .inflate(R.layout.sherlock_spinner_dropdown_item, parent, false);
+      } else {
+        textView = (TextView) convertView;
+      }
+      textView.setText(getDisplayName(getItem(position).getName()));
+      return textView;
+    }
+  }
+
   private static class QariAdapter extends BaseAdapter {
     @NonNull LayoutInflater mInflater;
     @NonNull private final List<QariItem> mItems;
@@ -275,34 +336,25 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
       }
 
       QariItem item = getItem(position);
-      textView.setText(item.getName());
+      textView.setText(getDisplayName(item.getName()));
       return textView;
     }
   }
 
   private void addSpinner() {
     if (spinner == null) {
-      spinner = new QuranSpinner(context, null,
-          R.attr.actionDropDownStyle);
+      spinner = new QuranSpinner(context, null, R.attr.actionDropDownStyle);
       spinner.setDropDownVerticalOffset(spinnerPadding);
       spinner.setAdapter(adapter);
 
-      spinner.setOnItemSelectedListener(
-          new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-              if (position != currentQari) {
-                sharedPreferences.edit().
-                    putInt(Constants.PREF_DEFAULT_QARI, adapter.getItem(position).getId()).apply();
-                currentQari = position;
-              }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-          });
+      spinner.setOnTouchListener((v, event) -> {
+        if (event.getAction() == android.view.MotionEvent.ACTION_UP) {
+          showQariSearchDialog();
+        }
+        return true;
+      });
     }
+
     spinner.setSelection(currentQari);
     final LayoutParams params = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
     params.weight = 1;
@@ -313,6 +365,127 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
       params.rightMargin = spinnerPadding;
     }
     addView(spinner, params);
+  }
+
+  private void showQariSearchDialog() {
+    final List<QariItem> allItems = AudioUtils.getQariList(context);
+    final QariSearchAdapter searchAdapter = new QariSearchAdapter(context, allItems);
+
+    final LinearLayout root = new LinearLayout(context);
+    root.setOrientation(LinearLayout.VERTICAL);
+    int padding = spinnerPadding;
+    root.setPadding(padding, 0, padding, 0);
+
+    final SearchView searchView = new SearchView(context);
+    searchView.setIconifiedByDefault(false);
+    searchView.setQueryHint("Search reciter...");
+    root.addView(searchView, new LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+    final ListView listView = new ListView(context);
+    listView.setAdapter(searchAdapter);
+    root.addView(listView, new LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+
+    final AlertDialog dialog = new AlertDialog.Builder(context)
+        .setTitle("Choose reciter")
+        .setView(root)
+        .create();
+
+    listView.setOnItemClickListener((parent, view, position, id) -> {
+      QariItem item = searchAdapter.getItem(position);
+      int itemId = item.getId();
+      sharedPreferences.edit().putInt(Constants.PREF_DEFAULT_QARI, itemId).apply();
+      currentQari = itemId;
+      if (spinner != null) {
+        spinner.setSelection(currentQari);
+      }
+      dialog.dismiss();
+    });
+
+    searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+      @Override
+      public boolean onQueryTextSubmit(String query) {
+        searchAdapter.filter(query);
+        return true;
+      }
+
+      @Override
+      public boolean onQueryTextChange(String newText) {
+        searchAdapter.filter(newText);
+        return true;
+      }
+    });
+
+    dialog.setOnShowListener(d -> searchView.requestFocus());
+    dialog.show();
+  }
+
+  private static String getDisplayName(String name) {
+    if (name == null) {
+      return "";
+    }
+    String n = name.trim();
+    String lower = n.toLowerCase(Locale.US);
+
+    if (lower.contains("minshawi") || lower.contains("manshawi")) return "محمد صديق المنشاوي";
+    if (lower.contains("husary") || lower.contains("husary")) return "محمود خليل الحصري";
+    if (lower.contains("muhammad luhaidan")) return "محمد اللحيدان";
+    if (lower.contains("idrees abkar")) return "إدريس أبكر";
+    if (lower.contains("abdulrahman aloosi")) return "عبد الرحمن العلوسي";
+    if (lower.contains("ali hudhayfi")) return "علي الحذيفي";
+    if (lower.contains("alzain mohammad ahmad")) return "الزين محمد أحمد";
+    if (lower.contains("ayman suwaid")) return "أيمن سويد";
+    if (lower.contains("hady toure")) return "هادي توري";
+    if (lower.contains("ibrahim alakhdar")) return "إبراهيم الأخضر";
+    if (lower.contains("khaled almuhanna")) return "خالد المهنا";
+    if (lower.contains("khalid alqahtani")) return "خالد القحطاني";
+    if (lower.contains("khalid jalil")) return "خالد الجليل";
+    if (lower.contains("mokhtasar asmari")) return "مختصر الأسمري";
+    if (lower.contains("muaiqly")) return "ماهر المعيقلي";
+    if (lower.contains("muhammad rashad shereef")) return "محمد رشاد الشريف";
+    if (lower.contains("nabil rifa")) return "نبيل الرفاعي";
+    if (lower.contains("noreen siddiq")) return "نورين صديق";
+    if (lower.contains("tawfeeq as sawaigh")) return "توفيق الصايغ";
+    if (lower.contains("wadee3 alyamani")) return "وديع اليمني";
+    if (lower.contains("yasser salama")) return "ياسر سلامة";
+    if (lower.contains("abdul muhsin alqasim") || lower.contains("abdulmuhsin")) return "عبد المحسن القاسم";
+    if (lower.contains("abdullah juhany") || lower.contains("abdulla aljuhainy")) return "عبد الله الجهني";
+    if (lower.contains("abdullah matroud") || lower.contains("abdulla almatrud")) return "عبد الله المطرود";
+    if (lower.contains("ahmed alajamy")) return "أحمد العجمي";
+    if (lower.contains("ali jaber")) return "علي جابر";
+    if (lower.contains("fares abbad")) return "فارس عباد";
+    if (lower.contains("khalifa taniji") || lower.contains("xalifa tunaiji")) return "خليفة الطنيجي";
+    if (lower.contains("maher al muaiqly")) return "ماهر المعيقلي";
+    if (lower.contains("mishari alafasy")) return "مشاري راشد العفاسي";
+    if (lower.contains("mishari cali")) return "مشاري العفاسي";
+    if (lower.contains("salah bukhatir") || lower.contains("selah buxatr")) return "صلاح بو خاطر";
+    if (lower.contains("muhammad ayub")) return "محمد أيوب";
+    if (lower.contains("sa3d ghamdi") || lower.contains("sa3d alghamidi")) return "سعد الغامدي";
+    if (lower.contains("abdulaziz zahrani")) return "عبد العزيز الزهراني";
+    if (lower.contains("abdullah basfar")) return "عبد الله بصفر";
+    if (lower.contains("abdurlrahman alshahat")) return "عبد الرحمن الشحات";
+    if (lower.contains("abdurrashid sufi")) return "عبد الرشيد صوفي";
+    if (lower.contains("bandar baleela")) return "بندر بليلة";
+    if (lower.contains("hani rifai")) return "هاني الرفاعي";
+    if (lower.contains("mahmoud ali albana")) return "محمود علي البنا";
+    if (lower.contains("mhamad jibreel")) return "محمد جبريل";
+    if (lower.contains("mostafa ismaeel")) return "مصطفى إسماعيل";
+    if (lower.contains("ibrahim al dosari")) return "إبراهيم الدوسري";
+    if (lower.contains("tofiq alsaigh")) return "توفيق الصايغ";
+    if (lower.contains("xalid alqahtani")) return "خالد القحطاني";
+    if (lower.contains("shahrayar")) return "شهريار";
+    if (lower.contains("karim mansury")) return "كريم منصوري";
+    if (lower.contains("yasin jazairy")) return "ياسين الجزائري";
+    if (lower.contains("ali abdulla jabr")) return "علي عبد الله جابر";
+    if (lower.contains("fuad alxamri")) return "فؤاد الشمري";
+    if (lower.contains("m_ramazan_shkur") || lower.contains("ramazan")) return "رمضان شكور";
+    if (lower.contains("ra3d")) return "رعد الكردي";
+    if (lower.equals("ajami")) return "أحمد العجمي";
+    if (lower.contains("ayman swidy")) return "أيمن سويد";
+    if (lower.equals("ghamdi")) return "سعد الغامدي";
+
+    return n;
   }
 
   private void showPromptForDownloadMode() {
