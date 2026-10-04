@@ -14,7 +14,7 @@ import com.quran.labs.androidquran.data.SuraAyah;
 
 public class ColorMushafPageLayout extends FrameLayout {
   private static final String CDN =
-      "https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/%03d.svg";
+      "https://raw.githubusercontent.com/quran-ws/quran-svg/v1.1.1/mushafs/hafs/kfqc/svg/%03d.svg";
 
   private final WebView webView;
   private final Handler handler = new Handler();
