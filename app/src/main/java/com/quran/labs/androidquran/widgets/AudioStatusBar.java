@@ -1,8 +1,6 @@
 package com.quran.labs.androidquran.widgets;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -396,7 +394,15 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
       QariItem item = searchAdapter.getItem(position);
       int itemId = item.getId();
       sharedPreferences.edit().putInt(Constants.PREF_DEFAULT_QARI, itemId).apply();
-      currentQari = itemId;
+
+      int selectedPosition = 0;
+      for (int i = 0; i < adapter.getCount(); i++) {
+        if (adapter.getItem(i).getId() == itemId) {
+          selectedPosition = i;
+          break;
+        }
+      }
+      currentQari = selectedPosition;
       if (spinner != null) {
         spinner.setSelection(currentQari);
       }
