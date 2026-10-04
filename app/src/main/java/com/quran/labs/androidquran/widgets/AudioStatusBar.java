@@ -272,6 +272,7 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
       List<QariItem> kurdish = new ArrayList<>();
       List<QariItem> persian = new ArrayList<>();
       List<QariItem> urdu = new ArrayList<>();
+      List<QariItem> azeri = new ArrayList<>();
       List<QariItem> russian = new ArrayList<>();
       List<QariItem> english = new ArrayList<>();
       List<QariItem> arabic = new ArrayList<>();
@@ -292,6 +293,8 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
           persian.add(item);
         } else if (isUrduTranslation(original)) {
           urdu.add(item);
+        } else if (isAzeriTranslation(original)) {
+          azeri.add(item);
         } else if (isRussianTranslation(original)) {
           russian.add(item);
         } else if (containsArabicText(display)) {
@@ -305,6 +308,7 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
       addSection("کوردەکان", kurdish);
       addSection("فارسی", persian);
       addSection("اردو", urdu);
+      addSection("ئەزەری", azeri);
       addSection("Русский", russian);
       addSection("English", english);
       addSection("العربية", arabic);
@@ -558,6 +562,12 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     return lower.contains("urdo") || lower.contains("urdu");
   }
 
+  private static boolean isAzeriTranslation(String name) {
+    if (name == null) return false;
+    String lower = name.trim().toLowerCase(Locale.US);
+    return lower.contains("tarjma azariya") || lower.contains("azer") || lower.contains("azeri") || lower.contains("azerbaijani");
+  }
+
   private static boolean isRussianTranslation(String name) {
     if (name == null) return false;
     String lower = name.trim().toLowerCase(Locale.US);
@@ -621,6 +631,7 @@ public class AudioStatusBar extends LeftToRightLinearLayout {
     // Translation entries are shown under their actual language.
     if (lower.contains("mtarjm farsi")) return "فارسی";
     if (lower.contains("mtarjm urdo")) return "ئوردو";
+    if (lower.contains("tarjma azariya")) return "ئەزەری";
 
     if (lower.contains("minshawi") || lower.contains("manshawi")) return "محمد صديق المنشاوي";
     if (lower.contains("husary") || lower.contains("husary")) return "محمود خليل الحصري";
