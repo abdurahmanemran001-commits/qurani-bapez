@@ -49,6 +49,9 @@ public class ColorMushafPageLayout extends FrameLayout {
       @Override
       public void onPageFinished(WebView view, String url) {
         installStyleAndTouchLayer();
+        if (activeSura >= 0) {
+          webView.evaluateJavascript("javascript:highlightAyah(" + activeSura + "," + activeAyah + ");", null);
+        }
       }
     });
     addView(webView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
