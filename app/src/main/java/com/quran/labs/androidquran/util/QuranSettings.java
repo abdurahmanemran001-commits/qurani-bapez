@@ -70,6 +70,10 @@ public class QuranSettings {
     return prefs.getBoolean(Constants.PREF_USE_NEW_BACKGROUND, true);
   }
 
+  public boolean useColorMushaf() {
+    return prefs.getBoolean(Constants.PREF_COLOR_MUSHAF, false);
+  }
+
   public boolean highlightBookmarks() {
     return prefs.getBoolean(Constants.PREF_HIGHLIGHT_BOOKMARKS, true);
   }
