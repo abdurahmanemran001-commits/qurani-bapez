@@ -147,3 +147,76 @@ dependencies {
   androidTestImplementation "com.android.support.test.espresso:espresso-intents:${espressoVersion}"
   androidTestImplementation "com.android.support:support-annotations:${supportLibVersion}"
 }
+ 
+// Package the KFGQPC Madani Mushaf locally so color mode never depends on
+// a runtime WebView URL that can fail with HTTP 404.
+def colorMushafAssetsDir = file("$projectDir/src/main/assets/mushaf-pages")
+def colorMushafCdn = "https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/%03d.svg"
+def colorMushafRaw = "https://raw.githubusercontent.com/quran-ws/quran-svg/v1.1.1/mushafs/hafs/kfqc/svg/%03d.svg"
+
+task downloadColorMushafPages {
+  outputs.dir colorMushafAssetsDir
+  doLast {
+    colorMushafAssetsDir.mkdirs()
+
+    def pool = java.util.concurrent.Executors.newFixedThreadPool(8)
+    def jobs = (1..604).collect { pageNumber ->
+      pool.submit({
+        def target = new File(colorMushafAssetsDir, String.format("%03d.svg", pageNumber))
+        def valid = { File f ->
+          f.exists() && f.length() > 1000 && f.text.contains("ayahPolygon")
+        }
+        if (valid(target)) return
+
+        Exception lastError = null
+        [
+          String.format(colorMushafCdn, pageNumber),
+          String.format(colorMushafRaw, pageNumber)
+        ].each { source ->
+          if (!valid(target)) {
+            try {
+              def connection = new URL(source).openConnection()
+              connection.setConnectTimeout(20000)
+              connection.setReadTimeout(60000)
+              connection.setRequestProperty("User-Agent", "qurani-bapez-build")
+              connection.connect()
+              if (connection.responseCode != 200) {
+                throw new IOException("HTTP " + connection.responseCode + " for " + source)
+              }
+              def bytes = connection.inputStream.bytes
+              def text = new String(bytes, "UTF-8")
+              if (!text.contains("<svg") || !text.contains("ayahPolygon")) {
+                throw new IOException("Invalid Mushaf SVG for page " + pageNumber)
+              }
+              def temp = new File(target.parentFile, target.name + ".tmp")
+              temp.bytes = bytes
+              if (!temp.renameTo(target)) {
+                target.bytes = bytes
+                temp.delete()
+              }
+              lastError = null
+            } catch (Exception e) {
+              lastError = e
+            }
+          }
+        }
+
+        if (!valid(target)) {
+          throw new GradleException("Could not download Mushaf page " + pageNumber, lastError)
+        }
+      } as java.util.concurrent.Callable)
+    }
+
+    pool.shutdown()
+    jobs.each { it.get() }
+
+    (1..604).each { pageNumber ->
+      def target = new File(colorMushafAssetsDir, String.format("%03d.svg", pageNumber))
+      if (!valid(target)) {
+        throw new GradleException("Color Mushaf package is incomplete at page " + pageNumber)
+      }
+    }
+  }
+}
+
+preBuild.dependsOn downloadColorMushafPages
