@@ -82,7 +82,7 @@ public class QuranSettingsFragment extends PreferenceFragment implements
     final String key = preference.getKey();
     if ("key_prefs_advanced".equals(key)) {
       Intent intent = new Intent(getActivity(), QuranAdvancedPreferenceActivity.class);
-      startActivity(new Intent(getActivity(), QuranAdvancedPreferenceActivity.class));
+      startActivity(intent);
       return true;
     }
 
