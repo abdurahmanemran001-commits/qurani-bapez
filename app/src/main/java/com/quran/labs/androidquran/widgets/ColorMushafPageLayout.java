@@ -14,12 +14,10 @@ import com.quran.labs.androidquran.data.QuranInfo;
 import com.quran.labs.androidquran.data.SuraAyah;
 import com.quran.labs.androidquran.data.SuraAyahIterator;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.squareup.moshi.JsonReader;
+import okio.Okio;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,32 +80,69 @@ public class ColorMushafPageLayout extends FrameLayout {
   }
 
   private void loadTajweedData(Context context) {
+    InputStream input = null;
+    JsonReader reader = null;
     try {
-      InputStream input = context.getAssets().open("tajweed/tajweedquran.json");
-      BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
-      StringBuilder json = new StringBuilder();
-      char[] buffer = new char[8192];
-      int read;
-      while ((read = reader.read(buffer)) != -1) {
-        json.append(buffer, 0, read);
-      }
-      reader.close();
+      input = context.getAssets().open("tajweed/tajweedquran.json");
+      reader = JsonReader.of(Okio.buffer(Okio.source(input)));
 
-      JSONObject root = new JSONObject(json.toString());
-      JSONArray verses = root.getJSONArray("verses");
-      for (int i = 0; i < verses.length(); i++) {
-        JSONObject verse = verses.getJSONObject(i);
-        int sura = verse.getInt("surah");
-        int ayah = verse.getInt("ayah");
-        String html = verse.optString("text_tajweed_html", "");
-        if (html.length() == 0) {
-          html = escapeHtml(verse.optString("text_ar", ""));
+      reader.beginObject();
+      while (reader.hasNext()) {
+        String name = reader.nextName();
+        if (!"verses".equals(name)) {
+          reader.skipValue();
+          continue;
         }
-        tajweedAyahs.put(sura + ":" + ayah, sanitizeVerseHtml(html));
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+          int sura = -1;
+          int ayah = -1;
+          String html = "";
+
+          reader.beginObject();
+          while (reader.hasNext()) {
+            String field = reader.nextName();
+            if ("surah".equals(field)) {
+              sura = reader.nextInt();
+            } else if ("ayah".equals(field)) {
+              ayah = reader.nextInt();
+            } else if ("text_tajweed_html".equals(field)) {
+              html = reader.nextString();
+            } else if ("text_ar".equals(field)) {
+              if (html.length() == 0) {
+                html = escapeHtml(reader.nextString());
+              } else {
+                reader.skipValue();
+              }
+            } else {
+              reader.skipValue();
+            }
+          }
+          reader.endObject();
+
+          if (sura > 0 && ayah > 0 && html.length() > 0) {
+            tajweedAyahs.put(sura + ":" + ayah, sanitizeVerseHtml(html));
+          }
+        }
+        reader.endArray();
       }
+      reader.endObject();
+
       dataLoaded = tajweedAyahs.size() >= 6000;
-    } catch (Exception ignored) {
+      if (dataLoaded && page > 0) {
+        loadPage();
+      }
+    } catch (Exception e) {
       dataLoaded = false;
+      tajweedAyahs.clear();
+      android.util.Log.e("ColorMushaf", "Failed to load Tajweed Quran asset", e);
+    } finally {
+      try {
+        if (reader != null) reader.close();
+        else if (input != null) input.close();
+      } catch (Exception ignored) {
+      }
     }
   }
 
