@@ -74,6 +74,14 @@ public class QuranSettings {
     return prefs.getBoolean(Constants.PREF_COLOR_MUSHAF, false);
   }
 
+  public String getColorMushafTheme() {
+    return prefs.getString(Constants.PREF_COLOR_MUSHAF_THEME, "classic");
+  }
+
+  public String getColorMushafColor(String key) {
+    return prefs.getString(key, "");
+  }
+
   public boolean highlightBookmarks() {
     return prefs.getBoolean(Constants.PREF_HIGHLIGHT_BOOKMARKS, true);
   }

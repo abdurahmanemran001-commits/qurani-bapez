@@ -22,6 +22,48 @@
         android:summary="@string/prefs_color_mushaf_summary"
         android:title="@string/prefs_color_mushaf_title"/>
 
+    <com.quran.labs.androidquran.ui.preference.QuranListPreference
+        android:defaultValue="classic"
+        android:entries="@array/color_mushaf_theme_entries"
+        android:entryValues="@array/color_mushaf_theme_values"
+        android:key="@string/prefs_color_mushaf_theme_key"
+        android:persistent="true"
+        android:dependency="@string/prefs_color_mushaf_key"
+        android:summary="%s"
+        android:title="@string/prefs_color_mushaf_theme_title"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/prefs_color_mushaf_text_key"
+        android:persistent="true"
+        android:singleLine="true"
+        android:summary="@string/prefs_color_mushaf_custom_summary"
+        android:title="@string/prefs_color_mushaf_text_title"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/prefs_color_mushaf_marker_key"
+        android:persistent="true"
+        android:singleLine="true"
+        android:summary="@string/prefs_color_mushaf_custom_summary"
+        android:title="@string/prefs_color_mushaf_marker_title"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/prefs_color_mushaf_background_key"
+        android:persistent="true"
+        android:singleLine="true"
+        android:summary="@string/prefs_color_mushaf_custom_summary"
+        android:title="@string/prefs_color_mushaf_background_title"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="@string/prefs_color_mushaf_highlight_key"
+        android:persistent="true"
+        android:singleLine="true"
+        android:summary="@string/prefs_color_mushaf_custom_summary"
+        android:title="@string/prefs_color_mushaf_highlight_title"/>
+
     <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
         android:title="@string/prefs_new_background_title"
         android:persistent="true"

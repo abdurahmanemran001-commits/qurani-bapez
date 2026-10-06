@@ -11,4 +11,20 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string-array name="color_mushaf_theme_entries">
+        <item>@string/color_mushaf_theme_classic</item>
+        <item>@string/color_mushaf_theme_paper</item>
+        <item>@string/color_mushaf_theme_sepia</item>
+        <item>@string/color_mushaf_theme_night</item>
+        <item>@string/color_mushaf_theme_midnight</item>
+        <item>@string/color_mushaf_theme_custom</item>
+    </string-array>
+    <string-array name="color_mushaf_theme_values" translatable="false">
+        <item>classic</item>
+        <item>paper</item>
+        <item>sepia</item>
+        <item>night</item>
+        <item>midnight</item>
+        <item>custom</item>
+    </string-array>
 </resources>

@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -26,6 +29,10 @@ public class ColorMushafPageLayout extends FrameLayout {
   private int sourceIndex;
   private int activeSura = -1;
   private int activeAyah = -1;
+  private boolean pageReady;
+  private ColorMushafPalette palette = ColorMushafPalette.forTheme(ColorMushafPalette.THEME_CLASSIC);
+  private static String cssTemplate;
+  private static String scriptSource;
 
   public interface AyahClickListener {
     void onAyahClicked(SuraAyah suraAyah);
@@ -62,11 +69,12 @@ public class ColorMushafPageLayout extends FrameLayout {
                 }
                 return;
               }
-              installStyleAndTouchLayer();
+              pageReady = true;
               if (activeSura >= 0) {
-                webView.evaluateJavascript(
-                    "javascript:highlightAyah(" + activeSura + "," + activeAyah + ");", null);
+                webView.evaluateJavascript("window._quranActiveSura=" + activeSura
+                    + ";window._quranActiveAyah=" + activeAyah + ";", null);
               }
+              installStyleAndTouchLayer();
             });
       }
     });
@@ -84,6 +92,7 @@ public class ColorMushafPageLayout extends FrameLayout {
   }
 
   private void loadCurrentSource() {
+    pageReady = false;
     webView.loadUrl(String.format(PAGE_SOURCES[sourceIndex], page));
   }
 
@@ -100,32 +109,58 @@ public class ColorMushafPageLayout extends FrameLayout {
     runJs("window._quranActiveSura=-1;window._quranActiveAyah=-1;clearAudioHighlight();");
   }
 
+  public void applyPalette(ColorMushafPalette newPalette) {
+    palette = newPalette;
+    setBackgroundColor(palette.background);
+    webView.setBackgroundColor(palette.background);
+    if (pageReady) {
+      installStyleAndTouchLayer();
+    }
+  }
+
+  private static String readAsset(Context context, String name) {
+    InputStream in = null;
+    try {
+      in = context.getAssets().open(name);
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      byte[] buffer = new byte[4096];
+      int read;
+      while ((read = in.read(buffer)) != -1) {
+        out.write(buffer, 0, read);
+      }
+      return out.toString("UTF-8");
+    } catch (IOException e) {
+      return "";
+    } finally {
+      if (in != null) {
+        try {
+          in.close();
+        } catch (IOException ignored) {
+        }
+      }
+    }
+  }
+
+  private static String quote(String value) {
+    return "'" + value.replace("\\", "\\\\").replace("'", "\\'")
+        .replace("\n", "\\n").replace("\r", "") + "'";
+  }
+
   private void installStyleAndTouchLayer() {
-    final String js =
-        "(function() {" +
-        "var s=document.createElement('style');" +
-        "s.innerHTML='html,body{margin:0;padding:0;background:#ffffff;overflow:hidden;}'" +
-        " + 'svg{width:100vw;height:auto;display:block;}'" +
-        " + '.ayahPolygon{fill:#173f35 !important;fill-opacity:0 !important;cursor:pointer;}'" +
-        " + '.ayahPolygon.audioActive{fill:#b7e4d0 !important;fill-opacity:.55 !important;}'" +
-        " + 'svg path:not(.ayahPolygon){fill:#173f35 !important;}'" +
-        " + 'svg text{fill:#8a6b24 !important;}';" +
-        "s.id='quranColorStyle';document.head.appendChild(s);" +
-        "window.highlightAyah=function(s,a){clearAudioHighlight();var e=document.querySelector('.ayahPolygon[surah=\\\"'+s+'\\\"][ayah=\\\"'+a+'\\\"]');if(e)e.classList.add('audioActive');};" +
-        "window.clearAudioHighlight=function(){document.querySelectorAll('.ayahPolygon.audioActive').forEach(function(e){e.classList.remove('audioActive');});}" +
-        "document.querySelectorAll('.ayahPolygon').forEach(function(el){" +
-        "el.style.pointerEvents='auto';" +
-        "el.addEventListener('click',function(){" +
-        "QuranBridge.ayah(" +
-        "el.getAttribute('surah'),el.getAttribute('ayah'));});});" +
-        "if(window._quranActiveSura>=0){highlightAyah(window._quranActiveSura,window._quranActiveAyah);}" +
-        "})();";
-    webView.evaluateJavascript("javascript:" + js, null);
+    if (cssTemplate == null) {
+      cssTemplate = readAsset(getContext(), "color_mushaf.css");
+      scriptSource = readAsset(getContext(), "color_mushaf.js");
+    }
+    if (scriptSource.isEmpty()) {
+      return;
+    }
+    final String css = palette.buildCss(cssTemplate);
+    webView.evaluateJavascript("(" + scriptSource.trim() + ")(" + quote(css) + ")", null);
   }
 
   private void runJs(final String js) {
-    if (webView.getUrl() == null) return;
-    webView.evaluateJavascript("javascript:" + js, null);
+    if (!pageReady) return;
+    webView.evaluateJavascript(js, null);
   }
 
   private class Bridge {

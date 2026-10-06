@@ -157,6 +157,24 @@
   <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
   <string name="prefs_color_mushaf_title">Clean Color Mushaf</string>
   <string name="prefs_color_mushaf_summary">Use the clean green and gold Madani Mushaf style</string>
+  <string name="prefs_color_mushaf_theme_key" translatable="false">colorMushafTheme</string>
+  <string name="prefs_color_mushaf_theme_title">Color Mushaf theme</string>
+  <string name="prefs_color_mushaf_text_key" translatable="false">colorMushafTextColor</string>
+  <string name="prefs_color_mushaf_text_title">Custom text color</string>
+  <string name="prefs_color_mushaf_marker_key" translatable="false">colorMushafMarkerColor</string>
+  <string name="prefs_color_mushaf_marker_title">Custom ayah marker color</string>
+  <string name="prefs_color_mushaf_background_key" translatable="false">colorMushafBackgroundColor</string>
+  <string name="prefs_color_mushaf_background_title">Custom background color</string>
+  <string name="prefs_color_mushaf_highlight_key" translatable="false">colorMushafHighlightColor</string>
+  <string name="prefs_color_mushaf_highlight_title">Custom highlight color</string>
+  <string name="prefs_color_mushaf_custom_summary">Hex color, for example #173F35 (used when the theme is Custom)</string>
+  <string name="prefs_color_mushaf_invalid_color">Invalid color. Use the form #RRGGBB</string>
+  <string name="color_mushaf_theme_classic">Classic green and gold</string>
+  <string name="color_mushaf_theme_paper">Black on white</string>
+  <string name="color_mushaf_theme_sepia">Sepia</string>
+  <string name="color_mushaf_theme_night">Night</string>
+  <string name="color_mushaf_theme_midnight">Midnight blue</string>
+  <string name="color_mushaf_theme_custom">Custom</string>
   <string name="prefs_lock_orientation_title">Lock screen orientation</string>
   <string name="prefs_lock_orientation_summary_on">Use fixed orientation mode</string>
   <string name="prefs_lock_orientation_summary_off">Adaptive to current orientation mode</string>

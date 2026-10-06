@@ -32,6 +32,7 @@ import com.quran.labs.androidquran.ui.util.PageController;
 import com.quran.labs.androidquran.util.QuranSettings;
 import com.quran.labs.androidquran.data.SuraAyah;
 import com.quran.labs.androidquran.widgets.ColorMushafPageLayout;
+import com.quran.labs.androidquran.widgets.ColorMushafPalette;
 import com.quran.labs.androidquran.widgets.HighlightingImageView;
 import com.quran.labs.androidquran.widgets.QuranImagePageLayout;
 
@@ -94,6 +95,7 @@ public class QuranPageFragment extends Fragment implements PageController,
               EventType.SINGLE_TAP, suraAyah, ayahTrackerPresenter);
         }
       });
+      colorMushafPageLayout.applyPalette(ColorMushafPalette.fromSettings(quranSettings));
       colorMushafPageLayout.setPage(pageNumber);
       return colorMushafPageLayout;
     }
@@ -107,6 +109,9 @@ public class QuranPageFragment extends Fragment implements PageController,
   public void updateView() {
     if (isAdded()) {
       if (quranSettings.useColorMushaf()) {
+        if (colorMushafPageLayout != null) {
+          colorMushafPageLayout.applyPalette(ColorMushafPalette.fromSettings(quranSettings));
+        }
         return;
       }
       quranPageLayout.updateView(quranSettings);

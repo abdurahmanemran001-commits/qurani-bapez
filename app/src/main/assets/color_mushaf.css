@@ -1,0 +1,6 @@
+html,body{margin:0;padding:0;background:{{BACKGROUND}};overflow:hidden;}
+svg{width:100vw;height:auto;display:block;}
+.ayahPolygon{fill:{{HIGHLIGHT}} !important;fill-opacity:0 !important;cursor:pointer;}
+.ayahPolygon.audioActive{fill:{{HIGHLIGHT}} !important;fill-opacity:{{HIGHLIGHT_OPACITY}} !important;mix-blend-mode:{{HIGHLIGHT_BLEND}};}
+svg path:not(.ayahPolygon){fill:{{TEXT}} !important;pointer-events:none;}
+svg .ayah_markers path:not(.ayahPolygon){fill:{{MARKER}} !important;}

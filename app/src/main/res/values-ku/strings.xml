@@ -205,4 +205,17 @@
 
   <!-- bookmark & tag list -->
   <string name="bookmarks_list_empty">ھیچ نیشانەکراوێک نیە</string>
+  <string name="prefs_color_mushaf_theme_title">ڕووکاری موسحەفی ڕەنگاوڕەنگ</string>
+  <string name="prefs_color_mushaf_text_title">ڕەنگی دەقی تایبەت</string>
+  <string name="prefs_color_mushaf_marker_title">ڕەنگی نیشانەی ئایەتی تایبەت</string>
+  <string name="prefs_color_mushaf_background_title">ڕەنگی پاشبنەمای تایبەت</string>
+  <string name="prefs_color_mushaf_highlight_title">ڕەنگی هایلایتی تایبەت</string>
+  <string name="prefs_color_mushaf_custom_summary">ڕەنگی هێکس، بۆ نموونە #173F35 (کاتێک ڕووکار «تایبەت» بێت بەکاردێت)</string>
+  <string name="prefs_color_mushaf_invalid_color">ڕەنگەکە هەڵەیە. بەم شێوەیە بنووسە: #RRGGBB</string>
+  <string name="color_mushaf_theme_classic">کلاسیک (سەوز و زێڕین)</string>
+  <string name="color_mushaf_theme_paper">ڕەش لەسەر سپی</string>
+  <string name="color_mushaf_theme_sepia">سیپیا</string>
+  <string name="color_mushaf_theme_night">شەو</string>
+  <string name="color_mushaf_theme_midnight">شینی نیوەشەو</string>
+  <string name="color_mushaf_theme_custom">تایبەت</string>
 </resources>
