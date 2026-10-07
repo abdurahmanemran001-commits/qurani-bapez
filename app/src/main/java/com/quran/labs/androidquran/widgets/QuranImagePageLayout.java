@@ -28,7 +28,9 @@ public class QuranImagePageLayout extends QuranPageLayout {
   @Override
   public void updateView(@NonNull QuranSettings quranSettings) {
     super.updateView(quranSettings);
-    imageView.setNightMode(quranSettings.isNightMode(), quranSettings.getNightModeTextBrightness());
+    final boolean nightMode = quranSettings.isNightMode();
+    imageView.setNightMode(nightMode, quranSettings.getNightModeTextBrightness());
+    imageView.setPageTheme(nightMode ? null : quranSettings.getPageTheme());
   }
 
   public HighlightingImageView getImageView() {

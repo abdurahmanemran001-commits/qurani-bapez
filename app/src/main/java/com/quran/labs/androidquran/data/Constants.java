@@ -59,6 +59,7 @@ public class Constants {
       "haveUpdatedTranslations";
   public static final String PREF_USE_NEW_BACKGROUND = "useNewBackground";
   public static final String PREF_COLOR_MUSHAF = "colorMushaf";
+  public static final String PREF_PAGE_THEME = "pageTheme";
   public static final String PREF_USE_VOLUME_KEY_NAV = "volumeKeyNavigation";
   public static final String PREF_SORT_BOOKMARKS = "sortBookmarks";
   public static final String PREF_GROUP_BOOKMARKS_BY_TAG = "groupBookmarksByTag";

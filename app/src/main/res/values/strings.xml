@@ -154,6 +154,14 @@
   <string name="prefs_use_arabic_title">Arabic mode</string>
   <string name="prefs_use_arabic_summary_on">Use Arabic for application interface</string>
   <string name="prefs_new_background_title">New background</string>
+  <string name="prefs_page_theme_title">Page colors</string>
+  <string name="prefs_page_theme_summary">Choose the page background and text colors</string>
+  <string name="page_theme_default">Default (black and white)</string>
+  <string name="page_theme_sepia">Sepia</string>
+  <string name="page_theme_cream">Cream</string>
+  <string name="page_theme_green">Soft green</string>
+  <string name="page_theme_gray">Gray</string>
+  <string name="page_theme_blue">Soft blue</string>
   <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
   <string name="prefs_color_mushaf_title">Tajweed Color Mushaf</string>
   <string name="prefs_color_mushaf_summary">Use the Uthmani Quran with real Tajweed color markings</string>
