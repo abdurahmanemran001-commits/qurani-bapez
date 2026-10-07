@@ -25,6 +25,7 @@ import com.quran.labs.androidquran.R;
 import com.quran.labs.androidquran.data.Constants;
 import com.quran.labs.androidquran.ui.helpers.QuranDisplayHelper;
 import com.quran.labs.androidquran.ui.util.PageController;
+import com.quran.labs.androidquran.util.PageTheme;
 import com.quran.labs.androidquran.util.QuranSettings;
 
 public abstract class QuranPageLayout extends QuranPageWrapperLayout
@@ -231,8 +232,11 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   }
 
   protected void updateBackground(boolean nightMode, QuranSettings quranSettings) {
+    final PageTheme pageTheme = quranSettings.getPageTheme();
     if (nightMode) {
       setBackgroundColor(Color.BLACK);
+    } else if (pageTheme != null) {
+      setBackgroundColor(pageTheme.background);
     } else if (quranSettings.useNewBackground()) {
       setBackgroundDrawable((pageNumber % 2 == 0 ? leftGradient : rightGradient));
     } else {

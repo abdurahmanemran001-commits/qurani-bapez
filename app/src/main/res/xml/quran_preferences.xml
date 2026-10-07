@@ -22,6 +22,16 @@
         android:summary="@string/prefs_color_mushaf_summary"
         android:title="@string/prefs_color_mushaf_title"/>
 
+    <com.quran.labs.androidquran.ui.preference.QuranListPreference
+        android:defaultValue="default"
+        android:dialogTitle="@string/prefs_page_theme_title"
+        android:entries="@array/page_theme_preference"
+        android:entryValues="@array/page_theme_preference_values"
+        android:key="@string/prefs_page_theme"
+        android:persistent="true"
+        android:summary="@string/prefs_page_theme_summary"
+        android:title="@string/prefs_page_theme_title"/>
+
     <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
         android:title="@string/prefs_new_background_title"
         android:persistent="true"

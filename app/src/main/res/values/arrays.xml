@@ -11,4 +11,22 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string-array name="page_theme_preference" translatable="false">
+        <item>@string/page_theme_default</item>
+        <item>@string/page_theme_sepia</item>
+        <item>@string/page_theme_cream</item>
+        <item>@string/page_theme_green</item>
+        <item>@string/page_theme_gray</item>
+        <item>@string/page_theme_blue</item>
+    </string-array>
+
+    <string-array name="page_theme_preference_values" translatable="false">
+        <item>default</item>
+        <item>sepia</item>
+        <item>cream</item>
+        <item>green</item>
+        <item>gray</item>
+        <item>blue</item>
+    </string-array>
 </resources>

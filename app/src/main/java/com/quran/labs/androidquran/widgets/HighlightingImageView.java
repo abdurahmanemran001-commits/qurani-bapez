@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import com.quran.labs.androidquran.R;
 import com.quran.labs.androidquran.common.AyahBounds;
+import com.quran.labs.androidquran.util.PageTheme;
 import com.quran.labs.androidquran.data.Constants;
 import com.quran.labs.androidquran.ui.helpers.HighlightType;
 
@@ -44,6 +45,7 @@ public class HighlightingImageView extends ImageView {
 
   private boolean isNightMode;
   private boolean isColorFilterOn;
+  private PageTheme pageTheme;
   private int nightModeTextBrightness = Constants.DEFAULT_NIGHT_MODE_TEXT_BRIGHTNESS;
 
   // cached objects for onDraw
@@ -117,6 +119,13 @@ public class HighlightingImageView extends ImageView {
     adjustNightMode();
   }
 
+  public void setPageTheme(PageTheme theme) {
+    this.pageTheme = theme;
+    // force the filter to be rebuilt for the new theme
+    isColorFilterOn = false;
+    adjustNightMode();
+  }
+
   public void highlightAyah(int sura, int ayah, HighlightType type) {
     Set<String> highlights = currentHighlights.get(type);
     if (highlights == null) {
@@ -154,8 +163,15 @@ public class HighlightingImageView extends ImageView {
       setColorFilter(new ColorMatrixColorFilter(matrix));
       isColorFilterOn = true;
     } else if (!isNightMode) {
-      clearColorFilter();
-      isColorFilterOn = false;
+      if (pageTheme != null) {
+        if (!isColorFilterOn) {
+          setColorFilter(new ColorMatrixColorFilter(pageTheme.toColorMatrix()));
+          isColorFilterOn = true;
+        }
+      } else {
+        clearColorFilter();
+        isColorFilterOn = false;
+      }
     }
 
     invalidate();

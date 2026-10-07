@@ -205,4 +205,12 @@
 
   <!-- bookmark & tag list -->
   <string name="bookmarks_list_empty">ھیچ نیشانەکراوێک نیە</string>
+  <string name="prefs_page_theme_title">ڕەنگی پەڕە</string>
+  <string name="prefs_page_theme_summary">ڕەنگی باکگراوند و نووسینی پەڕەکان هەڵبژێرە</string>
+  <string name="page_theme_default">ئاسایی (ڕەش و سپی)</string>
+  <string name="page_theme_sepia">سێپیا</string>
+  <string name="page_theme_cream">کرێمی</string>
+  <string name="page_theme_green">سەوزی نەرم</string>
+  <string name="page_theme_gray">خۆڵەمێشی</string>
+  <string name="page_theme_blue">شینی نەرم</string>
 </resources>
