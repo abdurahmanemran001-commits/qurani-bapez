@@ -90,8 +90,16 @@ public class QuranPageFragment extends Fragment implements PageController,
       colorMushafPageLayout.setAyahClickListener(new ColorMushafPageLayout.AyahClickListener() {
         @Override
         public void onAyahClicked(SuraAyah suraAyah) {
+          if (!ayahSelectedListener.onAyahSelected(
+              EventType.SINGLE_TAP, suraAyah, ayahTrackerPresenter)) {
+            ayahSelectedListener.onClick(EventType.SINGLE_TAP);
+          }
+        }
+
+        @Override
+        public void onAyahLongPressed(SuraAyah suraAyah) {
           ayahSelectedListener.onAyahSelected(
-              EventType.SINGLE_TAP, suraAyah, ayahTrackerPresenter);
+              EventType.LONG_PRESS, suraAyah, ayahTrackerPresenter);
         }
       });
       colorMushafPageLayout.setPage(pageNumber);

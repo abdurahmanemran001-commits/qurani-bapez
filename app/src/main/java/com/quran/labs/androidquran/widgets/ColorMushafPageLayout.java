@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
+import android.graphics.RectF;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -20,6 +21,7 @@ import okio.Okio;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ColorMushafPageLayout extends FrameLayout {
   private final WebView webView;
@@ -27,6 +29,7 @@ public class ColorMushafPageLayout extends FrameLayout {
   // parsed once and shared by every page view
   private static final Map<String, String> tajweedAyahs = new HashMap<>();
 
+  private final Map<String, RectF> ayahRects = new HashMap<>();
   private AyahClickListener ayahClickListener;
   private int page;
   private int activeSura = -1;
@@ -35,6 +38,8 @@ public class ColorMushafPageLayout extends FrameLayout {
 
   public interface AyahClickListener {
     void onAyahClicked(SuraAyah suraAyah);
+
+    void onAyahLongPressed(SuraAyah suraAyah);
   }
 
   @SuppressLint("SetJavaScriptEnabled")
@@ -56,6 +61,9 @@ public class ColorMushafPageLayout extends FrameLayout {
     webView.setBackgroundColor(Color.WHITE);
     webView.setVerticalScrollBarEnabled(false);
     webView.setHorizontalScrollBarEnabled(false);
+    webView.setLongClickable(false);
+    webView.setHapticFeedbackEnabled(false);
+    webView.setOnLongClickListener(v -> true);
     webView.addJavascriptInterface(new Bridge(), "QuranBridge");
     webView.setWebViewClient(new WebViewClient() {
       @Override
@@ -175,8 +183,7 @@ public class ColorMushafPageLayout extends FrameLayout {
 
       versesHtml.append("<div class=\"ayah\" data-sura=\"")
           .append(sura).append("\" data-ayah=\"").append(ayah)
-          .append("\" onclick=\"QuranBridge.ayah('")
-          .append(sura).append("','").append(ayah).append("')\">")
+          .append("\" onclick=\"tapAyah(this)\">")
           .append("<span class=\"ayahText\">")
           .append(verseHtml)
           .append("</span>")
@@ -192,6 +199,7 @@ public class ColorMushafPageLayout extends FrameLayout {
         "<style>" +
         "@font-face{font-family:Noorehira;src:url('file:///android_asset/tajweed/noorehira.ttf');}" +
         "html,body{margin:0;padding:0;background:#fff;color:#173f35;}" +
+        "*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;}" +
         "body{font-family:Noorehira,'Noto Naskh Arabic',serif;padding:18px 12px 40px;box-sizing:border-box;}" +
         ".pageTitle{text-align:center;font-family:serif;font-size:18px;color:#6f5720;margin:4px 0 18px;}" +
         ".ayah{position:relative;margin:0 0 10px;padding:12px 16px 14px;border-radius:14px;" +
@@ -215,6 +223,7 @@ public class ColorMushafPageLayout extends FrameLayout {
         "tajweed.idgham_mutajanisayn,tajweed.idgham_mutaqaribayn{color:#a1a1a1;}" +
         "tajweed.ghunnah{color:#ff7e1e;}" +
         ".ayah.audioActive{background:rgba(183,228,208,.52);box-shadow:0 3px 14px rgba(23,63,53,.12);}" +
+        ".ayah.selected{background:rgba(255,213,79,.45);}" +
         "</style></head><body>" +
         "<div class=\"pageTitle\">" + title + " · " + page + "</div>" +
         versesHtml +
@@ -222,6 +231,24 @@ public class ColorMushafPageLayout extends FrameLayout {
         "window.highlightAyah=function(s,a){window.clearAudioHighlight();var e=document.querySelector('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
         "if(e){e.classList.add('audioActive');e.scrollIntoView({behavior:'smooth',block:'center'});}};" +
         "window.clearAudioHighlight=function(){document.querySelectorAll('.ayah.audioActive').forEach(function(e){e.classList.remove('audioActive');});};" +
+        "var lp=null,lpFired=false,sx=0,sy=0;" +
+        "function ayahOf(t){while(t&&!(t.classList&&t.classList.contains('ayah')))t=t.parentNode;return t;}" +
+        "function rectOf(e){var r=e.getBoundingClientRect(),d=window.devicePixelRatio||1;" +
+        "return [r.left*d,r.top*d,r.right*d,r.bottom*d].join(',');}" +
+        "window.tapAyah=function(e){if(lpFired){lpFired=false;return;}QuranBridge.ayah(e.dataset.sura,e.dataset.ayah);};" +
+        "document.addEventListener('touchstart',function(ev){var e=ayahOf(ev.target);lpFired=false;if(!e)return;" +
+        "var t=ev.touches[0];sx=t.clientX;sy=t.clientY;clearTimeout(lp);" +
+        "lp=setTimeout(function(){lpFired=true;var r=e.getBoundingClientRect(),d=window.devicePixelRatio||1;" +
+        "QuranBridge.longPress(e.dataset.sura,e.dataset.ayah,rectOf(e));},450);},{passive:true});" +
+        "document.addEventListener('touchmove',function(ev){var t=ev.touches[0];" +
+        "if(Math.abs(t.clientX-sx)>10||Math.abs(t.clientY-sy)>10){clearTimeout(lp);}},{passive:true});" +
+        "document.addEventListener('touchend',function(){clearTimeout(lp);},{passive:true});" +
+        "document.addEventListener('contextmenu',function(ev){ev.preventDefault();});" +
+        "window.selectAyat=function(keys){window.clearSelection();keys.forEach(function(k){var p=k.split(':');" +
+        "var e=document.querySelector('.ayah[data-sura=\\\"'+p[0]+'\\\"][data-ayah=\\\"'+p[1]+'\\\"]');if(e)e.classList.add('selected');});};" +
+        "window.clearSelection=function(){document.querySelectorAll('.ayah.selected').forEach(function(e){e.classList.remove('selected');});};" +
+        "window.revealAyah=function(s,a){var e=document.querySelector('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
+        "if(e){var r=e.getBoundingClientRect();if(r.top<0||r.bottom>window.innerHeight){e.scrollIntoView({block:'center'});}}};" +
         "</script></body></html>";
 
     webView.loadDataWithBaseURL("file:///android_asset/tajweed/", html, "text/html", "UTF-8", null);
@@ -231,6 +258,55 @@ public class ColorMushafPageLayout extends FrameLayout {
     activeSura = sura;
     activeAyah = ayah;
     runJs("highlightAyah(" + sura + "," + ayah + ");");
+  }
+
+  public void selectAyat(Set<String> keys) {
+    StringBuilder sb = new StringBuilder("[");
+    boolean first = true;
+    for (String key : keys) {
+      if (!key.matches("\\d+:\\d+")) continue;
+      if (!first) sb.append(',');
+      sb.append('"').append(key).append('"');
+      first = false;
+    }
+    sb.append(']');
+    runJs("selectAyat(" + sb + ");");
+  }
+
+  public void clearSelection() {
+    runJs("clearSelection();");
+  }
+
+  public void revealAyah(int sura, int ayah) {
+    runJs("revealAyah(" + sura + "," + ayah + ");");
+  }
+
+  public AyahToolBar.AyahToolBarPosition getToolBarPosition(int sura, int ayah,
+                                                            int toolBarWidth, int toolBarHeight) {
+    final int width = getWidth();
+    final int height = getHeight();
+    if (width <= 0) return null;
+    RectF rect = ayahRects.get(sura + ":" + ayah);
+    if (rect == null) {
+      // no touch position known (e.g. next/previous ayah): center of the page
+      rect = new RectF(width / 4f, height / 3f, width * 3 / 4f, height / 3f + toolBarHeight);
+    }
+    boolean under = false;
+    float y = rect.top - toolBarHeight;
+    if (y < toolBarHeight) {
+      y = Math.min(rect.bottom, height - toolBarHeight);
+      under = true;
+    }
+    float mid = rect.centerX();
+    float x = mid - toolBarWidth / 2f;
+    if (x < 0) x = 0;
+    if (x + toolBarWidth > width) x = width - toolBarWidth;
+    AyahToolBar.AyahToolBarPosition pos = new AyahToolBar.AyahToolBarPosition();
+    pos.x = x;
+    pos.y = y;
+    pos.pipOffset = Math.max(0, Math.min(toolBarWidth, mid - x));
+    pos.pipPosition = under ? AyahToolBar.PipPosition.UP : AyahToolBar.PipPosition.DOWN;
+    return pos;
   }
 
   public void clearAudioHighlight() {
@@ -265,6 +341,24 @@ public class ColorMushafPageLayout extends FrameLayout {
   }
 
   private class Bridge {
+    @JavascriptInterface
+    public void longPress(String sura, String ayah, String rect) {
+      try {
+        final int s = Integer.parseInt(sura);
+        final int a = Integer.parseInt(ayah);
+        String[] p = rect.split(",");
+        final RectF r = new RectF(Float.parseFloat(p[0]), Float.parseFloat(p[1]),
+            Float.parseFloat(p[2]), Float.parseFloat(p[3]));
+        handler.post(() -> {
+          ayahRects.put(s + ":" + a, r);
+          if (ayahClickListener != null) {
+            ayahClickListener.onAyahLongPressed(new SuraAyah(s, a));
+          }
+        });
+      } catch (Exception ignored) {
+      }
+    }
+
     @JavascriptInterface
     public void ayah(String sura, String ayah) {
       try {
