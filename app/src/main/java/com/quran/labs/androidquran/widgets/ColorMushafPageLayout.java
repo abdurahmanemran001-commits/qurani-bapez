@@ -24,7 +24,8 @@ import java.util.Map;
 public class ColorMushafPageLayout extends FrameLayout {
   private final WebView webView;
   private final Handler handler = new Handler();
-  private final Map<String, String> tajweedAyahs = new HashMap<>();
+  // parsed once and shared by every page view
+  private static final Map<String, String> tajweedAyahs = new HashMap<>();
 
   private AyahClickListener ayahClickListener;
   private int page;
@@ -76,10 +77,22 @@ public class ColorMushafPageLayout extends FrameLayout {
     this.page = page;
     if (dataLoaded) {
       loadPage();
+    } else {
+      webView.loadDataWithBaseURL(null,
+          "<html dir=\"rtl\"><body style=\"font-family:sans-serif;padding:24px;color:#8a1c1c\">"
+              + "Tajweed data could not be loaded. Turn off Tajweed Color Mushaf in Settings "
+              + "or reinstall the app.</body></html>",
+          "text/html", "UTF-8", null);
     }
   }
 
   private void loadTajweedData(Context context) {
+    synchronized (tajweedAyahs) {
+      if (tajweedAyahs.size() >= 6000) {
+        dataLoaded = true;
+        return;
+      }
+    }
     InputStream input = null;
     JsonReader reader = null;
     try {
@@ -179,14 +192,28 @@ public class ColorMushafPageLayout extends FrameLayout {
         "<style>" +
         "@font-face{font-family:Noorehira;src:url('file:///android_asset/tajweed/noorehira.ttf');}" +
         "html,body{margin:0;padding:0;background:#fff;color:#173f35;}" +
-        "body{font-family:Noorehira,serif;padding:18px 12px 40px;box-sizing:border-box;}" +
+        "body{font-family:Noorehira,'Noto Naskh Arabic',serif;padding:18px 12px 40px;box-sizing:border-box;}" +
         ".pageTitle{text-align:center;font-family:serif;font-size:18px;color:#6f5720;margin:4px 0 18px;}" +
         ".ayah{position:relative;margin:0 0 10px;padding:12px 16px 14px;border-radius:14px;" +
         "background:#fff;border:1px solid rgba(23,63,53,.10);box-shadow:0 2px 8px rgba(0,0,0,.035);" +
         "cursor:pointer;transition:background .18s ease,box-shadow .18s ease;}" +
         ".ayahText{font-size:29px;line-height:2.05;text-align:justify;display:block;}" +
-        ".ayahNumber{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;" +
-        "border:1px solid #b99a4b;border-radius:50%;font:14px serif;color:#6f5720;margin:0 5px;vertical-align:middle;}" +
+        ".ayahNumber{display:none;}" +
+        "span.end{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;" +
+        "border:1px solid #b99a4b;border-radius:50%;font-size:16px;color:#6f5720;margin:0 6px;}" +
+        "tajweed.ham_wasl,tajweed.slnt,tajweed.laam_shamsiyah{color:#aaaaaa;}" +
+        "tajweed.madda_normal{color:#537fff;}" +
+        "tajweed.madda_permissible{color:#4050ff;}" +
+        "tajweed.madda_necessary{color:#000ebc;}" +
+        "tajweed.madda_obligatory{color:#2144c1;}" +
+        "tajweed.qalaqah{color:#dd0008;}" +
+        "tajweed.ikhafa_shafawi{color:#d500b7;}" +
+        "tajweed.ikhafa{color:#9400a8;}" +
+        "tajweed.iqlab{color:#26bffd;}" +
+        "tajweed.idgham_shafawi{color:#58b800;}" +
+        "tajweed.idgham_ghunnah,tajweed.idgham_wo_ghunnah{color:#169200;}" +
+        "tajweed.idgham_mutajanisayn,tajweed.idgham_mutaqaribayn{color:#a1a1a1;}" +
+        "tajweed.ghunnah{color:#ff7e1e;}" +
         ".ayah.audioActive{background:rgba(183,228,208,.52);box-shadow:0 3px 14px rgba(23,63,53,.12);}" +
         "</style></head><body>" +
         "<div class=\"pageTitle\">" + title + " · " + page + "</div>" +
