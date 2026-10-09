@@ -1,0 +1,7 @@
+200 27432 https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 out_d786b8d8
+200 98904 https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p3.woff2 out_de4e600d
+404 0 https://static.qurancdn.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 out_edbe66fd
+200 81796 https://verses.quran.com/fonts/quran/hafs/v4/colrv1/ttf/p1.ttf out_349449a5
+404 678 https://verses.quran.com/fonts/quran/hafs/v4/ot/woff2/p1.woff2 out_43b09caf
+200 43846 https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,text_uthmani&per_page=300&mushaf=19 out_7c88096f
+200 39186 https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,v4_page&per_page=300 out_2b032385
