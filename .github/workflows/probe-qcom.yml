@@ -1,4 +1,4 @@
-name: Probe quran.com fonts
+name: Fetch quran.com page fonts and layout
 
 on:
   workflow_dispatch:
@@ -7,28 +7,26 @@ permissions:
   contents: write
 
 jobs:
-  probe:
+  fetch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Probe
+      - name: Download
         run: |
-          mkdir -p /tmp/probe && cd /tmp/probe
-          : > report.txt
-          for u in \
-            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 \
-            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p3.woff2 \
-            https://static.qurancdn.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 \
-            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/ttf/p1.ttf \
-            https://verses.quran.com/fonts/quran/hafs/v4/ot/woff2/p1.woff2 \
-            "https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,text_uthmani&per_page=300&mushaf=19" \
-            "https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,v4_page&per_page=300" ; do
-            code=$(curl -s -m 60 -o "out_$(echo $u | md5sum | cut -c1-8)" -w "%{http_code} %{size_download}" "$u")
-            echo "$code $u out_$(echo $u | md5sum | cut -c1-8)" >> report.txt
+          mkdir -p /tmp/q/fonts /tmp/q/pages && cd /tmp/q
+          fail=0
+          for n in $(seq 1 604); do
+            curl -fsS -m 60 --retry 3 -o fonts/p$n.woff2 "https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p$n.woff2" || { echo "font $n failed"; fail=1; }
+            curl -fsS -m 60 --retry 3 -o pages/$n.json "https://api.quran.com/api/v4/verses/by_page/$n?words=true&word_fields=code_v2,v4_page&per_page=300" || { echo "page $n failed"; fail=1; }
+            sleep 0.1
           done
-          cat report.txt
-      - name: Push report
+          du -sh fonts pages
+          echo "fail=$fail"
+          grep -l v4_page pages/*.json | head -3 || true
+          grep -o '"v4_page": *[0-9]*' pages/*.json | head -5 || true
+      - name: Push data
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan data/probe; git rm -rf . -q
-          mkdir probe; cp /tmp/probe/* probe/ ; git add probe; git commit -q -m probe; git push -f origin data/probe
+          git checkout --orphan data/qcom; git rm -rf . -q
+          mkdir qcom; cp -r /tmp/q/fonts /tmp/q/pages qcom/; du -sh qcom/* > qcom/SIZES.txt
+          git add qcom; git commit -q -m "quran.com v4 colrv1 fonts and page layout"; git push -f origin data/qcom
