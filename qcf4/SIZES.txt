@@ -1,0 +1,59 @@
+12K	qcf4/README.md
+16K	qcf4/font-map.json
+36M	qcf4/fonts-woff2
+44K	qcf4/index.json
+4.0K	qcf4/package.json
+20M	qcf4/pages
+224K	qcf4/qbsml.json
+1.4M	qcf4/verses.json
+total 36620
+drwxr-xr-x 2 runner runner   4096 Oct  9 10:02 .
+drwxr-xr-x 4 runner runner   4096 Oct  9 10:02 ..
+-rw-r--r-- 1 runner runner 946364 Oct  9 10:02 QCF4_Hafs_01_W.woff2
+-rw-r--r-- 1 runner runner 870632 Oct  9 10:02 QCF4_Hafs_02_W.woff2
+-rw-r--r-- 1 runner runner 911296 Oct  9 10:02 QCF4_Hafs_03_W.woff2
+-rw-r--r-- 1 runner runner 826668 Oct  9 10:02 QCF4_Hafs_04_W.woff2
+-rw-r--r-- 1 runner runner 793164 Oct  9 10:02 QCF4_Hafs_05_W.woff2
+-rw-r--r-- 1 runner runner 804068 Oct  9 10:02 QCF4_Hafs_06_W.woff2
+-rw-r--r-- 1 runner runner 798192 Oct  9 10:02 QCF4_Hafs_07_W.woff2
+-rw-r--r-- 1 runner runner 787316 Oct  9 10:02 QCF4_Hafs_08_W.woff2
+-rw-r--r-- 1 runner runner 795196 Oct  9 10:02 QCF4_Hafs_09_W.woff2
+-rw-r--r-- 1 runner runner 816868 Oct  9 10:02 QCF4_Hafs_10_W.woff2
+-rw-r--r-- 1 runner runner 827896 Oct  9 10:02 QCF4_Hafs_11_W.woff2
+-rw-r--r-- 1 runner runner 922028 Oct  9 10:02 QCF4_Hafs_12_W.woff2
+-rw-r--r-- 1 runner runner 881732 Oct  9 10:02 QCF4_Hafs_13_W.woff2
+-rw-r--r-- 1 runner runner 803736 Oct  9 10:02 QCF4_Hafs_14_W.woff2
+-rw-r--r-- 1 runner runner 864008 Oct  9 10:02 QCF4_Hafs_15_W.woff2
+-rw-r--r-- 1 runner runner 779132 Oct  9 10:02 QCF4_Hafs_16_W.woff2
+-rw-r--r-- 1 runner runner 818116 Oct  9 10:02 QCF4_Hafs_17_W.woff2
+-rw-r--r-- 1 runner runner 785844 Oct  9 10:02 QCF4_Hafs_18_W.woff2
+-rw-r--r-- 1 runner runner 796344 Oct  9 10:02 QCF4_Hafs_19_W.woff2
+-rw-r--r-- 1 runner runner 823244 Oct  9 10:02 QCF4_Hafs_20_W.woff2
+-rw-r--r-- 1 runner runner 762832 Oct  9 10:02 QCF4_Hafs_21_W.woff2
+-rw-r--r-- 1 runner runner 785196 Oct  9 10:02 QCF4_Hafs_22_W.woff2
+-rw-r--r-- 1 runner runner 748988 Oct  9 10:02 QCF4_Hafs_23_W.woff2
+-rw-r--r-- 1 runner runner 726080 Oct  9 10:02 QCF4_Hafs_24_W.woff2
+-rw-r--r-- 1 runner runner 777040 Oct  9 10:02 QCF4_Hafs_25_W.woff2
+-rw-r--r-- 1 runner runner 771956 Oct  9 10:02 QCF4_Hafs_26_W.woff2
+-rw-r--r-- 1 runner runner 751056 Oct  9 10:02 QCF4_Hafs_27_W.woff2
+-rw-r--r-- 1 runner runner 763772 Oct  9 10:02 QCF4_Hafs_28_W.woff2
+-rw-r--r-- 1 runner runner 765632 Oct  9 10:02 QCF4_Hafs_29_W.woff2
+-rw-r--r-- 1 runner runner 771956 Oct  9 10:02 QCF4_Hafs_30_W.woff2
+-rw-r--r-- 1 runner runner 807568 Oct  9 10:02 QCF4_Hafs_31_W.woff2
+-rw-r--r-- 1 runner runner 750052 Oct  9 10:02 QCF4_Hafs_32_W.woff2
+-rw-r--r-- 1 runner runner 791648 Oct  9 10:02 QCF4_Hafs_33_W.woff2
+-rw-r--r-- 1 runner runner 800712 Oct  9 10:02 QCF4_Hafs_34_W.woff2
+-rw-r--r-- 1 runner runner 757092 Oct  9 10:02 QCF4_Hafs_35_W.woff2
+-rw-r--r-- 1 runner runner 762188 Oct  9 10:02 QCF4_Hafs_36_W.woff2
+-rw-r--r-- 1 runner runner 762560 Oct  9 10:02 QCF4_Hafs_37_W.woff2
+-rw-r--r-- 1 runner runner 783152 Oct  9 10:02 QCF4_Hafs_38_W.woff2
+-rw-r--r-- 1 runner runner 767184 Oct  9 10:02 QCF4_Hafs_39_W.woff2
+-rw-r--r-- 1 runner runner 768404 Oct  9 10:02 QCF4_Hafs_40_W.woff2
+-rw-r--r-- 1 runner runner 773840 Oct  9 10:02 QCF4_Hafs_41_W.woff2
+-rw-r--r-- 1 runner runner 808164 Oct  9 10:02 QCF4_Hafs_42_W.woff2
+-rw-r--r-- 1 runner runner 765260 Oct  9 10:02 QCF4_Hafs_43_W.woff2
+-rw-r--r-- 1 runner runner 727128 Oct  9 10:02 QCF4_Hafs_44_W.woff2
+-rw-r--r-- 1 runner runner 708856 Oct  9 10:02 QCF4_Hafs_45_W.woff2
+-rw-r--r-- 1 runner runner 368848 Oct  9 10:02 QCF4_Hafs_46_W.woff2
+-rw-r--r-- 1 runner runner 588316 Oct  9 10:02 QCF4_Hafs_47_W.woff2
+-rw-r--r-- 1 runner runner 616164 Oct  9 10:02 QCF4_QBSML.woff2
