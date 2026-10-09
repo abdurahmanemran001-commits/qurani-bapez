@@ -68,6 +68,25 @@ public class ColorMushafPageLayout extends FrameLayout {
     webView.addJavascriptInterface(new Bridge(), "QuranBridge");
     webView.setWebViewClient(new WebViewClient() {
       @Override
+      @SuppressWarnings("deprecation")
+      public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+        if (url != null && url.startsWith("https://qcf.local/")) {
+          String name = url.substring("https://qcf.local/".length());
+          int q = name.indexOf('?');
+          if (q >= 0) name = name.substring(0, q);
+          if (name.contains("..")) return null;
+          try {
+            InputStream in = getContext().getAssets().open("qcf4/" + name);
+            return new android.webkit.WebResourceResponse(
+                name.endsWith(".woff2") ? "font/woff2" : "application/octet-stream", null, in);
+          } catch (Exception e) {
+            return null;
+          }
+        }
+        return super.shouldInterceptRequest(view, url);
+      }
+
+      @Override
       public void onPageFinished(WebView view, String url) {
         installStyleAndTouchLayer();
         if (activeSura >= 0) {
@@ -98,7 +117,34 @@ public class ColorMushafPageLayout extends FrameLayout {
 
   private String pageHtml;
 
+  private boolean qcf;
+
+  private String readAsset(String path) {
+    InputStream in = null;
+    try {
+      in = getContext().getAssets().open(path);
+      java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+      byte[] buf = new byte[8192];
+      int n;
+      while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+      return out.toString("UTF-8");
+    } catch (Exception e) {
+      return null;
+    } finally {
+      try { if (in != null) in.close(); } catch (Exception ignored) { }
+    }
+  }
+
   private String readPageLayout() {
+    qcf = false;
+    if (PreferenceManager.getDefaultSharedPreferences(getContext())
+        .getBoolean("qcf4Pages", true)) {
+      String fragment = readAsset(String.format(java.util.Locale.US, "qcf4/pages/%03d.html", page));
+      if (fragment != null) {
+        qcf = true;
+        return fragment;
+      }
+    }
     if (!PreferenceManager.getDefaultSharedPreferences(getContext())
         .getBoolean("tajweedPageLayout", true)) {
       return null;
@@ -234,6 +280,21 @@ public class ColorMushafPageLayout extends FrameLayout {
         ".pg .ayah.audioActive{background:rgba(183,228,208,.7);box-shadow:none;}" +
         ".pg .ayah.selected{background:rgba(255,213,79,.55);}" +
         ".pg span.end{min-width:1.1em;height:1.1em;line-height:1.1em;font-size:.55em;margin:0 .15em;}";
+    String qcfCss = "";
+    String qcfJs = "";
+    if (qcf) {
+      String css = readAsset("qcf4/qcf.css");
+      String js = readAsset("qcf4/qcf.js");
+      if (css == null || js == null) {
+        qcf = false;
+      } else {
+        qcfCss = "@font-face{font-family:PG;src:url('https://qcf.local/fonts/p" + page + ".woff2');}"
+            + "@font-face{font-family:QCF4_QBSML;src:url('https://qcf.local/fonts/QCF4_QBSML.woff2');}"
+            + "@font-face{font-family:BSM;src:url('https://qcf.local/fonts/QCF4_Hafs_01_W.woff2');}"
+            + ":root{--pf:PG;}" + css;
+        qcfJs = js;
+      }
+    }
     String title = escapeHtml(QuranInfo.getSuraNameFromPage(getContext(), page));
     String html = "<!doctype html><html lang=\"ar\" dir=\"rtl\"><head>" +
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no\">" +
@@ -265,10 +326,10 @@ public class ColorMushafPageLayout extends FrameLayout {
         "tajweed.ghunnah{color:#ff7e1e;}" +
         ".ayah.audioActive{background:rgba(183,228,208,.52);box-shadow:0 3px 14px rgba(23,63,53,.12);}" +
         ".ayah.selected{background:rgba(255,213,79,.45);}" +
-        "" + (pageHtml != null ? PAGE_CSS : "") + "</style></head><body class=\"" + (pageHtml != null ? "pg" : "") + "\">" +
+        "" + (pageHtml != null ? PAGE_CSS : "") + qcfCss + "</style></head><body class=\"" + (pageHtml != null ? (qcf ? "pg q" : "pg") : "") + "\"" + (qcf ? " style=\"visibility:hidden\"" : "") + ">" +
         (pageHtml != null ? "" : "<div class=\"pageTitle\">" + title + " · " + page + "</div>") +
         versesHtml +
-        "<script>" +
+        "<script>" + qcfJs +
         "window.highlightAyah=function(s,a){window.clearAudioHighlight();var l=document.querySelectorAll('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
         "l.forEach(function(e){e.classList.add('audioActive');});if(l.length){l[0].scrollIntoView({behavior:'smooth',block:'center'});}};" +
         "window.clearAudioHighlight=function(){document.querySelectorAll('.ayah.audioActive').forEach(function(e){e.classList.remove('audioActive');});};" +
@@ -290,15 +351,16 @@ public class ColorMushafPageLayout extends FrameLayout {
         "window.clearSelection=function(){document.querySelectorAll('.ayah.selected').forEach(function(e){e.classList.remove('selected');});};" +
         "window.revealAyah=function(s,a){var e=document.querySelector('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
         "if(e){var r=e.getBoundingClientRect();if(r.top<0||r.bottom>window.innerHeight){e.scrollIntoView({block:'center'});}}};" +
-        "if(document.body.className==='pg'){document.addEventListener('click',function(ev){var e=ayahOf(ev.target);if(e)tapAyah(e);});" +
+        "if(document.body.classList.contains('pg')){document.addEventListener('click',function(ev){var e=ayahOf(ev.target);if(e)tapAyah(e);});" +
         "var fit=function(){var ls=[].slice.call(document.querySelectorAll('.line:not(.hd):not(.bs)'));var w=document.body.clientWidth-20;" +
         "var best=34;ls.forEach(function(l){if(l.classList.contains('c'))return;l.style.fontSize='34px';l.style.justifyContent='flex-start';" +
         "var sw=0;[].forEach.call(l.children,function(c){sw+=c.getBoundingClientRect().width;});sw+=(l.children.length-1)*8.5;var fs=34*w/(sw+0.0001);if(fs<best)best=fs;});" +
         "ls.forEach(function(l){l.style.fontSize=Math.min(best,34)+'px';l.style.justifyContent='';});};" +
-        "if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{window.onload=fit;}}" +
+        "if(document.body.classList.contains('q')){qinit();}else if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{window.onload=fit;}}" +
         "</script></body></html>";
 
-    webView.loadDataWithBaseURL("file:///android_asset/tajweed/", html, "text/html", "UTF-8", null);
+    webView.loadDataWithBaseURL(qcf ? "https://qcf.local/" : "file:///android_asset/tajweed/",
+        html, "text/html", "UTF-8", null);
   }
 
   public void highlightAyah(final int sura, final int ayah) {
