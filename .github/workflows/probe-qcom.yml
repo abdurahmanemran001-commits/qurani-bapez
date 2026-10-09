@@ -1,0 +1,34 @@
+name: Probe quran.com fonts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: |
+          mkdir -p /tmp/probe && cd /tmp/probe
+          : > report.txt
+          for u in \
+            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 \
+            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/woff2/p3.woff2 \
+            https://static.qurancdn.com/fonts/quran/hafs/v4/colrv1/woff2/p1.woff2 \
+            https://verses.quran.com/fonts/quran/hafs/v4/colrv1/ttf/p1.ttf \
+            https://verses.quran.com/fonts/quran/hafs/v4/ot/woff2/p1.woff2 \
+            "https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,text_uthmani&per_page=300&mushaf=19" \
+            "https://api.quran.com/api/v4/verses/by_page/3?words=true&word_fields=code_v2,v4_page&per_page=300" ; do
+            code=$(curl -s -m 60 -o "out_$(echo $u | md5sum | cut -c1-8)" -w "%{http_code} %{size_download}" "$u")
+            echo "$code $u out_$(echo $u | md5sum | cut -c1-8)" >> report.txt
+          done
+          cat report.txt
+      - name: Push report
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/probe; git rm -rf . -q
+          mkdir probe; cp /tmp/probe/* probe/ ; git add probe; git commit -q -m probe; git push -f origin data/probe
