@@ -69,7 +69,8 @@ public class QuranSettingsFragment extends PreferenceFragment implements
   @Override
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (key.equals(Constants.PREF_USE_ARABIC_NAMES)
-        || key.equals(Constants.PREF_COLOR_MUSHAF)) {
+        || key.equals(Constants.PREF_COLOR_MUSHAF)
+        || key.equals("tajweedPageLayout")) {
       final Context context = getActivity();
       if (context instanceof QuranPreferenceActivity) {
         ((QuranPreferenceActivity) context).restartActivity();

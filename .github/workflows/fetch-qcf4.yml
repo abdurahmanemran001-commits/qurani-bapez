@@ -1,0 +1,35 @@
+name: Fetch QCF4 page fonts
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download quran-qcf4 package
+        run: |
+          mkdir -p /tmp/qcf && cd /tmp/qcf
+          npm pack quran-qcf4@1.1.0
+          tar xzf quran-qcf4-1.1.0.tgz
+          ls package; du -sh package/*
+          ls package/fonts-woff2 | head -60
+      - name: Copy into data branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/qcf4
+          git rm -rf . -q
+          mkdir qcf4
+          cp -r /tmp/qcf/package/pages /tmp/qcf/package/fonts-woff2 qcf4/
+          cp /tmp/qcf/package/*.json qcf4/ || true
+          cp /tmp/qcf/package/README.md qcf4/ || true
+          du -sh qcf4/* > qcf4/SIZES.txt
+          ls -la qcf4/fonts-woff2 >> qcf4/SIZES.txt
+          git add qcf4
+          git commit -q -m "Add QCF4 page data and woff2 fonts"
+          git push -f origin data/qcf4

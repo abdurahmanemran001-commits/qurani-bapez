@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.graphics.RectF;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -83,7 +84,8 @@ public class ColorMushafPageLayout extends FrameLayout {
 
   public void setPage(int page) {
     this.page = page;
-    if (dataLoaded) {
+    pageHtml = readPageLayout();
+    if (pageHtml != null || dataLoaded) {
       loadPage();
     } else {
       webView.loadDataWithBaseURL(null,
@@ -91,6 +93,29 @@ public class ColorMushafPageLayout extends FrameLayout {
               + "Tajweed data could not be loaded. Turn off Tajweed Color Mushaf in Settings "
               + "or reinstall the app.</body></html>",
           "text/html", "UTF-8", null);
+    }
+  }
+
+  private String pageHtml;
+
+  private String readPageLayout() {
+    if (!PreferenceManager.getDefaultSharedPreferences(getContext())
+        .getBoolean("tajweedPageLayout", true)) {
+      return null;
+    }
+    InputStream in = null;
+    try {
+      in = getContext().getAssets().open(String.format(java.util.Locale.US,
+          "tajweed/pages/%03d.html", page));
+      java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+      byte[] buf = new byte[8192];
+      int n;
+      while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+      return out.toString("UTF-8");
+    } catch (Exception e) {
+      return null;
+    } finally {
+      try { if (in != null) in.close(); } catch (Exception ignored) { }
     }
   }
 
@@ -173,8 +198,11 @@ public class ColorMushafPageLayout extends FrameLayout {
     SuraAyah end = new SuraAyah(bounds[2], bounds[3]);
 
     StringBuilder versesHtml = new StringBuilder();
+    if (pageHtml != null) {
+      versesHtml.append(pageHtml);
+    }
     SuraAyahIterator iterator = new SuraAyahIterator(start, end);
-    while (iterator.next()) {
+    while (pageHtml == null && iterator.next()) {
       int sura = iterator.getSura();
       int ayah = iterator.getAyah();
       String key = sura + ":" + ayah;
@@ -193,6 +221,19 @@ public class ColorMushafPageLayout extends FrameLayout {
           .append("</div>");
     }
 
+    final String PAGE_CSS =
+        "body.pg{padding:6px 6px 24px;background:#fffdf5;}" +
+        ".pg .line{display:flex;justify-content:space-between;align-items:center;white-space:nowrap;" +
+        "direction:rtl;gap:.25em;font-size:30px;line-height:1.95;padding:0 4px;overflow:hidden;}" +
+        ".pg .line.c{justify-content:center;gap:.35em;}" +
+        ".pg .line.hd{justify-content:center;font-size:24px;color:#6f5720;background:#f1e6c4;" +
+        "border:1px solid #b99a4b;border-radius:8px;margin:4px 0;line-height:1.7;}" +
+        ".pg .line.bs{justify-content:center;font-size:27px;}" +
+        ".pg .ayah{display:inline-block;margin:0;padding:0;border:0;border-radius:6px;background:none;" +
+        "box-shadow:none;}" +
+        ".pg .ayah.audioActive{background:rgba(183,228,208,.7);box-shadow:none;}" +
+        ".pg .ayah.selected{background:rgba(255,213,79,.55);}" +
+        ".pg span.end{min-width:1.1em;height:1.1em;line-height:1.1em;font-size:.55em;margin:0 .15em;}";
     String title = escapeHtml(QuranInfo.getSuraNameFromPage(getContext(), page));
     String html = "<!doctype html><html lang=\"ar\" dir=\"rtl\"><head>" +
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no\">" +
@@ -224,12 +265,12 @@ public class ColorMushafPageLayout extends FrameLayout {
         "tajweed.ghunnah{color:#ff7e1e;}" +
         ".ayah.audioActive{background:rgba(183,228,208,.52);box-shadow:0 3px 14px rgba(23,63,53,.12);}" +
         ".ayah.selected{background:rgba(255,213,79,.45);}" +
-        "</style></head><body>" +
-        "<div class=\"pageTitle\">" + title + " · " + page + "</div>" +
+        "" + (pageHtml != null ? PAGE_CSS : "") + "</style></head><body class=\"" + (pageHtml != null ? "pg" : "") + "\">" +
+        (pageHtml != null ? "" : "<div class=\"pageTitle\">" + title + " · " + page + "</div>") +
         versesHtml +
         "<script>" +
-        "window.highlightAyah=function(s,a){window.clearAudioHighlight();var e=document.querySelector('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
-        "if(e){e.classList.add('audioActive');e.scrollIntoView({behavior:'smooth',block:'center'});}};" +
+        "window.highlightAyah=function(s,a){window.clearAudioHighlight();var l=document.querySelectorAll('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
+        "l.forEach(function(e){e.classList.add('audioActive');});if(l.length){l[0].scrollIntoView({behavior:'smooth',block:'center'});}};" +
         "window.clearAudioHighlight=function(){document.querySelectorAll('.ayah.audioActive').forEach(function(e){e.classList.remove('audioActive');});};" +
         "var lp=null,lpFired=false,sx=0,sy=0;" +
         "function ayahOf(t){while(t&&!(t.classList&&t.classList.contains('ayah')))t=t.parentNode;return t;}" +
@@ -245,10 +286,16 @@ public class ColorMushafPageLayout extends FrameLayout {
         "document.addEventListener('touchend',function(){clearTimeout(lp);},{passive:true});" +
         "document.addEventListener('contextmenu',function(ev){ev.preventDefault();});" +
         "window.selectAyat=function(keys){window.clearSelection();keys.forEach(function(k){var p=k.split(':');" +
-        "var e=document.querySelector('.ayah[data-sura=\\\"'+p[0]+'\\\"][data-ayah=\\\"'+p[1]+'\\\"]');if(e)e.classList.add('selected');});};" +
+        "document.querySelectorAll('.ayah[data-sura=\\\"'+p[0]+'\\\"][data-ayah=\\\"'+p[1]+'\\\"]').forEach(function(e){e.classList.add('selected');});});};" +
         "window.clearSelection=function(){document.querySelectorAll('.ayah.selected').forEach(function(e){e.classList.remove('selected');});};" +
         "window.revealAyah=function(s,a){var e=document.querySelector('.ayah[data-sura=\\\"'+s+'\\\"][data-ayah=\\\"'+a+'\\\"]');" +
         "if(e){var r=e.getBoundingClientRect();if(r.top<0||r.bottom>window.innerHeight){e.scrollIntoView({block:'center'});}}};" +
+        "if(document.body.className==='pg'){document.addEventListener('click',function(ev){var e=ayahOf(ev.target);if(e)tapAyah(e);});" +
+        "var fit=function(){var ls=[].slice.call(document.querySelectorAll('.line:not(.hd):not(.bs)'));var w=document.body.clientWidth-20;" +
+        "var best=34;ls.forEach(function(l){if(l.classList.contains('c'))return;l.style.fontSize='34px';l.style.justifyContent='flex-start';" +
+        "var sw=0;[].forEach.call(l.children,function(c){sw+=c.getBoundingClientRect().width;});sw+=(l.children.length-1)*8.5;var fs=34*w/(sw+0.0001);if(fs<best)best=fs;});" +
+        "ls.forEach(function(l){l.style.fontSize=Math.min(best,34)+'px';l.style.justifyContent='';});};" +
+        "if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{window.onload=fit;}}" +
         "</script></body></html>";
 
     webView.loadDataWithBaseURL("file:///android_asset/tajweed/", html, "text/html", "UTF-8", null);

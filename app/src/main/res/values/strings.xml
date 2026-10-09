@@ -156,6 +156,8 @@
   <string name="prefs_new_background_title">New background</string>
   <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
   <string name="prefs_color_mushaf_title">Tajweed Color Mushaf</string>
+  <string name="prefs_tajweed_pages_title">Tajweed page layout</string>
+  <string name="prefs_tajweed_pages_summary">Show real Mushaf pages (15 lines) instead of verse cards</string>
   <string name="prefs_color_mushaf_summary">Use the Uthmani Quran with real Tajweed color markings</string>
   <string name="prefs_lock_orientation_title">Lock screen orientation</string>
   <string name="prefs_lock_orientation_summary_on">Use fixed orientation mode</string>
