@@ -70,7 +70,8 @@ public class QuranSettingsFragment extends PreferenceFragment implements
   public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
     if (key.equals(Constants.PREF_USE_ARABIC_NAMES)
         || key.equals(Constants.PREF_COLOR_MUSHAF)
-        || key.equals("tajweedPageLayout")) {
+        || key.equals("tajweedPageLayout")
+        || key.equals("qcf4Pages")) {
       final Context context = getActivity();
       if (context instanceof QuranPreferenceActivity) {
         ((QuranPreferenceActivity) context).restartActivity();

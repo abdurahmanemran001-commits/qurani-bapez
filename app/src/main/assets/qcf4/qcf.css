@@ -1,7 +1,7 @@
 body.q{background:#fffdf5;padding:2px 4px;overflow:hidden;color:#1b1b1b;}
 body.q .line{display:flex;justify-content:space-between;align-items:center;white-space:nowrap;direction:rtl;gap:0;padding:0;overflow:visible;font-family:var(--pf),serif;line-height:1;}
 body.q .line.hd{justify-content:center;font-family:QCF4_QBSML,serif;background:none;border:0;border-radius:0;margin:0;color:#6f5720;}
-body.q .line.bs{justify-content:center;font-family:var(--pf),serif;}
+body.q .line.bs{justify-content:center;font-family:BSM,serif;}
 body.q .ayah{display:inline-block;margin:0;padding:0;border:0;border-radius:6px;background:none;}
 body.q .ayah.audioActive{background:rgba(183,228,208,.7);}
 body.q .ayah.selected{background:rgba(255,213,79,.55);}

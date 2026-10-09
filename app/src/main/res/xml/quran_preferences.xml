@@ -31,6 +31,14 @@
         android:title="@string/prefs_tajweed_pages_title"/>
 
     <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
+        android:defaultValue="true"
+        android:dependency="@string/prefs_color_mushaf_key"
+        android:key="qcf4Pages"
+        android:persistent="true"
+        android:summary="@string/prefs_qcf4_summary"
+        android:title="@string/prefs_qcf4_title"/>
+
+    <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
         android:title="@string/prefs_new_background_title"
         android:persistent="true"
         android:defaultValue="true"
