@@ -1,0 +1,2 @@
+50M	qcom/fonts
+25M	qcom/pages
