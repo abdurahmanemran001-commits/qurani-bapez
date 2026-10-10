@@ -133,6 +133,8 @@
     <item>@string/qari_ahmad_nauina_gapless</item>
     <item>@string/qari_akram_al_alaqmi</item>
     <item>@string/qari_ali_hajjaj_alsouasi_gapless</item>
+    <item>@string/qari_warsh_dosary_everyayah</item>
+    <item>@string/qari_warsh_jazaery_everyayah</item>
   </string-array>
 
   <integer-array translatable="false" name="quran_readers_have_gapless_equivalents">
@@ -256,6 +258,8 @@
     <item>0</item>
     <item>1</item>
     <item>1</item>
+    <item>0</item>
+    <item>0</item>
     <item>0</item>
     <item>0</item>
     <item>0</item>
@@ -403,6 +407,8 @@
     <item>ahmad_nauina</item>
     <item>akram_al_alaqmi</item>
     <item>ali_hajjaj_alsouasi</item>
+    <item>20</item>
+    <item>21</item>
   </string-array>
 
   <string-array translatable="false" name="quran_readers_db_name">
@@ -538,6 +544,8 @@
     <item>ahmad_nauina</item>
     <item>akram_al_alaqmi</item>
     <item>ali_hajjaj_alsouasi</item>
+    <item></item>
+    <item></item>
   </string-array>
 
   <string-array translatable="false" name="quran_readers_urls">
@@ -673,6 +681,8 @@
     <item>http://download.quranicaudio.com/quran/ahmad_nauina/</item>
     <item>http://download.quranicaudio.com/quran/akram_al_alaqmi/</item>
     <item>http://download.quranicaudio.com/quran/ali_hajjaj_alsouasi/</item>
+    <item>https://everyayah.com/data/warsh/warsh_ibrahim_aldosary_128kbps/</item>
+    <item>https://everyayah.com/data/warsh/warsh_yassin_al_jazaery_64kbps/</item>
   </string-array>
 
   <!-- actual qari names -->
@@ -816,6 +826,8 @@
   <string name="qari_ajami">Ajami</string>
   <string name="qari_ayman_swidy">Ayman Swidy</string>
   <string name="qari_ghamdi">Ghamdi</string>
+  <string name="qari_warsh_dosary_everyayah">Ibrahim Al-Dosary (Warsh)</string>
+  <string name="qari_warsh_jazaery_everyayah">Yassin Al-Jazaery (Warsh)</string>
   <string name="qari_hani_rifai_everyayah">Hani Ar-Rifai (EveryAyah)</string>
   <string name="qari_minshawi_mujawwad_everyayah">Minshawy Mujawwad (EveryAyah)</string>
 
