@@ -1,0 +1,7 @@
+body.w{background:#fffdf5;padding:4px 12px;overflow:hidden;color:#1b1b1b;}
+body.w .hd{text-align:center;font-family:WARSH,serif;color:#6f5720;border:1px solid #b99a4b;border-radius:10px;background:#f1e6c4;margin:4px 0;padding:2px 0;line-height:1.7;}
+body.w .bs{text-align:center;font-family:WARSH,serif;margin:2px 0 4px;line-height:1.8;}
+body.w .wtxt{font-family:WARSH,serif;text-align:justify;text-justify:inter-word;direction:rtl;line-height:2;}
+body.w .ayah{display:inline;position:static;margin:0;padding:0;border:0;border-radius:4px;background:none;box-shadow:none;}
+body.w .ayah.audioActive{background:rgba(183,228,208,.7);}
+body.w .ayah.selected{background:rgba(255,213,79,.55);}

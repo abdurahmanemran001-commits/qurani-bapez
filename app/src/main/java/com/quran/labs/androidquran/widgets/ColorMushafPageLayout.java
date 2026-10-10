@@ -76,7 +76,7 @@ public class ColorMushafPageLayout extends FrameLayout {
           if (q >= 0) name = name.substring(0, q);
           if (name.contains("..")) return null;
           try {
-            InputStream in = getContext().getAssets().open("qcf4/" + name);
+            InputStream in = getContext().getAssets().open(name.startsWith("warsh/") ? name : "qcf4/" + name);
             return new android.webkit.WebResourceResponse(
                 name.endsWith(".woff2") ? "font/woff2" : "application/octet-stream", null, in);
           } catch (Exception e) {
@@ -118,6 +118,7 @@ public class ColorMushafPageLayout extends FrameLayout {
   private String pageHtml;
 
   private boolean qcf;
+  private boolean warsh;
 
   private String readAsset(String path) {
     InputStream in = null;
@@ -137,6 +138,15 @@ public class ColorMushafPageLayout extends FrameLayout {
 
   private String readPageLayout() {
     qcf = false;
+    warsh = false;
+    if (PreferenceManager.getDefaultSharedPreferences(getContext())
+        .getBoolean("warshPages", false)) {
+      String fragment = readAsset(String.format(java.util.Locale.US, "warsh/pages/%03d.html", page));
+      if (fragment != null) {
+        warsh = true;
+        return fragment;
+      }
+    }
     if (PreferenceManager.getDefaultSharedPreferences(getContext())
         .getBoolean("qcf4Pages", true)) {
       String fragment = readAsset(String.format(java.util.Locale.US, "qcf4/pages/%03d.html", page));
@@ -282,7 +292,14 @@ public class ColorMushafPageLayout extends FrameLayout {
         ".pg span.end{min-width:1.1em;height:1.1em;line-height:1.1em;font-size:.55em;margin:0 .15em;}";
     String qcfCss = "";
     String qcfJs = "";
-    if (qcf) {
+    if (warsh) {
+      String css = readAsset("warsh/warsh.css");
+      String js = readAsset("warsh/warsh.js");
+      if (css != null && js != null) {
+        qcfCss = "@font-face{font-family:WARSH;src:url('https://qcf.local/warsh/warsh.woff2');}" + css;
+        qcfJs = js;
+      }
+    } else if (qcf) {
       String css = readAsset("qcf4/qcf.css");
       String js = readAsset("qcf4/qcf.js");
       if (css == null || js == null) {
@@ -326,7 +343,7 @@ public class ColorMushafPageLayout extends FrameLayout {
         "tajweed.ghunnah{color:#ff7e1e;}" +
         ".ayah.audioActive{background:rgba(183,228,208,.52);box-shadow:0 3px 14px rgba(23,63,53,.12);}" +
         ".ayah.selected{background:rgba(255,213,79,.45);}" +
-        "" + (pageHtml != null ? PAGE_CSS : "") + qcfCss + "</style></head><body class=\"" + (pageHtml != null ? (qcf ? "pg q" : "pg") : "") + "\"" + (qcf ? " style=\"visibility:hidden\"" : "") + ">" +
+        "" + (pageHtml != null ? PAGE_CSS : "") + qcfCss + "</style></head><body class=\"" + (pageHtml != null ? (warsh ? "pg w" : (qcf ? "pg q" : "pg")) : "") + "\"" + ((qcf || warsh) ? " style=\"visibility:hidden\"" : "") + ">" +
         (pageHtml != null ? "" : "<div class=\"pageTitle\">" + title + " · " + page + "</div>") +
         versesHtml +
         "<script>" + qcfJs +
@@ -356,10 +373,10 @@ public class ColorMushafPageLayout extends FrameLayout {
         "var best=34;ls.forEach(function(l){if(l.classList.contains('c'))return;l.style.fontSize='34px';l.style.justifyContent='flex-start';" +
         "var sw=0;[].forEach.call(l.children,function(c){sw+=c.getBoundingClientRect().width;});sw+=(l.children.length-1)*8.5;var fs=34*w/(sw+0.0001);if(fs<best)best=fs;});" +
         "ls.forEach(function(l){l.style.fontSize=Math.min(best,34)+'px';l.style.justifyContent='';});};" +
-        "if(document.body.classList.contains('q')){qinit();}else if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{window.onload=fit;}}" +
+        "if(document.body.classList.contains('w')){winit();}else if(document.body.classList.contains('q')){qinit();}else if(document.fonts&&document.fonts.ready){document.fonts.ready.then(fit);}else{window.onload=fit;}}" +
         "</script></body></html>";
 
-    webView.loadDataWithBaseURL(qcf ? "https://qcf.local/" : "file:///android_asset/tajweed/",
+    webView.loadDataWithBaseURL((qcf || warsh) ? "https://qcf.local/" : "file:///android_asset/tajweed/",
         html, "text/html", "UTF-8", null);
   }
 

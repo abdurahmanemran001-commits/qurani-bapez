@@ -71,7 +71,8 @@ public class QuranSettingsFragment extends PreferenceFragment implements
     if (key.equals(Constants.PREF_USE_ARABIC_NAMES)
         || key.equals(Constants.PREF_COLOR_MUSHAF)
         || key.equals("tajweedPageLayout")
-        || key.equals("qcf4Pages")) {
+        || key.equals("qcf4Pages")
+        || key.equals("warshPages")) {
       final Context context = getActivity();
       if (context instanceof QuranPreferenceActivity) {
         ((QuranPreferenceActivity) context).restartActivity();
