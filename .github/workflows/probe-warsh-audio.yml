@@ -15,13 +15,14 @@ jobs:
         run: |
           mkdir -p /tmp/wa && cd /tmp/wa
           python3 - <<'PY'
-          counts=[7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6]
+          # sura -> hafs verse count; probe only suras whose warsh count differs plus a few controls
+          import json
+          diff={1:(7,7),2:(286,285),3:(200,200),4:(176,176),5:(120,120),6:(165,167),7:(206,206),8:(75,75),9:(129,129),10:(109,109),11:(123,123),18:(110,110),19:(98,98),20:(135,135),36:(83,83),55:(78,78),112:(4,4),113:(5,5),114:(6,6)}
           with open('files.txt','w') as f:
-              for s,c in enumerate(counts,1):
-                  for a in range(1,c+4):   # a few beyond the hafs count to catch extra warsh verses
-                      f.write('%03d%03d.mp3\n'%(s,a))
+              for s,(h,w) in diff.items():
+                  for a in range(1,max(h,w)+3): f.write('%03d%03d.mp3\n'%(s,a))
           PY
-          for d in warsh_ibrahim_aldosary_128kbps warsh_yassin_al_jazaery_64kbps warsh_Abdul_Basit_128kbps; do
+          for d in warsh_ibrahim_aldosary_128kbps; do
             cat files.txt | xargs -P 24 -I{} sh -c 'echo "{} $(curl -s -m 30 -I -o /dev/null -w "%{http_code} %header{content-length}" https://everyayah.com/data/warsh/'$d'/{})"' > res_$d.txt
             echo "$d: $(grep -c ' 200 ' res_$d.txt) ok of $(wc -l < res_$d.txt)"
           done
