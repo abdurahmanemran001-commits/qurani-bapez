@@ -156,6 +156,8 @@
   <string name="prefs_new_background_title">New background</string>
   <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
   <string name="prefs_color_mushaf_title">Tajweed Color Mushaf</string>
+  <string name="prefs_warsh_title">Warsh (Nafi) colored</string>
+  <string name="prefs_warsh_summary">Show the Quran in the Warsh narration. Colors are approximate (taken from Hafs rules). Audio, tafsir and bookmarks still follow the Hafs verse numbers.</string>
   <string name="prefs_qcf4_title">Madinah Tajweed pages</string>
   <string name="prefs_qcf4_summary">Show the colored Tajweed Mushaf exactly like the printed Madinah Mushaf (15 lines per page)</string>
   <string name="prefs_tajweed_pages_title">Tajweed page layout</string>
