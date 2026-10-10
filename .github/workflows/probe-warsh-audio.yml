@@ -11,23 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Probe everyayah warsh folders
+      - name: Probe
         run: |
-          mkdir -p /tmp/wa && cd /tmp/wa
-          python3 - <<'PY'
-          # sura -> hafs verse count; probe only suras whose warsh count differs plus a few controls
-          import json
-          diff={1:(7,7),2:(286,285),3:(200,200),4:(176,176),5:(120,120),6:(165,167),7:(206,206),8:(75,75),9:(129,129),10:(109,109),11:(123,123),18:(110,110),19:(98,98),20:(135,135),36:(83,83),55:(78,78),112:(4,4),113:(5,5),114:(6,6)}
-          with open('files.txt','w') as f:
-              for s,(h,w) in diff.items():
-                  for a in range(1,max(h,w)+3): f.write('%03d%03d.mp3\n'%(s,a))
-          PY
-          for d in warsh_ibrahim_aldosary_128kbps; do
-            cat files.txt | xargs -P 24 -I{} sh -c 'echo "{} $(curl -s -m 30 -I -o /dev/null -w "%{http_code} %header{content-length}" https://everyayah.com/data/warsh/'$d'/{})"' > res_$d.txt
-            echo "$d: $(grep -c ' 200 ' res_$d.txt) ok of $(wc -l < res_$d.txt)"
+          mkdir -p /tmp/wa && cd /tmp/wa && : > res.txt
+          for d in warsh_ibrahim_aldosary_128kbps warsh_yassin_al_jazaery_64kbps warsh_Abdul_Basit_128kbps; do
+            for base in "https://everyayah.com/data/warsh/$d" "http://mirrors.quranicaudio.com/everyayah/warsh/$d"; do
+              for f in 001001 001007 001008 002285 002286 002287 018105 018110 018111 112004 112005 114006 114007; do
+                echo "$base/$f.mp3 $(curl -s -m 40 -I -o /dev/null -w '%{http_code} %header{content-length}' $base/$f.mp3)" >> res.txt
+              done
+            done
           done
+          cat res.txt
       - name: Push report
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan data/warshaudio; git rm -rf . -q
-          mkdir wa; cp /tmp/wa/res_*.txt wa/; git add wa; git commit -q -m probe; git push -f origin data/warshaudio
+          git checkout --orphan data/warshaudio2; git rm -rf . -q
+          mkdir wa; cp /tmp/wa/res.txt wa/; git add wa; git commit -q -m probe; git push -f origin data/warshaudio2
