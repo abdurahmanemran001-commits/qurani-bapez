@@ -296,7 +296,13 @@ public class ColorMushafPageLayout extends FrameLayout {
       String css = readAsset("warsh/warsh.css");
       String js = readAsset("warsh/warsh.js");
       if (css != null && js != null) {
-        qcfCss = "@font-face{font-family:WARSH;src:url('https://qcf.local/warsh/warsh.woff2');}" + css;
+        boolean maghribi = PreferenceManager.getDefaultSharedPreferences(getContext())
+            .getBoolean("warshMaghribi", false);
+        qcfCss = "@font-face{font-family:WARSH;src:url('https://qcf.local/warsh/"
+            + (maghribi ? "warsh.woff2" : "naskh.woff2") + "');}" + css;
+        if (!maghribi && pageHtml != null) {
+          pageHtml = pageHtml.replace('\u06d2', '\u064a');
+        }
         qcfJs = js;
       }
     } else if (qcf) {
