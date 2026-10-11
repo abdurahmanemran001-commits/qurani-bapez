@@ -28,7 +28,7 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html dist/index.html
+          cp index.html icon.svg manifest.webmanifest sw.js dist/
           mkdir -p dist/mushaf/data
           cp web/mushaf/* dist/mushaf/
           A=app/src/main/assets
