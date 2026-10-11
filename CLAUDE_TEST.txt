@@ -1,0 +1,1 @@
+Claude edit test - if you can see this file, Claude has write access to this repo.
