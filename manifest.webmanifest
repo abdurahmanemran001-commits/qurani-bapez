@@ -1,0 +1,17 @@
+{
+  "name": "قرآن الکریم (قورئانی پیرۆز)",
+  "short_name": "قورئان",
+  "description": "قورئانی پیرۆز و زیکرەکان - لەسەر هەموو سیستەمەکان",
+  "lang": "ku",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f1",
+  "theme_color": "#176b4b",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
