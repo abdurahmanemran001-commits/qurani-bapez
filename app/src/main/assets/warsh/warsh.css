@@ -9,4 +9,3 @@ body.w .ayah{display:inline;position:static;margin:0;padding:0;border:0;border-r
 body.w tajweed{font:inherit;}
 body.w .ayah.audioActive{background:rgba(183,228,208,.7);}
 body.w .ayah.selected{background:rgba(255,213,79,.55);}
-body.w .wtxt,body.w .hd,body.w .bs{text-rendering:optimizeLegibility;font-kerning:normal;font-feature-settings:"liga" 1,"calt" 1,"mark" 1,"mkmk" 1;}
