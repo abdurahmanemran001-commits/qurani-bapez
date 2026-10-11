@@ -29,6 +29,13 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html dist/index.html
+          mkdir -p dist/mushaf/data
+          cp web/mushaf/* dist/mushaf/
+          A=app/src/main/assets
+          cp -r $A/qcf4 dist/mushaf/data/qcf4
+          cp -r $A/warsh dist/mushaf/data/warsh
+          cp -r $A/tajweed dist/mushaf/data/tajweed
+          rm -f dist/mushaf/data/tajweed/tajweedquran.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

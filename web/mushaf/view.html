@@ -1,0 +1,66 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style id="base">
+html,body{margin:0;padding:0;background:#fffdf5;color:#173f35}
+*{-webkit-tap-highlight-color:transparent}
+body.pg{padding:6px 6px 24px;background:#fffdf5}
+.pg .line{display:flex;justify-content:space-between;align-items:center;white-space:nowrap;direction:rtl;gap:.25em;font-size:30px;line-height:1.95;padding:0 4px;overflow:hidden}
+.pg .line.c{justify-content:center;gap:.35em}
+.pg .line.hd{justify-content:center;font-size:24px;color:#6f5720;background:#f1e6c4;border:1px solid #b99a4b;border-radius:8px;margin:4px 0;line-height:1.7}
+.pg .line.bs{justify-content:center;font-size:27px}
+.pg .ayah{display:inline-block;margin:0;padding:0;border:0;border-radius:6px;background:none;cursor:pointer}
+.pg .ayah.selected{background:rgba(255,213,79,.55)}
+.pg span.end{min-width:1.1em;height:1.1em;line-height:1.1em;font-size:.55em;margin:0 .15em}
+@font-face{font-family:Noorehira;src:url('data/tajweed/noorehira.ttf')}
+body.pg:not(.q):not(.w){font-family:Noorehira,'Noto Naskh Arabic',serif}
+tajweed.ham_wasl,tajweed.slnt,tajweed.laam_shamsiyah{color:#aaa}
+tajweed.madda_normal{color:#537fff}tajweed.madda_permissible{color:#4050ff}
+tajweed.madda_necessary{color:#000ebc}tajweed.madda_obligatory{color:#2144c1}
+tajweed.qalaqah{color:#dd0008}tajweed.ikhafa_shafawi{color:#d500b7}
+tajweed.ikhafa{color:#9400a8}tajweed.iqlab{color:#26bffd}
+tajweed.idgham_shafawi{color:#58b800}
+tajweed.idgham_ghunnah,tajweed.idgham_wo_ghunnah{color:#169200}
+tajweed.idgham_mutajanisayn,tajweed.idgham_mutaqaribayn{color:#a1a1a1}
+tajweed.ghunnah{color:#ff7e1e}
+</style></head><body>
+<script>
+(function(){
+var q=new URLSearchParams(location.search),mode=q.get('m')||'q',page=Math.max(1,Math.min(604,+q.get('p')||1));
+var n=('00'+page).slice(-3),dir={q:'qcf4',w:'warsh',t:'tajweed'}[mode]||'qcf4';
+function get(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.text();});}
+function css(t){var s=document.createElement('style');s.textContent=t;document.head.appendChild(s);}
+function js(t){var s=document.createElement('script');s.textContent=t;document.body.appendChild(s);}
+window.selectAyah=function(s,a){document.querySelectorAll('.ayah.selected').forEach(function(e){e.classList.remove('selected');});
+ if(s)document.querySelectorAll('.ayah[data-sura="'+s+'"][data-ayah="'+a+'"]').forEach(function(e){e.classList.add('selected');});};
+document.addEventListener('click',function(ev){var t=ev.target;while(t&&!(t.classList&&t.classList.contains('ayah')))t=t.parentNode;
+ if(t){selectAyah(t.dataset.sura,t.dataset.ayah);parent.postMessage({ayah:[+t.dataset.sura,+t.dataset.ayah]},'*');}});
+var tx=0,ty=0;document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',function(e){var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy))parent.postMessage({swipe:dx>0?1:-1},'*');},{passive:true});
+var jobs=[get('data/'+dir+'/pages/'+n+'.html')];
+if(mode==='q')jobs.push(get('data/qcf4/qcf.css'),get('data/qcf4/qcf.js'));
+if(mode==='w')jobs.push(get('data/warsh/warsh.css'),get('data/warsh/warsh.js'));
+Promise.all(jobs).then(function(r){
+ document.body.className='pg '+(mode==='q'?'q':mode==='w'?'w':'');
+ if(mode==='q'){
+  css("@font-face{font-family:PG;src:url('data/qcf4/fonts/p"+page+".woff2')}@font-face{font-family:QCF4_QBSML;src:url('data/qcf4/fonts/QCF4_QBSML.woff2')}@font-face{font-family:BSM;src:url('data/qcf4/fonts/QCF4_Hafs_01_W.woff2')}:root{--pf:PG}"+r[1]);
+  document.body.style.visibility='hidden';
+ }
+ if(mode==='w'){
+  var f=localStorage.getItem('warshFont')==='m'?'warsh':'naskh';
+  css("@font-face{font-family:WARSH;src:url('data/warsh/"+f+".woff2')}"+r[1]);
+  if(f==='naskh')r[0]=r[0].replace(/ے/g,'ي');
+  document.body.style.visibility='hidden';
+ }
+ document.body.insertAdjacentHTML('afterbegin',r[0]);
+ if(mode==='q'){js(r[2]);qinit();}
+ else if(mode==='w'){js(r[2]);winit();}
+ else{
+  var fit=function(){var ls=[].slice.call(document.querySelectorAll('.line:not(.hd):not(.bs)'));var w=document.body.clientWidth-20,best=34;
+   ls.forEach(function(l){if(l.classList.contains('c'))return;l.style.fontSize='34px';l.style.justifyContent='flex-start';var sw=0;[].forEach.call(l.children,function(c){sw+=c.getBoundingClientRect().width;});sw+=(l.children.length-1)*8.5;var fs=34*w/(sw+.0001);if(fs<best)best=fs;});
+   ls.forEach(function(l){l.style.fontSize=Math.min(best,34)+'px';l.style.justifyContent='';});};
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);else fit();
+ }
+ parent.postMessage({ready:true},'*');
+}).catch(function(){document.body.innerHTML='<p style="text-align:center;margin-top:40vh;font-family:sans-serif">پەڕەکە بارنەکرا / تعذر تحميل الصفحة</p>';});
+})();
+</script></body></html>
