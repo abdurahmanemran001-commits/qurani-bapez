@@ -1,0 +1,62 @@
+<!doctype html><html lang="ku" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b4b">
+<title>موسحەفی قورئان</title>
+<style>
+:root{--g:#176b4b;--bg:#fffdf5}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Tahoma,Arial,sans-serif;background:var(--bg);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+header{display:flex;gap:6px;align-items:center;padding:6px;background:var(--g);color:#fff;flex-wrap:wrap}
+header select,header input,header button{font:inherit;font-size:14px;border:0;border-radius:8px;padding:6px 8px;background:#fff;color:#173f35;min-height:34px}
+header input{width:62px;text-align:center}
+header button{background:#e8f3ee;cursor:pointer}
+#modes{display:flex;gap:4px;flex:1;min-width:200px}
+#modes button{flex:1;font-size:13px;padding:6px 4px}
+#modes button.on{background:#ffd54f;font-weight:700}
+#sura{flex:1;min-width:120px}
+#f{flex:1;border:0;width:100%;background:var(--bg)}
+#tip{position:absolute;bottom:10px;left:10px;right:10px;margin:auto;max-width:420px;background:#173f35;color:#fff;border-radius:10px;padding:8px 12px;text-align:center;font-size:14px;display:none}
+</style></head><body>
+<div id="app">
+<header>
+ <button id="next" title="دواتر">›</button>
+ <input id="pg" type="number" min="1" max="604" inputmode="numeric">
+ <button id="prev" title="پێشوو">‹</button>
+ <select id="sura"></select>
+ <div id="modes">
+  <button data-m="q">مەدینە تەجوید</button>
+  <button data-m="w">وەرش</button>
+  <button data-m="t">تەجوید</button>
+ </div>
+</header>
+<iframe id="f" title="mushaf"></iframe>
+<div id="tip"></div>
+</div>
+<script>
+var N=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
+var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementById('pg'),sel=document.getElementById('sura');
+function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+mode=ld('m','q');page=+ld('p',1)||1;
+function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
+function show(){
+ page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
+ [].forEach.call(document.querySelectorAll('#modes button'),function(b){b.classList.toggle('on',b.dataset.m===mode)});
+ sv('m',mode);sv('p',page);
+ f.src='view.html?m='+mode+'&p='+page;
+ var a=new Image();
+}
+function go(d){page+=d;show();}
+document.getElementById('next').onclick=function(){go(1)};
+document.getElementById('prev').onclick=function(){go(-1)};
+pg.onchange=function(){page=+pg.value||1;show();};
+sel.onchange=function(){page=S[+sel.value];show();};
+document.getElementById('modes').onclick=function(e){var m=e.target.dataset&&e.target.dataset.m;if(m){mode=m;show();}};
+addEventListener('message',function(e){var d=e.data||{};
+ if(d.swipe)go(d.swipe);
+ if(d.ayah){var t=document.getElementById('tip');t.textContent=N[d.ayah[0]-1]+' · '+d.ayah[1];t.style.display='block';clearTimeout(t.h);t.h=setTimeout(function(){t.style.display='none'},2500);}
+});
+addEventListener('keydown',function(e){if(e.target===pg)return;if(e.key==='ArrowLeft')go(1);if(e.key==='ArrowRight')go(-1);});
+fetch('starts.json').then(function(r){return r.json()}).then(function(s){S=s;
+ N.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+n;sel.appendChild(o);});show();});
+</script></body></html>
