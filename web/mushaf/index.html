@@ -19,6 +19,7 @@ header button{background:#e8f3ee;cursor:pointer}
 </style></head><body>
 <div id="app">
 <header>
+ <button onclick="location.href='../'" title="گەڕانەوە">⌂</button>
  <button id="next" title="دواتر">›</button>
  <input id="pg" type="number" min="1" max="604" inputmode="numeric">
  <button id="prev" title="پێشوو">‹</button>
@@ -38,6 +39,7 @@ var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementBy
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 mode=ld('m','q');page=+ld('p',1)||1;
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwt'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);

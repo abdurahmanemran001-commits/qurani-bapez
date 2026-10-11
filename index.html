@@ -45,14 +45,14 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <div class="main">
 <section id="home" class="view active">
 <div class="hero"><h2>قورئانی پیرۆز</h2><p>ئەم ئەپە لەسەر ئەندرۆید، ئایفۆن، کۆمپیوتەر و هەموو وێبگەڕێک کار دەکات.</p><button id="installBtn" class="primary" onclick="installApp()">دابەزاندنی ئەپ</button></div>
-<div class="search"><input id="surahSearch" placeholder="گەڕان بە ناوی سورەت..." oninput="filterSurahs()"><button onclick="openPage(1)">موسحەف</button></div>
+<div class="search"><input id="surahSearch" placeholder="گەڕان بە ناوی سورەت..." oninput="filterSurahs()"><button onclick="openPage(1)">موسحەف</button><button onclick="location.href='mushaf/'" style="background:#ffd54f;color:#173f35">ڕەنگاوڕەنگ 🎨</button></div>
 <div class="tabs"><button id="tabSurah" class="tab on" onclick="setHomeTab('surah')">سورەتەکان</button><button id="tabJuz" class="tab" onclick="setHomeTab('juz')">جوز</button><button id="tabBookmark" class="tab" onclick="setHomeTab('bookmark')">نیشانکراوەکان</button></div>
 <div id="surahList" class="list"><div class="card muted">لیستی سورەتەکان بار دەکرێت...</div></div>
 <div class="card"><div class="row"><b>دۆخی پڕۆژە</b><span id="version" class="badge">...</span></div><div id="commit" class="muted" style="margin-top:8px">نوێترین commit...</div></div>
 </section>
 
 <section id="reader" class="view">
-<div class="readerhead"><button onclick="goHome()">‹ فهرست</button><b id="pageTitle">پەڕەی 1</b><span class="badge">604</span></div>
+<div class="readerhead"><button onclick="goHome()">‹ فهرست</button><b id="pageTitle">پەڕەی 1</b><button onclick="location.href='mushaf/?p='+currentPage" style="background:#ffd54f;color:#173f35;border:0;border-radius:10px;padding:6px 10px">ڕەنگاوڕەنگ 🎨</button><span class="badge">604</span></div>
 <div class="mushaf" id="mushaf"><img id="pageImg" alt="پەڕەی موسحەف" onerror="imageFailed()"></div>
 <div class="readerbar"><button onclick="changePage(-1)">›</button><input id="pageInput" type="number" min="1" max="604" value="1" onchange="openPage(this.value)"><button onclick="changePage(1)">‹</button></div>
 <div class="card"><div class="row"><b>پەڕەی موسحەف</b><span id="pageStatus" class="muted">بارکردن...</span></div><div class="muted" style="margin-top:7px">ئەو پەڕانەی خوێندووتنەوە، بەبێ ئینتەرنێتیش دەکرێنەوە.</div></div>
