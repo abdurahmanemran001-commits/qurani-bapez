@@ -156,6 +156,8 @@
   <string name="prefs_new_background_title">New background</string>
   <string name="prefs_color_mushaf_key" translatable="false">colorMushaf</string>
   <string name="prefs_color_mushaf_title">Tajweed Color Mushaf</string>
+  <string name="prefs_warsh_maghribi_title">Maghribi script (North African)</string>
+  <string name="prefs_warsh_maghribi_summary">Use the North African letter shapes (qaf with one dot above, fa with one dot below). Off = the usual Naskh dots.</string>
   <string name="prefs_warsh_title">Warsh (Nafi) colored</string>
   <string name="prefs_warsh_summary">Show the Quran in the Warsh narration. Colors are approximate (taken from Hafs rules). Audio, tafsir and bookmarks still follow the Hafs verse numbers.</string>
   <string name="prefs_qcf4_title">Madinah Tajweed pages</string>

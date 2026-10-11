@@ -47,6 +47,14 @@
         android:title="@string/prefs_warsh_title"/>
 
     <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
+        android:defaultValue="false"
+        android:dependency="warshPages"
+        android:key="warshMaghribi"
+        android:persistent="true"
+        android:summary="@string/prefs_warsh_maghribi_summary"
+        android:title="@string/prefs_warsh_maghribi_title"/>
+
+    <com.quran.labs.androidquran.ui.preference.QuranCheckBoxPreference
         android:title="@string/prefs_new_background_title"
         android:persistent="true"
         android:defaultValue="true"
