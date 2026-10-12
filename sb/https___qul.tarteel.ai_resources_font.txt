@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<meta
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no"
+  name="viewport"
+/>
+<meta name="theme-color" content="#000000" />
+<meta name="msapplication-TileColor" content="#000000" />
+<title>Quran fonts</title><meta name="description" content="Download Quran-related fonts, including glyph-based, Unicode, and translation fonts. Also includes specialized fonts for Surah names and headings."><meta name="keywords" content="Arabic Sign Language Font, Arabic Sign Language Font json data, font, download Font, Quran, Quran data, Quran json data, download Quran data"><meta name="robots" content="index, follow"><meta name="author" content="Tarteel AI"><meta property="og:site_name" content="Quranic Universal Library"><meta property="og:type" content="website"><meta property="og:title" content="Quran fonts"><meta property="og:description" content="Download Quran-related fonts, including glyph-based, Unicode, and translation fonts. Also includes specialized fonts for Surah names and headings."><meta property="og:image" content="https://static-cdn.tarteel.ai/qul/og.jpeg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Quranic Universal Library (QUL) logo"><meta property="og:url" content="https://qul.tarteel.ai/resources/font"><meta property="og:locale" content="en_US"><meta name="twitter:

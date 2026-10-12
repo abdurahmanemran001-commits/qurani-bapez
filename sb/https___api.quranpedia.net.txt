@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quranpedia API v1 — Documentation</title>
+    <meta name="description" content="Free RESTful API for Quran text, tafsirs, translations, reciters, fatwas, and more. JSON responses, no authentication required.">
+    <meta name="robots" content="index, follow">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="theme-color" content="#0f172a">
+
+    
+    <meta property="og:title" content="Quranpedia API v1 — Documentation">
+    <meta property="og:description" content="Free RESTful API for Quran text, tafsirs, translations, reciters, fatwas, and more. JSON responses, no authentication required.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+
+    
+    <link rel="stylesheet" href="/assets/fonts/ui/api-docs.css?v=1">
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0b0f1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2236;
+            --bg-code: #0d1117;
+            --border: #1e293b;
+            --border-light: #1e293b80;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #38bdf8;
+            --accent-dim: #0ea5e9;
+            --green: #34d399;
+            --green-dim: #065
