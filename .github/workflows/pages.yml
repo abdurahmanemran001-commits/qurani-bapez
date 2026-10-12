@@ -33,9 +33,10 @@ jobs:
           cp web/mushaf/* dist/mushaf/
           A=app/src/main/assets
           cp -r $A/qcf4 dist/mushaf/data/qcf4
-          cp -r $A/warsh dist/mushaf/data/warsh
           cp -r $A/tajweed dist/mushaf/data/tajweed
           rm -f dist/mushaf/data/tajweed/tajweedquran.json
+          git fetch --depth=1 origin data/warshimg2
+          git archive FETCH_HEAD warshimg | tar -x -C dist/mushaf/data
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
