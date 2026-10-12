@@ -1,0 +1,39 @@
+name: Probe Shuba
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: |
+          mkdir -p /tmp/sb && cd /tmp/sb
+          curl -sL -m 60 "https://mp3quran.net/api/v3/riwayat?language=ar" -o riwayat.json
+          curl -sL -m 120 "https://mp3quran.net/api/v3/reciters?language=ar" -o reciters.json
+          python3 - <<'PY'
+          import json
+          r=json.load(open('riwayat.json')); print([x for x in r.get('riwayat',[]) if 'شعبة' in x['name']])
+          d=json.load(open('reciters.json'))
+          out=[]
+          for rc in d.get('reciters',[]):
+              for m in rc.get('moshaf',[]):
+                  if 'شعبة' in m.get('name',''): out.append({'reciter':rc['name'],'server':m['server'],'n':m['surah_total'],'name':m['name']})
+          print(len(out)); print(json.dumps(out,ensure_ascii=False,indent=1))
+          json.dump(out,open('shuba_reciters.json','w'),ensure_ascii=False,indent=1)
+          PY
+          for u in https://api.quranpedia.net https://api.quranpedia.net/v1/mushafs https://qul.tarteel.ai/resources/font https://qul.tarteel.ai/resources/quran-script https://qul.tarteel.ai/resources/mushaf-layout; do
+            echo "== $u"; curl -sL -m 40 "$u" | head -c 1500 > "$(echo $u | tr '/:' '__').txt"; head -c 300 "$(echo $u | tr '/:' '__').txt"; echo
+          done
+          curl -sL -m 40 https://qul.tarteel.ai/resources/quran-script | grep -io "shu[a-z']*[^<]\{0,80\}" | head -10 > qul_shuba.txt; cat qul_shuba.txt
+          curl -sL -m 40 https://qul.tarteel.ai/resources/mushaf-layout | grep -io "shu[a-z']*[^<]\{0,80\}" | head -10 >> qul_shuba.txt
+      - name: Push report
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/shuba; git rm -rf . -q
+          mkdir sb; cp /tmp/sb/*.txt /tmp/sb/shuba_reciters.json sb/ 2>/dev/null; git add sb; git commit -q -m probe; git push -f origin data/shuba
