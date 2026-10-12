@@ -1,0 +1,117 @@
+[
+ {
+  "id": 275,
+  "name": "مصحف عبد الرشيد صوفي برواية شعبة عن عاصم",
+  "surahs_list": "[list 114]",
+  "timing_url": null,
+  "server": "https://files.quranpedia.net/recitations/275/",
+  "rawi": {
+   "id": 9,
+   "name": "شعبة"
+  },
+  "recitation_type": {
+   "id": 1,
+   "ar_name": "مرتل"
+  },
+  "classification": {
+   "id": 2,
+   "name": "حسب الآيات"
+  }
+ },
+ {
+  "id": 9,
+  "name": "شعبة"
+ },
+ {
+  "id": 219,
+  "name": "مصحف مفتاح السلطني برواية شعبة  عن عاصم",
+  "surahs_list": "[list 77]",
+  "timing_url": null,
+  "server": "https://server14.mp3quran.net/muftah_sultany/Rewayat_Sho-bah-A-n-Asim",
+  "rawi": {
+   "id": 9,
+   "name": "شعبة"
+  },
+  "recitation_type": {
+   "id": 1,
+   "ar_name": "مرتل"
+  },
+  "classification": {
+   "id": 1,
+   "name": "حسب السور"
+  }
+ },
+ {
+  "id": 9,
+  "name": "شعبة"
+ },
+ {
+  "id": 276,
+  "name": "مصحف عبد الحكيم عبد اللطيف برواية شعبة عن عاصم",
+  "surahs_list": "[list 114]",
+  "timing_url": null,
+  "server": "https://files.quranpedia.net/recitations/276/",
+  "rawi": {
+   "id": 9,
+   "name": "شعبة"
+  },
+  "recitation_type": {
+   "id": 1,
+   "ar_name": "مرتل"
+  },
+  "classification": {
+   "id": 2,
+   "name": "حسب الآيات"
+  }
+ },
+ {
+  "id": 9,
+  "name": "شعبة"
+ },
+ {
+  "id": 329,
+  "name": "مصحف أحمد ديبان برواية شعبة  عن عاصم",
+  "surahs_list": "[list 114]",
+  "timing_url": null,
+  "server": "https://server16.mp3quran.net/deban/Rewayat-Sho-bah-A-n-Asim",
+  "rawi": {
+   "id": 9,
+   "name": "شعبة"
+  },
+  "recitation_type": {
+   "id": 1,
+   "ar_name": "مرتل"
+  },
+  "classification": {
+   "id": 1,
+   "name": "حسب السور"
+  }
+ },
+ {
+  "id": 9,
+  "name": "شعبة"
+ },
+ {
+  "id": 365,
+  "name": "مصحف علي بن عبدالرحمن الحذيفي برواية شعبة  عن عاصم",
+  "surahs_list": "[list 114]",
+  "timing_url": "https://quranpedia.net/data/timings/365.zip",
+  "server": "https://server9.mp3quran.net/hthfi/Rewayat-Sho-bah-A-n-Asim",
+  "rawi": {
+   "id": 9,
+   "name": "شعبة"
+  },
+  "recitation_type": {
+   "id": 1,
+   "ar_name": "مرتل"
+  },
+  "classification": {
+   "id": 1,
+   "name": "حسب السور"
+  }
+ },
+ {
+  "id": 9,
+  "name": "شعبة"
+ }
+]
