@@ -1,0 +1,53 @@
+name: Fetch Warsh page images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and convert
+        run: |
+          pip install pillow -q
+          mkdir -p /tmp/w && cd /tmp/w
+          B=https://android.quran.com/data/warsh
+          curl -sL -m 900 -o img.zip $B/zips/images_1024.zip
+          curl -sL -m 120 -o info.zip $B/databases/ayahinfo/ayahinfo_1024.zip
+          unzip -q -o img.zip -d img; unzip -q -o info.zip -d info
+          find info -type f | head; find img -type f | head -3; find img -type f | wc -l
+          python3 - <<'PY'
+          import sqlite3,glob,json,os,re
+          from PIL import Image
+          db=glob.glob('/tmp/w/info/**/*.db',recursive=True)[0]
+          c=sqlite3.connect(db)
+          print(c.execute("select name,sql from sqlite_master").fetchall())
+          os.makedirs('/tmp/w/out/pages',exist_ok=True); os.makedirs('/tmp/w/out/ayah',exist_ok=True)
+          rows=c.execute("select page_number,line_number,sura_number,ayah_number,min_x,min_y,max_x,max_y from glyphs order by page_number,line_number,sura_number,ayah_number,position").fetchall()
+          pg={}
+          for p,l,s,a,x1,y1,x2,y2 in rows:
+              d=pg.setdefault(p,{}); k=(l,s,a); r=d.get(k)
+              if r: r[0]=min(r[0],x1);r[1]=min(r[1],y1);r[2]=max(r[2],x2);r[3]=max(r[3],y2)
+              else: d[k]=[x1,y1,x2,y2]
+          for p,d in pg.items():
+              json.dump([[s,a,l]+v for (l,s,a),v in sorted(d.items())],open('/tmp/w/out/ayah/%03d.json'%p,'w'),separators=(',',':'))
+          print('pages with ayah info',len(pg))
+          tot=0
+          for f in glob.glob('/tmp/w/img/**/*.png',recursive=True):
+              m=re.search(r'(\d+)\.png$',f)
+              if not m: continue
+              n=int(m.group(1)); im=Image.open(f).convert('L')
+              if n==1: print('size',im.size)
+              o='/tmp/w/out/pages/%03d.webp'%n; im.save(o,'WEBP',quality=80,method=6); tot+=os.path.getsize(o)
+          print('total webp bytes',tot)
+          PY
+          du -sh out
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/warshimg2; git rm -rf . -q
+          cp -r /tmp/w/out warshimg; git add warshimg; git commit -q -m "warsh images"; git push -f origin data/warshimg2
