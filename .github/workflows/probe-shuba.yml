@@ -14,28 +14,20 @@ jobs:
       - name: Probe
         run: |
           mkdir -p /tmp/sb && cd /tmp/sb
-          curl -sL -m 60 -A "qurani-bapez (abdurahmanemran001@gmail.com)" "https://api.quranpedia.net/v1/mushafs" -o mushafs.json
-          curl -sL -m 60 -A "qurani-bapez (abdurahmanemran001@gmail.com)" "https://api.quranpedia.net/v1/reciters" -o reciters.json
-          python3 - <<'PY'
-          import json
-          m=json.load(open('mushafs.json'))
-          for x in m: print(json.dumps({k:v for k,v in x.items() if k!='description'},ensure_ascii=False))
-          r=json.load(open('reciters.json'))
-          print(type(r), len(r))
-          txt=json.dumps(r,ensure_ascii=False)
-          import re
-          out=[]
-          def walk(o):
-              if isinstance(o,dict):
-                  if any(isinstance(v,str) and 'شعبة' in v for v in o.values()): out.append({k:(v if not isinstance(v,list) else '[list %d]'%len(v)) for k,v in o.items()})
-                  for v in o.values(): walk(v)
-              elif isinstance(o,list):
-                  for v in o: walk(v)
-          walk(r); print(len(out)); print(json.dumps(out[:12],ensure_ascii=False,indent=1))
-          json.dump(out,open('shuba_reciters2.json','w'),ensure_ascii=False,indent=1)
-          PY
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sIL -m 30 -A "$A" https://quranpedia.net/api-quran-svg/shubah.zip | grep -i "^HTTP\|content-length\|content-type" 
+          curl -sL -m 600 -A "$A" -o shubah.zip https://quranpedia.net/api-quran-svg/shubah.zip; ls -l shubah.zip
+          mkdir x && cd x && unzip -q ../shubah.zip; find . -type f | head -8; find . -type f | wc -l; du -sh .
+          F=$(find . -name "*.svg" | sort | sed -n 5p); echo "FILE $F"; ls -l "$F"; head -c 2500 "$F" > ../sample.txt; head -c 1500 "$F"
+          cd /tmp/sb
+          curl -sL -m 60 -A "$A" "https://api.quranpedia.net/v1/mushafs/9/2/5" -o ayah.json; head -c 1500 ayah.json
+          curl -sL -m 60 -A "$A" "https://api.quranpedia.net/v1/reciters" | python3 -c "
+          import json,sys
+          r=json.load(sys.stdin)
+          print(json.dumps(r[0],ensure_ascii=False)[:1500])
+          " 
       - name: Push report
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan data/shuba2; git rm -rf . -q
-          mkdir sb; cp /tmp/sb/mushafs.json /tmp/sb/shuba_reciters2.json sb/; git add sb; git commit -q -m probe; git push -f origin data/shuba2
+          git checkout --orphan data/shuba3; git rm -rf . -q
+          mkdir sb; cp /tmp/sb/sample.txt /tmp/sb/ayah.json sb/; git add sb; git commit -q -m probe; git push -f origin data/shuba3
