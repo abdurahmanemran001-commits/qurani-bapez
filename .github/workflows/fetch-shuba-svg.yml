@@ -1,0 +1,30 @@
+name: Fetch Shuba SVG pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          mkdir -p /tmp/s && cd /tmp/s
+          curl -sL -m 900 -A "qurani-bapez (abdurahmanemran001@gmail.com)" -o shubah.zip https://quranpedia.net/api-quran-svg/shubah.zip
+          ls -l shubah.zip
+          mkdir x && cd x && unzip -q ../shubah.zip
+          find . -type f | sort | head -5 > ../list.txt; find . -type f | wc -l >> ../list.txt; du -sh . >> ../list.txt
+          find . -type f -printf "%s %p\n" | sort -n | sed -n '1p;$p' >> ../list.txt
+          cat ../list.txt
+      - name: Push data
+        run: |
+          cd /tmp/s
+          mkdir -p out; cp list.txt out/; cp -r x out/svg
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/shubasvg; git rm -rf . -q
+          cp -r /tmp/s/out shubasvg; git add shubasvg; git commit -q -m "shuba svg"; git push -f origin data/shubasvg
