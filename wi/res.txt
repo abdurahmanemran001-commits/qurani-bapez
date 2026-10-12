@@ -1,0 +1,23 @@
+https://android.quran.com/data/warsh/zips/images_1024.zip 200 174332002
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1024.zip 200 289248
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1024.db 404 
+https://android.quran.com/data/warsh/width_1024/page001.png 200 45359
+https://android.quran.com/data/warsh/zips/images_1280.zip 404 
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1280.zip 404 
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1280.db 404 
+https://android.quran.com/data/warsh/width_1280/page001.png 404 
+https://android.quran.com/data/warsh/zips/images_1260.zip 200 235361511
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1260.zip 200 286492
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_1260.db 404 
+https://android.quran.com/data/warsh/width_1260/page001.png 200 60780
+https://android.quran.com/data/warsh/zips/images_800.zip 200 123647673
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_800.zip 200 283899
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo_800.db 404 
+https://android.quran.com/data/warsh/width_800/page001.png 200 25906
+https://android.quran.com/data/warsh/zips/images.zip 404 
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo.zip 404 
+https://android.quran.com/data/warsh/databases/ayahinfo/ayahinfo.db 404 
+https://android.quran.com/data/warsh/width/page001.png 404 
+https://android.quran.com/data/warsh/ 200
+https://android.quran.com/data/databases/audio/ 404
+https://android.quran.com/data/warsh/databases/audio/ 404
