@@ -38,10 +38,11 @@ document.addEventListener('click',function(ev){var t=ev.target;while(t&&!(t.clas
 window.hl=function(s,a){document.querySelectorAll('.ayah.audioActive').forEach(function(e){e.classList.remove('audioActive');});if(!s)return false;var l=document.querySelectorAll('.ayah[data-sura="'+s+'"][data-ayah="'+a+'"]');l.forEach(function(e){e.classList.add('audioActive');});return l.length>0;};
 var tx=0,ty=0;document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 document.addEventListener('touchend',function(e){var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy))parent.postMessage({swipe:dx>0?1:-1},'*');},{passive:true});
-if(mode==='w'){
+if(mode==='w'||mode==='s'){
+ var idir=mode==='s'?'shubaimg':'warshimg';
  css("body.wi{margin:0;background:#fffdf5;display:flex;justify-content:center;overflow:hidden}#wp{position:relative;line-height:0}#wp img{width:100%;height:auto;mix-blend-mode:multiply;display:block;user-select:none;-webkit-user-drag:none}#wp .ayah{position:absolute;border-radius:6px;cursor:pointer;mix-blend-mode:multiply}#wp .ayah.audioActive{background:rgba(120,200,160,.45)}#wp .ayah.selected{background:rgba(255,213,79,.5)}");
  document.body.className='wi';
- Promise.all([fetch('data/warshimg/ayah/'+n+'.json').then(function(r){return r.json()}),new Promise(function(ok,no){var im=new Image();im.onload=function(){ok(im)};im.onerror=no;im.src='data/warshimg/pages/'+n+'.webp';})]).then(function(r){
+ Promise.all([fetch('data/'+idir+'/ayah/'+n+'.json').then(function(r){return r.json()}),new Promise(function(ok,no){var im=new Image();im.onload=function(){ok(im)};im.onerror=no;im.src='data/'+idir+'/pages/'+n+'.webp';})]).then(function(r){
   var im=r[1],W=im.naturalWidth,H=im.naturalHeight,wp=document.createElement('div');wp.id='wp';wp.appendChild(im);
   r[0].forEach(function(a){var d=document.createElement('div');d.className='ayah';d.dataset.sura=a[0];d.dataset.ayah=a[1];
    d.style.cssText='left:'+(a[3]/W*100)+'%;top:'+(a[4]/H*100)+'%;width:'+((a[5]-a[3])/W*100)+'%;height:'+((a[6]-a[4])/H*100)+'%';wp.appendChild(d);});
