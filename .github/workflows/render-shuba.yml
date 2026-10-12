@@ -1,0 +1,27 @@
+name: Render Shuba page images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render
+        run: |
+          pip install pillow playwright -q
+          playwright install chromium --with-deps > /dev/null 2>&1
+          git fetch --depth=1 origin data/shubasvg
+          mkdir -p /tmp/svg && git archive FETCH_HEAD shubasvg/svg | tar -x -C /tmp/svg
+          python3 tools/shuba_render.py /tmp/svg/shubasvg/svg /tmp/out
+          cp /tmp/svg/shubasvg/svg/mushaf-content.json /tmp/out/
+          du -sh /tmp/out
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/shubaimg; git rm -rf . -q
+          cp -r /tmp/out shubaimg; git add shubaimg; git commit -q -m "shuba images"; git push -f origin data/shubaimg
