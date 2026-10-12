@@ -14,14 +14,14 @@ jobs:
       - name: Probe
         run: |
           mkdir -p /tmp/wi && cd /tmp/wi && : > res.txt
-          B=http://android.quran.com/data
-          for w in _1024 _1280 _1260 _800 _1920 _1440 ""; do
+          B=https://android.quran.com/data
+          for w in _1024 _1280 _1260 _800 ""; do
             for u in "$B/warsh/zips/images$w.zip" "$B/warsh/databases/ayahinfo/ayahinfo$w.zip" "$B/warsh/databases/ayahinfo/ayahinfo$w.db" "$B/warsh/width$w/page001.png"; do
-              echo "$u $(curl -s -m 40 -I -o /dev/null -w '%{http_code} %header{content-length}' $u)" >> res.txt
+              echo "$u $(curl -sL -m 40 -I -o /dev/null -w '%{http_code} %header{content-length}' $u)" >> res.txt
             done
           done
           for u in "$B/warsh/" "$B/databases/audio/" "$B/warsh/databases/audio/"; do
-            echo "$u $(curl -s -m 30 -I -o /dev/null -w '%{http_code}' $u)" >> res.txt
+            echo "$u $(curl -sL -m 30 -I -o /dev/null -w '%{http_code}' $u)" >> res.txt
           done
           cat res.txt
       - name: Push report
