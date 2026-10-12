@@ -32,7 +32,7 @@ header button{background:#e8f3ee;cursor:pointer}
  <select id="sura"></select>
  <div id="modes">
   <button data-m="q">مەدینە تەجوید</button>
-  <button data-m="w" hidden>وەرش</button>
+  <button data-m="w">وەرش</button>
   <button data-m="t">تەجوید</button>
  </div>
 </header>
@@ -47,8 +47,8 @@ pp=document.getElementById('pp');pa=document.getElementById('pa');pn=document.ge
 var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementById('pg'),sel=document.getElementById('sura');
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-mode=ld('m','q');if(mode==='w')mode='q';page=+ld('p',1)||1;
-var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qt'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
+mode=ld('m','q');page=+ld('p',1)||1;
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwt'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
