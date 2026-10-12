@@ -1,0 +1,36 @@
+name: Fetch Shuba audio timings
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch
+        run: |
+          mkdir -p /tmp/t && cd /tmp/t
+          for s in $(seq 1 114); do
+            curl -sL -m 60 "https://mp3quran.net/api/v3/ayat_timing?surah=$s&read=305" -o raw$s.json
+          done
+          python3 - <<'PY'
+          import json,os
+          out={}
+          for s in range(1,115):
+              try: d=json.load(open('/tmp/t/raw%d.json'%s))
+              except Exception as e: print('bad',s,e); continue
+              out[s]=[[x['ayah'],x['start_time'],x['end_time']] for x in d]
+          print(len(out), sum(len(v) for v in out.values()))
+          json.dump(out,open('/tmp/t/timing.json','w'),separators=(',',':'))
+          PY
+          for f in 001 002 114; do echo "$f $(curl -sIL -m 30 -o /dev/null -w '%{http_code} %header{content-length}' https://cdn.mp3quran.net/audio/ali-hudhaifi/r3/$f.mp3)"; done > audio_check.txt; cat audio_check.txt
+      - name: Push data
+        run: |
+          mkdir -p /tmp/o; cp /tmp/t/timing.json /tmp/t/audio_check.txt /tmp/o/
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/shubatiming; git rm -rf . -q
+          cp -r /tmp/o shubatiming; git add shubatiming; git commit -q -m "shuba timing"; git push -f origin data/shubatiming
