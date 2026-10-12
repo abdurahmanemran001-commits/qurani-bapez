@@ -40,9 +40,9 @@ jobs:
           for f in glob.glob('/tmp/w/img/**/*.png',recursive=True):
               m=re.search(r'(\d+)\.png$',f)
               if not m: continue
-              n=int(m.group(1)); im=Image.open(f).convert('L')
+              n=int(m.group(1)); im=Image.open(f).convert('RGBA'); bg=Image.new('RGBA',im.size,(255,255,255,255)); bg.alpha_composite(im); im=bg.convert('L')
               if n==1: print('size',im.size)
-              o='/tmp/w/out/pages/%03d.webp'%n; im.save(o,'WEBP',quality=80,method=6); tot+=os.path.getsize(o)
+              o='/tmp/w/out/pages/%03d.webp'%n; im.save(o,'WEBP',quality=55,method=6); tot+=os.path.getsize(o)
           print('total webp bytes',tot)
           PY
           du -sh out
