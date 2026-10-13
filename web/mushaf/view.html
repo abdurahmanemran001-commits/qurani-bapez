@@ -53,9 +53,10 @@ if(mode==='w'||mode==='s'||mode==='k'){
  }).catch(function(){document.body.innerHTML='<p style="text-align:center;margin-top:40vh;font-family:sans-serif">پەڕەکە بارنەکرا</p>';});
  return;
 }
-if(mode==='b'){
- Promise.all([fetch('data/qunbul/pages/'+n+'.json').then(function(r){return r.json()}),fetch('data/qunbul/meta.json').then(function(r){return r.json()})]).then(function(r){
-  css("@font-face{font-family:QB;src:url('data/qunbul/qunbul.otf')}body.qb{margin:0;padding:6px 10px;background:#fffdf5;overflow:hidden;color:#1b1b1b}#qt{font-family:QB,serif;direction:rtl;text-align:justify;text-align-last:center;line-height:2.1;font-size:28px}#qt .qh{text-align:center;color:#6f5720;background:#f1e6c4;border:1px solid #b99a4b;border-radius:10px;margin:4px 0;line-height:1.7;font-size:1.05em}#qt .qbs{text-align:center;line-height:1.8}#qt .ayah{display:inline;border-radius:5px;cursor:pointer}#qt .end{display:inline-block;min-width:1.5em;height:1.5em;line-height:1.5em;text-align:center;border:1px solid #b99a4b;border-radius:50%;font-size:.6em;color:#6f5720;margin:0 .2em;font-family:serif;vertical-align:middle}");
+if(mode==='b'||mode==='z'){
+ var qd=mode==='z'?'bazzi':'qunbul';
+ Promise.all([fetch('data/'+qd+'/pages/'+n+'.json').then(function(r){return r.json()}),fetch('data/'+qd+'/meta.json').then(function(r){return r.json()})]).then(function(r){
+  css("@font-face{font-family:QB;src:url('data/"+qd+"/"+qd+".otf')}body.qb{margin:0;padding:6px 10px;background:#fffdf5;overflow:hidden;color:#1b1b1b}#qt{font-family:QB,serif;direction:rtl;text-align:justify;text-align-last:center;line-height:2.1;font-size:28px}#qt .qh{text-align:center;color:#6f5720;background:#f1e6c4;border:1px solid #b99a4b;border-radius:10px;margin:4px 0;line-height:1.7;font-size:1.05em}#qt .qbs{text-align:center;line-height:1.8}#qt .ayah{display:inline;border-radius:5px;cursor:pointer}#qt .end{display:inline-block;min-width:1.5em;height:1.5em;line-height:1.5em;text-align:center;border:1px solid #b99a4b;border-radius:50%;font-size:.6em;color:#6f5720;margin:0 .2em;font-family:serif;vertical-align:middle}");
   document.body.className='pg qb';var qt=document.createElement('div');qt.id='qt';var h='';
   r[0].forEach(function(a){
    if(a[1]===1){h+='<div class="qh">'+r[1].names[a[0]-1]+'</div>';if(a[0]!==1&&a[0]!==9)h+='<div class="qbs">'+r[1].bismillah+'</div>';}
