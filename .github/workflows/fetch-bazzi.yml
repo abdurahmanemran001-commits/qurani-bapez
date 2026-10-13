@@ -1,0 +1,58 @@
+name: Fetch Bazzi data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch and build
+        run: |
+          mkdir -p /tmp/o && cd /tmp
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/mushafs/5 -o m5.json
+          curl -sL -m 120 -A "$A" -o /tmp/o/bazzi.otf https://quranpedia.net/assets/fonts/arabic/UthmanicBazzi1Ver06.otf
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/reciters -o qp.json
+          curl -sL -m 120 https://mp3quran.net/api/v3/reciters?language=ar -o mp.json
+          ls -l m5.json /tmp/o/bazzi.otf
+          python3 "$GITHUB_WORKSPACE/tools/build_qunbul.py" m5.json /tmp/o
+          python3 - <<'PY'
+          import json,subprocess
+          qp=json.load(open('/tmp/qp.json'))
+          hits=[]
+          def walk(o):
+              if isinstance(o,dict):
+                  r=o.get('rawi')
+                  if isinstance(r,dict) and r.get('name')=='البزي': hits.append({k:o[k] for k in ('id','name','server','timing_url','classification') if k in o})
+                  else:
+                      for v in o.values(): walk(v)
+              elif isinstance(o,list):
+                  for v in o: walk(v)
+          walk(qp); print('quranpedia bazzi',json.dumps(hits,ensure_ascii=False))
+          mp=json.load(open('/tmp/mp.json'))['reciters']
+          m=[(r['id'],r['name'],mo['server'],mo['surah_total']) for r in mp for mo in r['moshaf'] if 'البزي' in mo['name']]
+          print('mp3quran bazzi',m)
+          out={}
+          for rid,name,server,n in m:
+              if rid!=296: continue
+              t={}
+              for s in range(1,115):
+                  p=subprocess.run(['curl','-sL','-m','60','https://mp3quran.net/api/v3/ayat_timing?surah=%d&read=%d'%(s,rid)],capture_output=True,text=True)
+                  try: t[s]=[[a['ayah'],a['start_time'],a['end_time']] for a in json.loads(p.stdout)]
+                  except Exception: print('bad',s)
+              print(rid,name,server,n,'ayahs',sum(len(v) for v in t.values()))
+              json.dump(t,open('/tmp/o/t%d.json'%rid,'w'),separators=(',',':'))
+              out={'id':rid,'n':name,'server':server}
+          json.dump({'quranpedia':hits,'mp':out},open('/tmp/o/meta2.json','w'),ensure_ascii=False)
+          PY
+          du -sh /tmp/o
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/bazzidata; git rm -rf . -q
+          cp -r /tmp/o bazzi; git add bazzi; git commit -q -m "bazzi data"; git push -f origin data/bazzidata
