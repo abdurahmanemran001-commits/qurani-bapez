@@ -14,7 +14,7 @@ jobs:
       - name: Probe
         run: |
           mkdir -p /tmp/q && cd /tmp/q && : > res.txt
-          B=https://files.quranpedia.net/recitations/269
+          B=https://files.quranpedia.net/recitations/268
           for f in "" 001001.mp3 1/1.mp3 001/001.mp3 001_001.mp3 1_1.mp3 43576.mp3 43577.mp3 001001.mp3 002001.mp3 114006.mp3 1.mp3 001.mp3 index.json; do
             echo "$B/$f $(curl -sIL -m 30 -o /dev/null -w '%{http_code} %{content_type} %header{content-length}' $B/$f)" >> res.txt
           done
@@ -27,5 +27,5 @@ jobs:
       - name: Push report
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
-          git checkout --orphan data/qunbul2; git rm -rf . -q
-          mkdir qb; cp /tmp/q/res.txt qb/; git add qb; git commit -q -m probe; git push -f origin data/qunbul2
+          git checkout --orphan data/bazziaudio; git rm -rf . -q
+          mkdir qb; cp /tmp/q/res.txt qb/; git add qb; git commit -q -m probe; git push -f origin data/bazziaudio
