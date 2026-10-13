@@ -1,0 +1,44 @@
+name: Fetch Douri text
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch and build
+        run: |
+          mkdir -p /tmp/o && cd /tmp
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/mushafs -o list.json
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/mushafs/6 -o m6.json
+          curl -sL -m 120 -A "$A" -o /tmp/o/douri.ttf https://quranpedia.net/assets/fonts/arabic/UthmanicDouri_V20.ttf
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/reciters -o qp.json
+          ls -l m6.json /tmp/o/douri.ttf
+          python3 "$GITHUB_WORKSPACE/tools/build_qunbul.py" m6.json /tmp/o
+          python3 - <<'PY'
+          import json
+          qp=json.load(open('/tmp/qp.json'))
+          hits=[]
+          def walk(o):
+              if isinstance(o,dict):
+                  r=o.get('rawi')
+                  if isinstance(r,dict) and 'دوري' in (r.get('name') or ''): hits.append({k:o[k] for k in o if k in ('id','name','server','timing_url','classification','mushaf_id')})
+                  else:
+                      for v in o.values(): walk(v)
+              elif isinstance(o,list):
+                  for v in o: walk(v)
+          walk(qp)
+          json.dump({'quranpedia':hits},open('/tmp/o/meta2.json','w'),ensure_ascii=False)
+          print(len(hits))
+          PY
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/douridata; git rm -rf . -q
+          cp -r /tmp/o douri; git add douri; git commit -q -m "douri text"; git push -f origin data/douridata
