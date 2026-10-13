@@ -44,6 +44,8 @@ jobs:
           git archive FETCH_HEAD qaloonimg | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/qaloontiming
           git archive FETCH_HEAD qaloontiming | tar -x -C dist/mushaf/data
+          git fetch --depth=1 origin data/qunbuldata
+          git archive FETCH_HEAD qunbul | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/shubatiming
           git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
 

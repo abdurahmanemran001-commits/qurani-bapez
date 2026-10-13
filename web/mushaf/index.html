@@ -36,6 +36,7 @@ header button{background:#e8f3ee;cursor:pointer}
   <button data-m="w">وەرش</button>
   <button data-m="s">شوعبە</button>
   <button data-m="k">قالون</button>
+  <button data-m="b">قونبول</button>
   <button data-m="t">تەجوید</button>
  </div>
 </header>
@@ -51,7 +52,7 @@ var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementBy
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 mode=ld('m','q');page=+ld('p',1)||1;
-var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtsk'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtskb'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
@@ -78,7 +79,8 @@ fetch('starts.json').then(function(r){return r.json()}).then(function(s){S=s;
 var C=[7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6],R=[],au=new Audio(),cur=null,playing=false;
 function pad(n,l){return ('000'+n).slice(-l);}
 function frameHl(){try{return f.contentWindow.hl(cur&&cur[0],cur&&cur[1],cur&&cur.slice(2));}catch(e){return false;}}
-var QM=null,cq=0;function h2q(s,a){return QM?QM.h2q[s-1][a-1]:a;}
+var QM=null,cq=0,QBC=null;fetch('data/qunbul/meta.json').then(function(r){return r.json()}).then(function(j){QBC=j.counts;}).catch(function(){});
+function CC(s){return mode==='b'&&QBC?QBC[s-1]:C[s-1];}function h2q(s,a){return QM?QM.h2q[s-1][a-1]:a;}
 var TT={},AUD={s:{n:'عەلی حوزەیفی (شوعبە)',t:'data/shubatiming/timing.json',u:function(s){return 'https://cdn.mp3quran.net/audio/ali-hudhaifi/r3/'+pad(s,3)+'.mp3';}},k:{n:'دوکالی (قالون)',t:'data/qaloontiming/t208.json',u:function(s){return 'https://cdn.mp3quran.net/audio/dokali-alim/r1/'+pad(s,3)+'.mp3';}}};
 function isG(){return mode==='s'||mode==='k';}
 function tm(s,a){var t=TT[mode],l=t&&t[s];if(!l)return null;for(var i=0;i<l.length;i++)if(l[i][0]===a)return l[i];return null;}
@@ -90,7 +92,7 @@ function mark(s,a,turn,more,q){
  if(!frameHl()&&turn){page=Math.max(1,Math.min(604,page+turn));show();}
 }
 function setCur(s,a,play){mark(s,a,play?1:0);if(play)start();}
-function url(){return 'https://everyayah.com/data/'+rc.value+'/'+pad(cur[0],3)+pad(cur[1],3)+'.mp3';}
+function url(){return (mode==='b'?'https://files.quranpedia.net/recitations/269/':'https://everyayah.com/data/'+rc.value+'/')+pad(cur[0],3)+pad(cur[1],3)+'.mp3';}
 function ok(){playing=true;pp.textContent='⏸';}
 function bad(){playing=false;pp.textContent='▶';}
 function start(){
@@ -101,7 +103,7 @@ function start(){
 function step(d){
  if(!cur)return;var s=cur[0],a=cur[1]+d;
  if(mode==='k'&&QM){var q=(cq||h2q(s,cur[1]))+d,qn=QM.q2h[s-1].length;if(q>qn){s++;q=1;}else if(q<1){s--;if(s<1)return;q=QM.q2h[s-1].length;}if(s>114)return;var hs=QM.q2h[s-1][q-1];mark(s,hs[0],d>0?1:-1,hs.slice(1),q);if(playing)start();return;}
- if(a>C[s-1]){s++;a=1;}else if(a<1){s--;if(s<1)return;a=C[s-1];}
+ if(a>CC(s)){s++;a=1;}else if(a<1){s--;if(s<1)return;a=CC(s);}
  if(s>114)return;mark(s,a,d>0?1:-1);if(playing)start();
 }
 au.ontimeupdate=function(){
@@ -110,16 +112,16 @@ au.ontimeupdate=function(){
 };
 au.onended=function(){
  if(isG()){if(cur[0]===114){bad();return;}setCur(cur[0]+1,1,true);return;}
- if(cur[0]===114&&cur[1]===C[113]){bad();return;}step(1);
+ if(cur[0]===114&&cur[1]===CC(114)){bad();return;}step(1);
 };
 pp.onclick=function(){if(!cur)return;if(playing){au.pause();bad();}else if(isG()){start();}else{if(au.src&&au.src===url()){au.play();ok();}else start();}};
 pn.onclick=function(){step(1)};pa.onclick=function(){step(-1)};
 px.onclick=function(){au.pause();bad();cur=null;frameHl();document.getElementById('pl').classList.remove('on');};
-rc.onchange=function(){if(!isG())sv('rc',rc.value);if(cur&&playing)start();};
+rc.onchange=function(){if(!isG()&&mode!=='b')sv('rc',rc.value);if(cur&&playing)start();};
 function fillReciters(){
- rc.innerHTML='';var l=isG()?[{id:mode,n:AUD[mode].n}]:R;
+ rc.innerHTML='';var l=isG()?[{id:mode,n:AUD[mode].n}]:mode==='b'?[{id:'q269',n:'محمد عبدالحکیم (قنبل)'}]:R;
  l.forEach(function(r){var o=document.createElement('option');o.value=r.id;o.textContent=r.n;rc.appendChild(o);});
- if(!isG()){var v=ld('rc','');if(v)rc.value=v;}
+ if(!isG()&&mode!=='b'){var v=ld('rc','');if(v)rc.value=v;}
 }
 fetch('reciters.json').then(function(r){return r.json()}).then(function(l){R=l;fillReciters();});
 </script></body></html>
