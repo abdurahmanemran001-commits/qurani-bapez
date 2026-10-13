@@ -40,6 +40,8 @@ jobs:
           git fetch --depth=1 origin data/shubaimg
           git archive FETCH_HEAD shubaimg | tar -x -C dist/mushaf/data
           rm -f dist/mushaf/data/shubaimg/mushaf-content.json
+          git fetch --depth=1 origin data/qaloonimg
+          git archive FETCH_HEAD qaloonimg | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/shubatiming
           git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
 

@@ -35,6 +35,7 @@ header button{background:#e8f3ee;cursor:pointer}
   <button data-m="q">مەدینە تەجوید</button>
   <button data-m="w">وەرش</button>
   <button data-m="s">شوعبە</button>
+  <button data-m="k">قالون</button>
   <button data-m="t">تەجوید</button>
  </div>
 </header>
@@ -50,7 +51,7 @@ var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementBy
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 mode=ld('m','q');page=+ld('p',1)||1;
-var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwts'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtsk'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
@@ -79,6 +80,7 @@ function pad(n,l){return ('000'+n).slice(-l);}
 function frameHl(){try{var ok=f.contentWindow.hl(cur&&cur[0],cur&&cur[1]);return ok;}catch(e){return false;}}
 var T=null,SB={id:'shuba',n:'عەلی حوزەیفی (شوعبە)'};
 function isS(){return mode==='s';}
+function isK(){return mode==='k';}
 function tm(s,a){var l=T&&T[s];if(!l)return null;for(var i=0;i<l.length;i++)if(l[i][0]===a)return l[i];return null;}
 function surahUrl(s){return 'https://cdn.mp3quran.net/audio/ali-hudhaifi/r3/'+pad(s,3)+'.mp3';}
 function ensureT(cb){if(T)return cb();fetch('data/shubatiming/timing.json').then(function(r){return r.json()}).then(function(j){T=j;cb();});}
@@ -114,7 +116,7 @@ pn.onclick=function(){step(1)};pa.onclick=function(){step(-1)};
 px.onclick=function(){au.pause();bad();cur=null;frameHl();document.getElementById('pl').classList.remove('on');};
 rc.onchange=function(){if(!isS())sv('rc',rc.value);if(cur&&playing)start();};
 function fillReciters(){
- rc.innerHTML='';var l=isS()?[SB]:R;
+ rc.innerHTML='';rc.style.display=pp.style.display=isK()?'none':'';var l=isS()?[SB]:R;
  l.forEach(function(r){var o=document.createElement('option');o.value=r.id;o.textContent=r.n;rc.appendChild(o);});
  if(!isS()){var v=ld('rc','');if(v)rc.value=v;}
 }
