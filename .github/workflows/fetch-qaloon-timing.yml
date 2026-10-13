@@ -1,0 +1,52 @@
+name: Fetch Qaloon audio timings
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch
+        run: |
+          mkdir -p /tmp/t /tmp/o && cd /tmp/t
+          curl -sL -m 60 "https://mp3quran.net/api/v3/ayat_timing/reads" -o reads.json
+          curl -sL -m 120 "https://mp3quran.net/api/v3/reciters?language=ar" -o reciters.json
+          python3 - <<'PY'
+          import json,subprocess
+          reads=json.load(open('/tmp/t/reads.json'))
+          reads=reads if isinstance(reads,list) else reads.get('reads',reads)
+          print(type(reads), reads[:2] if isinstance(reads,list) else list(reads)[:3])
+          rec=json.load(open('/tmp/t/reciters.json'))['reciters']
+          meta=[]
+          for r in reads:
+              if 'قالون' not in json.dumps(r,ensure_ascii=False): continue
+              rid=r['id']
+              m=[(x,mo) for x in rec if x['id']==rid for mo in x['moshaf'] if 'قالون' in mo['name']]
+              print('read',rid,r.get('name'),'-> reciter match',len(m))
+              if not m: continue
+              x,mo=m[0]
+              out={}
+              ok=True
+              for s in range(1,115):
+                  p=subprocess.run(['curl','-sL','-m','60','https://mp3quran.net/api/v3/ayat_timing?surah=%d&read=%d'%(s,rid)],capture_output=True,text=True)
+                  try: d=json.loads(p.stdout); out[s]=[[a['ayah'],a['start_time'],a['end_time']] for a in d]
+                  except Exception as e: ok=False; print('bad',rid,s)
+              n=sum(len(v) for v in out.values())
+              print(rid,x['name'],mo['server'],mo['surah_total'],'ayahs',n,'ok',ok)
+              if n>=6000:
+                  json.dump(out,open('/tmp/o/t%d.json'%rid,'w'),separators=(',',':'))
+                  meta.append({'id':rid,'n':x['name'],'server':mo['server'],'list':mo['surah_list']})
+          json.dump(meta,open('/tmp/o/meta.json','w'),ensure_ascii=False)
+          print(json.dumps(meta,ensure_ascii=False)[:800])
+          PY
+          ls -l /tmp/o
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/qaloontiming; git rm -rf . -q
+          cp -r /tmp/o qaloontiming; git add qaloontiming; git commit -q -m "qaloon timing"; git push -f origin data/qaloontiming
