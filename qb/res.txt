@@ -1,0 +1,14 @@
+https://files.quranpedia.net/recitations/269/ 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/001001.mp3 200 audio/mpeg 34944
+https://files.quranpedia.net/recitations/269/1/1.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/001/001.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/001_001.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/1_1.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/43576.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/43577.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/001001.mp3 200 audio/mpeg 34944
+https://files.quranpedia.net/recitations/269/002001.mp3 200 audio/mpeg 243798
+https://files.quranpedia.net/recitations/269/114006.mp3 200 audio/mpeg 50074
+https://files.quranpedia.net/recitations/269/1.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/001.mp3 404 text/plain;charset=UTF-8 
+https://files.quranpedia.net/recitations/269/index.json 404 text/plain;charset=UTF-8 
