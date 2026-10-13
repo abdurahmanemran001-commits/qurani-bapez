@@ -1,0 +1,63 @@
+name: Fetch Douri data
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch zip and render
+        run: |
+          pip install pillow playwright -q
+          playwright install chromium --with-deps > /dev/null 2>&1
+          mkdir -p /tmp/d /tmp/out && cd /tmp/d
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sL -m 900 -A "$A" -o douri.zip https://quranpedia.net/api-quran-svg/douri.zip
+          ls -l douri.zip; mkdir x && cd x && unzip -q ../douri.zip; ls | head -4; ls | wc -l
+          cd "$GITHUB_WORKSPACE"
+          python3 tools/shuba_render.py /tmp/d/x /tmp/out
+          du -sh /tmp/out
+      - name: Counts and timing
+        run: |
+          cd /tmp/d
+          curl -sL -m 90 https://mp3quran.net/api/v3/reciters?language=ar -o mp.json
+          curl -sL -m 60 https://mp3quran.net/api/v3/ayat_timing/reads -o reads.json
+          python3 - <<'PY'
+          import json,glob,subprocess,collections
+          cnt=collections.defaultdict(int)
+          for f in glob.glob('/tmp/out/ayah/*.json'):
+              for s,a,*_ in json.load(open(f)): cnt[s]=max(cnt[s],a)
+          counts=[cnt[s] for s in range(1,115)]
+          print('douri counts',sum(counts),counts[:5])
+          mp=json.load(open('/tmp/d/mp.json'))['reciters']
+          reads=json.load(open('/tmp/d/reads.json')); reads=reads if isinstance(reads,list) else reads.get('reads',[])
+          rid=[r['id'] for r in reads if 'الدوري' in json.dumps(r,ensure_ascii=False)]
+          print('timing reads douri',rid)
+          meta=[]
+          for x in mp:
+              for m in x['moshaf']:
+                  if 'الدوري' in m['name'] and 'أبي عمرو' in m['name']: print(x['id'],x['name'],m['name'],m['server'],m['surah_total'],x['id'] in rid)
+                  if 'الدوري' in m['name'] and x['id'] in rid: meta.append({'id':x['id'],'n':x['name'],'server':m['server']})
+          for r in meta:
+              t={}
+              for s in range(1,115):
+                  p=subprocess.run(['curl','-sL','-m','60','https://mp3quran.net/api/v3/ayat_timing?surah=%d&read=%d'%(s,r['id'])],capture_output=True,text=True)
+                  try: t[s]=[[a['ayah'],a['start_time'],a['end_time']] for a in json.loads(p.stdout)]
+                  except Exception: print('bad',s)
+              n=sum(len(v) for v in t.values()); tc={s:max([x[0] for x in v] or [0]) for s,v in t.items()}
+              diff=[(s,tc[s],counts[s-1]) for s in range(1,115) if tc[s]!=counts[s-1]]
+              print('timing',r,n,'diff',len(diff),diff[:8])
+              json.dump(t,open('/tmp/out/t%d.json'%r['id'],'w'),separators=(',',':'))
+          json.dump({'counts':counts,'audio':meta},open('/tmp/out/meta.json','w'),ensure_ascii=False)
+          PY
+          ls /tmp/out | head
+      - name: Push data
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/douriimg; git rm -rf . -q
+          cp -r /tmp/out douri; git add douri; git commit -q -m "douri data"; git push -f origin data/douriimg
