@@ -1,0 +1,51 @@
+name: Probe Qunbul
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: |
+          mkdir -p /tmp/q && cd /tmp/q
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sL -m 90 -A "$A" https://mp3quran.net/api/v3/reciters?language=ar -o mp.json
+          curl -sL -m 90 -A "$A" https://api.quranpedia.net/v1/reciters -o qp.json
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/mushafs/8 -o m8.json
+          ls -l
+          python3 - <<'PY'
+          import json
+          out={}
+          mp=json.load(open('/tmp/q/mp.json'))['reciters']
+          out['mp3quran']=[{'id':r['id'],'name':r['name'],'moshaf':[{'name':m['name'],'server':m['server'],'n':m['surah_total']} for m in r['moshaf'] if 'قنبل' in m['name'] or 'ابن كثير' in m['name'] or 'البزي' in m['name']]} for r in mp if any('قنبل' in m['name'] for m in r['moshaf'])]
+          qp=json.load(open('/tmp/q/qp.json'))
+          hits=[]
+          def walk(o,path=''):
+              if isinstance(o,dict):
+                  s=json.dumps(o,ensure_ascii=False)
+                  if 'قنبل' in s and len(s)<3000: hits.append(o)
+                  else:
+                      for v in o.values(): walk(v)
+              elif isinstance(o,list):
+                  for v in o: walk(v)
+          walk(qp)
+          out['quranpedia']=hits[:10]
+          m8=json.load(open('/tmp/q/m8.json'))
+          out['m8_keys']=list(m8.keys()) if isinstance(m8,dict) else type(m8).__name__
+          sur=m8.get('surahs') if isinstance(m8,dict) else None
+          if sur:
+              a=sur[0]['ayahs'][0]; out['m8_sample']=a; out['m8_n']=sum(len(s['ayahs']) for s in sur); out['m8_pages']=max(a['page_number'] for s in sur for a in s['ayahs'])
+          print(json.dumps(out,ensure_ascii=False,indent=1)[:6000])
+          json.dump(out,open('/tmp/q/out.json','w'),ensure_ascii=False,indent=1)
+          PY
+      - name: Push report
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/qunbul; git rm -rf . -q
+          mkdir qb; cp /tmp/q/out.json /tmp/q/m8.json qb/; git add qb; git commit -q -m probe; git push -f origin data/qunbul
