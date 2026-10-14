@@ -1,0 +1,8 @@
+currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=1&qareeid=0&sorafrom=2&sorato=2&ayafrom=0&ayato=0&page=qplayer -> ['003'] 6826 [('6', '2'), ('7', '2'), ('8', '2')]
+currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&qareeid=0&sorafrom=2&sorato=2&ayafrom=0&ayato=0&page=qplayer -> ['003'] 6826 [('6', '2'), ('7', '2'), ('8', '2')]
+currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&qareeid=0&sorafrom=2&sorato=3&ayafrom=0&ayato=0&page=qplayer&action=getplaylist -> ['003'] 8634 [('6', '2'), ('7', '2'), ('8', '2')]
+currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&page=qplayer -> ['003'] 6826 [('6', '2'), ('7', '2'), ('8', '2')]
+currentpage=3&rewayano=13&sorano=2&ayano=8 -> [] 0 []
+currentpage=3&rewayano=13&sorano=0&currentsora=0&currentaya=0&page=qplayer -> ['003'] 6814 [('6', '2'), ('7', '2'), ('8', '2')]
+currentpage=50&rewayano=13&sorano=3&currentsora=3&currentaya=1&page=qplayer -> ['050'] 6535 [('0', '3'), ('1', '3'), ('2', '3')]
+currentpage=50&rewayano=13&sorano=2&currentsora=2&currentaya=250&page=qplayer -> ['050'] 6537 [('0', '3'), ('1', '3'), ('2', '3')]
