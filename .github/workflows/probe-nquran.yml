@@ -14,7 +14,7 @@ jobs:
       - name: Probe
         run: |
           mkdir -p /tmp/o && cd /tmp/o
-          python3 - <<'PY' > /tmp/o/report.txt
+          python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
           import base64,subprocess,re
           B='https://www.nquran.com'
           def sh(c): return subprocess.run(c,capture_output=True,text=True).stdout
@@ -30,10 +30,11 @@ jobs:
                   p='khalaf_hamza/%s/001.jpg:%d'%(d,i)
                   print(d,sh(['curl','-sL','-m','30','-A','Mozilla/5.0','-o','/tmp/o/%s.jpg'%d,'-w','%{http_code} %{size_download}',u(p)]))
           print(sh('file /tmp/o/*.jpg'))
+          import traceback
           for q in ['?rewayano=13&sorano=0&ayano=0&page=2','?rewayano=13&page=2','?rewayano=13&sorano=18&ayano=54','?rewayano=13&sorano=2&ayano=0']:
               t=sh(['curl','-sL','-m','60','-A','Mozilla/5.0',B+'/ar/quranplayer/'+q])
               print(q,len(t),re.findall(r'quranpic2/(\d+)',base64.b64decode(re.search(r'img=([A-Za-z0-9+/=]+)',t).group(1)).decode()) if re.search(r'img=([A-Za-z0-9+/=]+)',t) else None, len(re.findall(r'class="tafseer"',t)))
-              open('/tmp/o/q_%d.html'%abs(hash(q)),'w').write(t)
+              open('/tmp/o/q_%d.html'%len(q),'w').write(t)
           PY
           cat report.txt | cut -c1-400 | head -90
       - name: Push
