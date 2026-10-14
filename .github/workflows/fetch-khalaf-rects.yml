@@ -1,0 +1,54 @@
+name: Fetch Khalaf rects
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scrape rects
+        run: |
+          mkdir -p /tmp/o/ayah && cd /tmp/o
+          python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
+          import subprocess,re,json,base64,time
+          B='https://www.nquran.com/ar/quranplayer/ajax/nindex.php'
+          def get(p,s,a):
+              q='currentpage=%d&rewayano=13&sorano=%d&currentsora=%d&currentaya=%d&qareeid=0&sorafrom=1&sorato=1&ayafrom=0&ayato=0&page=qplayer'%(p,s,s,a)
+              return subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','-e','https://www.nquran.com/ar/quranplayer/','-G',B,'--data-raw',q],capture_output=True,text=True).stdout
+          def pagenum(h):
+              m=re.search(r'img=([A-Za-z0-9+/=]+)',h)
+              if not m: return None
+              r=re.search(r'quranpic2/(\d+)',base64.b64decode(m.group(1)).decode())
+              return int(r.group(1)) if r else None
+          for v in [(300,0,0),(300,18,54),(300,18,0),(2,2,1)]:
+              h=get(*v); print(v,len(h),pagenum(h),len(re.findall('class="tafseer"',h)),h[:150].replace('\n',' '))
+          def parse(h):
+              aya={}
+              for m in re.finditer(r"class='aya' data-aya='(\d+)' data-sora='(\d+)'[^>]*data-group='(\d+)'",h): aya[m.group(3)]=(int(m.group(2)),int(m.group(1)))
+              out=[]
+              for m in re.finditer(r'class="tafseer" data-group="(\d+)"[^>]*top:\s*([\d.]+)%;\s*left:\s*([\d.]+)%;\s*width:\s*([\d.]+)%;\s*height:\s*([\d.]+)%',h):
+                  g=m.group(1)
+                  if g in aya: out.append([aya[g][0],aya[g][1]]+[round(float(m.group(i)),2) for i in (3,2,4,5)])
+              return out
+          cur=(1,1); bad=[]; n=0
+          for p in range(1,605):
+              ok=False
+              for s,a in ([(0,0)] if p==1 else [])+[(0,0)]:
+                  h=get(p,s,a)
+                  if pagenum(h)==p:
+                      r=parse(h); json.dump(r,open('/tmp/o/ayah/%03d.json'%p,'w'),separators=(',',':')); ok=True; n+=len(r); break
+              if not ok: bad.append(p)
+              time.sleep(0.25)
+          print('done rects',n,'bad',bad[:50],len(bad))
+          PY
+          head -c 3000 report.txt
+      - name: Push
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/khalafrects; git rm -rf . -q
+          cp -r /tmp/o khalaf; git add khalaf; git commit -q -m rects; git push -f origin data/khalafrects
