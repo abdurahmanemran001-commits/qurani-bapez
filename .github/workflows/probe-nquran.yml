@@ -16,25 +16,26 @@ jobs:
           mkdir -p /tmp/o && cd /tmp/o
           python3 - <<'PY' > /tmp/o/report.txt
           import base64,subprocess,re
-          def u(path,n):
-              s=path+':'+str(n)
-              return base64.b64encode(('s:%d:"%s";|_*7H_'%(len(s),s)).encode()).decode()
-          def get(url,ref=None,out=None):
-              c=['curl','-sL','-m','60','-o',out or '/dev/null','-w','%{http_code} %{content_type} %{size_download}','-A','Mozilla/5.0']
-              if ref: c+=['-e',ref]
-              return subprocess.run(c+[url],capture_output=True,text=True).stdout
-          for d in ['khalaf_hamza']:
-              for p in ['001','002','300']:
-                  for n in (0,1,2):
-                      url='https://www.nquran.com/globals/loadimage.php?img='+u('%s/quranpic2/%s.jpg'%(d,p),n)
-                      print(d,p,n,'noref',get(url,None,'/tmp/o/%s_%s_%d.jpg'%(d,p,n)))
-                      print(d,p,n,'ghref',get(url,'https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/'))
-          print(subprocess.run('file /tmp/o/*.jpg',shell=True,capture_output=True,text=True).stdout)
-          r=subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','https://www.nquran.com/ar/quranplayer/?rewayano=13&sorano=0&ayano=0'],capture_output=True,text=True).stdout
-          open('/tmp/o/page.html','w').write(r)
-          print(len(r)); print(re.findall(r'<script[^>]*src=[^>]*>',r)[:20])
+          B='https://www.nquran.com'
+          def sh(c): return subprocess.run(c,capture_output=True,text=True).stdout
+          def u(path):
+              return B+'/globals/loadimage.php?img='+base64.b64encode(('s:%d:"%s";|_*7H_'%(len(path),path)).encode()).decode()
+          for js in ['/ar/quranplayer/javascripts/buffer.nquran.min.js?v=6.4','/ar/content/js/main.js?v=1.2']:
+              t=sh(['curl','-sL','-m','60','-A','Mozilla/5.0',B+js]); open('/tmp/o/'+js.split('/')[-1].split('?')[0],'w').write(t)
+              print(js,len(t))
+              for k in ('quranpic','loadimage','page=','ajax','.php','getpage','currentpage'):
+                  for m in list(re.finditer(re.escape(k),t))[:4]: print(' ',k,'|',t[max(0,m.start()-100):m.start()+160].replace('\n',' '))
+          for d in ['quranpic','quranpic1','quranpic2','quranpic3','quranpichd','quranhd','quranpic_hd','quranpic4']:
+              for i in (0,):
+                  p='khalaf_hamza/%s/001.jpg:%d'%(d,i)
+                  print(d,sh(['curl','-sL','-m','30','-A','Mozilla/5.0','-o','/tmp/o/%s.jpg'%d,'-w','%{http_code} %{size_download}',u(p)]))
+          print(sh('file /tmp/o/*.jpg'))
+          for q in ['?rewayano=13&sorano=0&ayano=0&page=2','?rewayano=13&page=2','?rewayano=13&sorano=18&ayano=54','?rewayano=13&sorano=2&ayano=0']:
+              t=sh(['curl','-sL','-m','60','-A','Mozilla/5.0',B+'/ar/quranplayer/'+q])
+              print(q,len(t),re.findall(r'quranpic2/(\d+)',base64.b64decode(re.search(r'img=([A-Za-z0-9+/=]+)',t).group(1)).decode()) if re.search(r'img=([A-Za-z0-9+/=]+)',t) else None, len(re.findall(r'class="tafseer"',t)))
+              open('/tmp/o/q_%d.html'%abs(hash(q)),'w').write(t)
           PY
-          cat report.txt | head -60
+          cat report.txt | cut -c1-400 | head -90
       - name: Push
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
