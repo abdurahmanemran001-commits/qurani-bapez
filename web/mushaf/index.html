@@ -36,7 +36,7 @@ header button{background:#e8f3ee;cursor:pointer}
   <button data-m="w">وەرش</button>
   <button data-m="s">شوعبە</button>
   <button data-m="k">قالون</button>
-  <button data-m="b">قونبول</button><button data-m="d">دووری</button>
+  <button data-m="b">قونبول</button><button data-m="d">دووری</button><button data-m="u">سووسی</button>
   <button data-m="z">بەزی</button>
   <button data-m="t">تەجوید</button>
  </div>
@@ -53,7 +53,7 @@ var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementBy
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 mode=ld('m','q');page=+ld('p',1)||1;
-var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtskbzd'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtskbzdu'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
@@ -80,8 +80,8 @@ fetch('starts.json').then(function(r){return r.json()}).then(function(s){S=s;
 var C=[7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6],R=[],au=new Audio(),cur=null,playing=false;
 function pad(n,l){return ('000'+n).slice(-l);}
 function frameHl(){try{return f.contentWindow.hl(cur&&cur[0],cur&&cur[1],cur&&cur.slice(2));}catch(e){return false;}}
-var QM=null,cq=0,QBC={};['qunbul','bazzi','douri'].forEach(function(d){fetch('data/'+d+'/meta.json').then(function(r){return r.json()}).then(function(j){QBC[d]=j.counts;}).catch(function(){});});
-function isQ(){return mode==='b'||mode==='z'||mode==='d';}var QD={b:'qunbul',z:'bazzi',d:'douri'},QA={b:269,z:268,d:271},QN={b:'محمد عبدالحکیم (قنبل)',z:'محمد عبدالحکیم (بزی)',d:'عبدالڕەشید سوفی (دووری)'};
+var QM=null,cq=0,QBC={};['qunbul','bazzi','douri','susi'].forEach(function(d){fetch('data/'+d+'/meta.json').then(function(r){return r.json()}).then(function(j){QBC[d]=j.counts;}).catch(function(){});});
+function isQ(){return mode==='b'||mode==='z'||mode==='d'||mode==='u';}var QD={b:'qunbul',z:'bazzi',d:'douri',u:'susi'},QA={b:269,z:268,d:271,u:272},QN={b:'محمد عبدالحکیم (قنبل)',z:'محمد عبدالحکیم (بزی)',d:'عبدالڕەشید سوفی (دووری)',u:'عبدالڕەشید سوفی (سووسی)'};
 function CC(s){var q=QBC[QD[mode]];return isQ()&&q?q[s-1]:C[s-1];}function h2q(s,a){return QM?QM.h2q[s-1][a-1]:a;}
 var TT={},AUD={s:{n:'عەلی حوزەیفی (شوعبە)',t:'data/shubatiming/timing.json',u:function(s){return 'https://cdn.mp3quran.net/audio/ali-hudhaifi/r3/'+pad(s,3)+'.mp3';}},k:{n:'دوکالی (قالون)',t:'data/qaloontiming/t208.json',u:function(s){return 'https://cdn.mp3quran.net/audio/dokali-alim/r1/'+pad(s,3)+'.mp3';}}};
 function isG(){return mode==='s'||mode==='k';}

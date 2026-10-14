@@ -48,6 +48,8 @@ jobs:
           git archive FETCH_HEAD qunbul | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/douridata
           git archive FETCH_HEAD douri | tar -x -C dist/mushaf/data
+          git fetch --depth=1 origin data/susidata
+          git archive FETCH_HEAD susi | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/shubatiming
           git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
 
