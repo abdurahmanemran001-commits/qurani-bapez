@@ -52,6 +52,7 @@ jobs:
           git archive FETCH_HEAD susi | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/khalafrects
           git archive FETCH_HEAD khalaf | tar -x -C dist/mushaf/data
+          mkdir -p dist/mushaf/data/khalaf/ayah && cp web/mushaf/khalaf_p1.json dist/mushaf/data/khalaf/ayah/001.json
           git fetch --depth=1 origin data/shubatiming
           git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
 
