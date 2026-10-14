@@ -1,0 +1,47 @@
+name: Probe mushafs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: |
+          mkdir -p /tmp/o && cd /tmp
+          A="qurani-bapez (abdurahmanemran001@gmail.com)"
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/mushafs -o list.json
+          curl -sL -m 120 -A "$A" https://api.quranpedia.net/v1/reciters -o qp.json
+          python3 - <<'PY'
+          import json
+          l=json.load(open('/tmp/list.json'))
+          l=l if isinstance(l,list) else l.get('data',l.get('mushafs',[]))
+          out=[]
+          for x in l:
+              r=x.get('rawi') or {}
+              out.append([x.get('id'),x.get('name'),x.get('font_file'),r.get('name'),(r.get('qiraa') or {}).get('short_name'),((r.get('qiraa') or {}).get('count') or {}).get('name')])
+          print(len(out))
+          json.dump(out,open('/tmp/o/mushafs.json','w'),ensure_ascii=False,indent=0)
+          # audio per-ayah mp3 sets (classification id 2)
+          hits=[]
+          def walk(o):
+              if isinstance(o,dict):
+                  r=o.get('rawi')
+                  if isinstance(r,dict) and (o.get('classification') or {}).get('id')==2: hits.append([o.get('id'),o.get('name'),o.get('server')])
+                  else:
+                      for v in o.values(): walk(v)
+              elif isinstance(o,list):
+                  for v in o: walk(v)
+          walk(json.load(open('/tmp/qp.json')))
+          json.dump(hits,open('/tmp/o/ayahaudio.json','w'),ensure_ascii=False,indent=0)
+          PY
+      - name: Push
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/probe; git rm -rf . -q
+          cp -r /tmp/o probe; git add probe; git commit -q -m probe; git push -f origin data/probe
