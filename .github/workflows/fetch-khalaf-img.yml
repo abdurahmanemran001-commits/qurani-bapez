@@ -1,0 +1,48 @@
+name: Fetch Khalaf images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and convert
+        run: |
+          pip install pillow -q
+          mkdir -p /tmp/z /tmp/o/pages /tmp/o/cmp && cd /tmp/z
+          curl -sL -m 1500 -o k.zip https://archive.org/download/khala__an__hamzah/khala__an__hamzah_jp2.zip
+          ls -l k.zip; unzip -q k.zip; find . -type f | head -3; find . -type f -name '*.jp2' | wc -l
+          cd "$GITHUB_WORKSPACE"
+          python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
+          import glob,os,re,subprocess,base64,io
+          from PIL import Image
+          fs=sorted(glob.glob('/tmp/z/**/*.jp2',recursive=True))
+          print('files',len(fs),fs[:3],fs[-2:])
+          im=Image.open(fs[0]); print('size',im.size,im.mode)
+          def nq(p,i):
+              t='khalaf_hamza/quranpic2/%03d.jpg:%d'%(p,i)
+              u='https://www.nquran.com/globals/loadimage.php?img='+base64.b64encode(('s:%d:"%s";|_*7H_'%(len(t),t)).encode()).decode()
+              return Image.open(io.BytesIO(subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0',u],capture_output=True).stdout))
+          for k,f in enumerate(fs):
+              im=Image.open(f).convert('RGB')
+              if k<4 or k in (299,300,301): print(k,os.path.basename(f),im.size)
+              w=1100; h=round(im.height*w/im.width)
+              im.resize((w,h),Image.LANCZOS).save('/tmp/o/pages/%03d.webp'%(k+1),quality=70)
+              if k+1 in (1,2,300,500):
+                  a=[nq(k+1,i) for i in range(3)]; W=a[0].width; H=sum(x.height for x in a)
+                  c=Image.new('RGB',(W,H),'white'); y=0
+                  for x in a: c.paste(x.convert('RGB'),(0,y)); y+=x.height
+                  s=im.resize((round(im.width*H/im.height),H)); o=Image.new('RGB',(W+s.width+10,H),'white'); o.paste(c,(0,0)); o.paste(s,(W+10,0)); o.save('/tmp/o/cmp/c%03d.jpg'%(k+1),quality=80)
+          print('done')
+          PY
+          cat /tmp/o/report.txt | head -30; du -sh /tmp/o/pages
+      - name: Push
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/khalafimg; git rm -rf . -q
+          cp -r /tmp/o khalafimg; git add khalafimg; git commit -q -m "khalaf img"; git push -f origin data/khalafimg
