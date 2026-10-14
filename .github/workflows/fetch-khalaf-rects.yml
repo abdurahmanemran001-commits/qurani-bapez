@@ -35,23 +35,31 @@ jobs:
                   g=m.group(1)
                   if g in aya: out.append([aya[g][0],aya[g][1]]+[round(float(m.group(i)),2) for i in (3,2,4,5)])
               return out
-          C=json.loads(re.search(r'var C=(\[[^\]]*\])',open('web/mushaf/index.html').read()).group(1))
-          def nxt(s,a):
-              return (s,a+1) if a<C[s-1] else (s+1,1)
-          bad=[]; n=0; log=[]; prev=0; s,a=1,1; seen={}
-          while s<=114 and prev<604:
-              h=get(1,s,a); pn=pagenum(h)
-              if not pn or pn<=prev:
-                  if len(log)<10: log.append((s,a,pn,prev))
-                  s,a=nxt(s,a); continue
-              r=parse(h); json.dump(r,open('/tmp/o/ayah/%03d.json'%pn,'w'),separators=(',',':')); n+=len(r)
-              if pn!=prev+1: bad.append((prev,pn))
-              prev=pn
-              if not r: s,a=nxt(s,a); continue
-              ls,la=max((x[0],x[1]) for x in r); s,a=nxt(ls,la)
-              time.sleep(0.15)
-          print('log',log); bad=[b for b in bad]
-          print('done rects',n,'bad',bad[:50],len(bad))
+          def plist(s):
+              h=subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','https://www.nquran.com/ar/quranplayer/?rewayano=13&sorano=%d&ayano=0'%s],capture_output=True,text=True).stdout
+              m=re.search(r'id="playlist"[^>]*>\s*(\[.*?\])\s*</div>',h,re.S)
+              try: return json.loads(m.group(1)) if m else None
+              except Exception: return None
+          pages={}; bad=[]; log=[]; n=0
+          for s in range(1,115):
+              pl=plist(s)
+              if not pl:
+                  bad.append(('nopl',s)); continue
+              for ent in pl:
+                  if ent['sora']!=s and len(log)<5: log.append(('sora',s,ent['sora']))
+                  for pe in ent['pages']:
+                      p=pe['page']; h=get(p,ent['sora'],pe['minaya'])
+                      pn=pagenum(h)
+                      if pn!=p:
+                          bad.append((s,p,pn)); continue
+                      for x in parse(h):
+                          pages.setdefault(p,[])
+                          if x not in pages[p]: pages[p].append(x)
+                      time.sleep(0.12)
+          for p,r in pages.items():
+              json.dump(r,open('/tmp/o/ayah/%03d.json'%p,'w'),separators=(',',':')); n+=len(r)
+          print('log',log,'pages',len(pages),'missing',[p for p in range(1,605) if p not in pages][:40])
+          print('done rects',n,'bad',bad[:30],len(bad))
           PY
           head -c 3000 /tmp/o/report.txt
       - name: Push
