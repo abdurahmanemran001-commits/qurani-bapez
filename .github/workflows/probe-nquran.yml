@@ -15,28 +15,18 @@ jobs:
         run: |
           mkdir -p /tmp/o && cd /tmp/o
           python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
-          import base64,subprocess,re
-          B='https://www.nquran.com'
-          def sh(c): return subprocess.run(c,capture_output=True,text=True).stdout
-          def u(path):
-              return B+'/globals/loadimage.php?img='+base64.b64encode(('s:%d:"%s";|_*7H_'%(len(path),path)).encode()).decode()
-          for js in ['/ar/quranplayer/javascripts/buffer.nquran.min.js?v=6.4','/ar/content/js/main.js?v=1.2']:
-              t=sh(['curl','-sL','-m','60','-A','Mozilla/5.0',B+js]); open('/tmp/o/'+js.split('/')[-1].split('?')[0],'w').write(t)
-              print(js,len(t))
-              for k in ('quranpic','loadimage','page=','ajax','.php','getpage','currentpage'):
-                  for m in list(re.finditer(re.escape(k),t))[:4]: print(' ',k,'|',t[max(0,m.start()-100):m.start()+160].replace('\n',' '))
-          for d in ['quranpic','quranpic1','quranpic2','quranpic3','quranpichd','quranhd','quranpic_hd','quranpic4']:
-              for i in (0,):
-                  p='khalaf_hamza/%s/001.jpg:%d'%(d,i)
-                  print(d,sh(['curl','-sL','-m','30','-A','Mozilla/5.0','-o','/tmp/o/%s.jpg'%d,'-w','%{http_code} %{size_download}',u(p)]))
-          print(sh('file /tmp/o/*.jpg'))
-          import traceback
-          for q in ['?rewayano=13&sorano=0&ayano=0&page=2','?rewayano=13&page=2','?rewayano=13&sorano=18&ayano=54','?rewayano=13&sorano=2&ayano=0']:
-              t=sh(['curl','-sL','-m','60','-A','Mozilla/5.0',B+'/ar/quranplayer/'+q])
-              print(q,len(t),re.findall(r'quranpic2/(\d+)',base64.b64decode(re.search(r'img=([A-Za-z0-9+/=]+)',t).group(1)).decode()) if re.search(r'img=([A-Za-z0-9+/=]+)',t) else None, len(re.findall(r'class="tafseer"',t)))
-              open('/tmp/o/q_%d.html'%len(q),'w').write(t)
+          import subprocess,re
+          B='https://www.nquran.com/ar/quranplayer/ajax/nindex.php'
+          def get(q):
+              return subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','-e','https://www.nquran.com/ar/quranplayer/','-G',B,'--data-raw',q],capture_output=True,text=True).stdout
+          for q in ['rewayano=13&sorano=18&sorafrom=18&sorato=18&ayafrom=0&ayato=0&page=qplayer',
+                    'rewayano=13&sorano=18&sorafrom=18&sorato=18&ayafrom=0&ayato=0&qareeid=0',
+                    'rewayano=13&sorano=18&currentsora=18&currentaya=1&currentpage=0&page=qplayer',
+                    'rewayano=13&sorano=18&sorafrom=18&sorato=19&ayafrom=0&ayato=0&page=qplayer&action=getplaylist']:
+              h=get(q); m=re.search(r'id="playlist"[^>]*>\s*(.*?)\s*</div>',h,re.S)
+              print(q,len(h),'|',(m.group(1)[:600] if m else None))
           PY
-          cat report.txt | cut -c1-400 | head -90
+          cat report.txt | cut -c1-900
       - name: Push
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"

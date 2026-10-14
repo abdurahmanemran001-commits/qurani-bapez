@@ -39,14 +39,18 @@ window.hl=function(s,a,more){document.querySelectorAll('.ayah.audioActive').forE
 var tx=0,ty=0;document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
 document.addEventListener('touchend',function(e){var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy))parent.postMessage({swipe:dx>0?1:-1},'*');},{passive:true});
 if(mode==='x'){
- css("body.xi{margin:0;background:#fffdf5;display:flex;justify-content:center;overflow:hidden}#xp{line-height:0}#xp img{width:100%;height:auto;display:block}");
- document.body.className='xi';window.hl=function(){return true;};
+ css("body.xi{margin:0;background:#fffdf5;display:flex;justify-content:center;overflow:hidden}#xp{line-height:0;position:relative}#xp img{width:100%;height:auto;display:block;image-rendering:auto}#xp .ayah{position:absolute;cursor:pointer;display:block}#xp .ayah.audioActive{background:rgba(120,200,160,.45);mix-blend-mode:multiply}#xp .ayah.selected{background:rgba(255,200,40,.45);mix-blend-mode:multiply}");
+ document.body.className='xi';
  var xp=document.createElement('div');xp.id='xp';xp.style.width='100%';var left=3,hs=[0,0,0];
  function xu(i){var t='khalaf_hamza/quranpic2/'+n+'.jpg:'+i;return 'https://www.nquran.com/globals/loadimage.php?img='+btoa('s:'+t.length+':"'+t+'";|_*7H_');}
  function xfit(){var h=hs[0]+hs[1]+hs[2];if(!h)return;var w=Math.min(innerWidth,innerHeight*450/h);xp.style.width=w+'px';}
- [0,1,2].forEach(function(i){var im=new Image();im.onload=function(){hs[i]=im.naturalHeight*(450/im.naturalWidth);if(--left===0){xfit();parent.postMessage({ready:true},'*');}};
-  im.onerror=function(){if(--left===0)xfit();};im.src=xu(i);xp.appendChild(im);});
- document.body.appendChild(xp);addEventListener('resize',xfit);parent.postMessage({ready:true},'*');
+ function xdone(){if(--left===0){xfit();fetch('data/khalaf/ayah/'+n+'.json').then(function(r){return r.json()}).then(function(rs){
+  rs.forEach(function(a){if(!a[4]||!a[5])return;var d=document.createElement('div');d.className='ayah';d.dataset.sura=a[0];d.dataset.ayah=a[1];
+   d.style.cssText='left:'+a[2]+'%;top:'+a[3]+'%;width:'+a[4]+'%;height:'+a[5]+'%';xp.appendChild(d);});
+  }).catch(function(){}).then(function(){parent.postMessage({ready:true},'*');});}}
+ [0,1,2].forEach(function(i){var im=new Image();im.onload=function(){hs[i]=im.naturalHeight*(450/im.naturalWidth);xdone();};
+  im.onerror=function(){xdone();};im.src=xu(i);xp.appendChild(im);});
+ document.body.appendChild(xp);addEventListener('resize',xfit);
  return;
 }
 if(mode==='w'||mode==='s'||mode==='k'){
