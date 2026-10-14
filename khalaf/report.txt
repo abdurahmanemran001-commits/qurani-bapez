@@ -1,0 +1,6 @@
+(300, 0, 0) 6050 300 22                    <img class="qimage" data-minaya="" data-maxaya="" style="width: 100%;max-width:450px;"  src="/globals/loadimage.php?img=czozMjoia2h
+(300, 18, 54) 6118 300 22                    <img class="qimage" data-minaya="1" data-maxaya="110" style="width: 100%;max-width:450px;"  src="/globals/loadimage.php?img=czozMjo
+(300, 18, 0) 6117 300 22                    <img class="qimage" data-minaya="1" data-maxaya="110" style="width: 100%;max-width:450px;"  src="/globals/loadimage.php?img=czozMjo
+(2, 2, 1) 6826 3 24                    <img class="qimage" data-minaya="1" data-maxaya="286" style="width: 100%;max-width:450px;"  src="/globals/loadimage.php?img=czozMjo
+log [] pages 603 missing [1]
+done rects 14416 bad [(1, 1, 2), (18, 293, 300)] 2
