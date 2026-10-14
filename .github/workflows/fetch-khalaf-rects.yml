@@ -14,7 +14,7 @@ jobs:
       - name: Scrape rects
         run: |
           mkdir -p /tmp/o/ayah && cd /tmp/o
-          python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
+          cp "$GITHUB_WORKSPACE/web/mushaf/starts.json" web_starts.json 2>/dev/null; cd "$GITHUB_WORKSPACE"; python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
           import subprocess,re,json,base64,time
           B='https://www.nquran.com/ar/quranplayer/ajax/nindex.php'
           def get(p,s,a):
@@ -35,18 +35,27 @@ jobs:
                   g=m.group(1)
                   if g in aya: out.append([aya[g][0],aya[g][1]]+[round(float(m.group(i)),2) for i in (3,2,4,5)])
               return out
-          cur=(1,1); bad=[]; n=0
+          S=json.load(open('web/mushaf/starts.json'))
+          def sura(p):
+              r=1
+              for i,x in enumerate(S):
+                  if x<=p: r=i+1
+              return r
+          bad=[]; n=0; log=[]
           for p in range(1,605):
               ok=False
-              for s,a in ([(0,0)] if p==1 else [])+[(0,0)]:
-                  h=get(p,s,a)
-                  if pagenum(h)==p:
+              for s in sorted(set([sura(p),sura(p)-1 if sura(p)>1 else 1,0])):
+                  h=get(p,s,1)
+                  pn=pagenum(h)
+                  if pn==p:
                       r=parse(h); json.dump(r,open('/tmp/o/ayah/%03d.json'%p,'w'),separators=(',',':')); ok=True; n+=len(r); break
+                  elif len(log)<8: log.append((p,s,pn,len(h)))
               if not ok: bad.append(p)
-              time.sleep(0.25)
+              time.sleep(0.2)
+          print('log',log)
           print('done rects',n,'bad',bad[:50],len(bad))
           PY
-          head -c 3000 report.txt
+          head -c 3000 /tmp/o/report.txt
       - name: Push
         run: |
           git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
