@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ckb" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ڕیوایەتەکان - دەنگ</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#fffdf5;color:#1b1b1b}
+header{display:flex;gap:8px;align-items:center;padding:10px;background:#f1e6c4;border-bottom:1px solid #b99a4b;flex-wrap:wrap}
+header a{color:#6f5720;text-decoration:none;font-weight:bold}
+select,input,button{font-size:16px;padding:6px 8px;border:1px solid #b99a4b;border-radius:8px;background:#fff}
+main{max-width:560px;margin:0 auto;padding:14px}
+.row{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;align-items:center}
+.row>*{flex:1;min-width:120px}
+#big{font-size:30px;text-align:center;background:#f1e6c4;border:1px solid #b99a4b;border-radius:12px;padding:18px;margin:14px 0}
+#ctl{display:flex;gap:10px;justify-content:center}
+#ctl button{font-size:24px;width:64px;padding:8px}
+#msg{text-align:center;color:#6f5720;min-height:1.4em}
+small{color:#555;display:block;text-align:center;margin-top:16px;line-height:1.6}
+</style></head><body>
+<header><a href="./">‹ موسحەف</a><b>ڕیوایەتە تری دەنگ</b></header>
+<main>
+<div class="row"><select id="rw"></select></div>
+<div class="row"><select id="su"></select><input id="ay" type="number" min="1" value="1" inputmode="numeric" placeholder="ئایەت"></div>
+<div id="big">—</div>
+<div id="ctl"><button id="b0" title="پێشوو">⏮</button><button id="b1">▶</button><button id="b2" title="دواتر">⏭</button></div>
+<div id="msg"></div>
+<small>ئەم ڕیوایەتانە تەنها دەنگن، چونکە دەقی ڕەسمیان لە سەرچاوە ئازادەکان بەردەست نییە. دەنگ: quranpedia.net</small>
+</main>
+<audio id="au" preload="auto"></audio>
+<script>
+var RW=[
+[273,'هشام عن ابن عامر — مفتاح السلطني'],[274,'ابن ذكوان عن ابن عامر — مفتاح السلطني'],
+[277,'خلف عن حمزة — عبدالرشيد صوفي'],[278,'خلاد عن حمزة — مفتاح السلطني'],
+[282,'ابن وردان عن أبي جعفر — مفتاح السلطني'],[283,'ابن جماز عن أبي جعفر — مفتاح السلطني'],
+[284,'رويس عن يعقوب — ياسر المزروعي'],[285,'رويس عن يعقوب — مفتاح السلطني'],[286,'روح عن يعقوب — ياسر المزروعي'],
+[287,'إسحاق عن خلف العاشر — مفتاح السلطني'],[288,'إدريس عن خلف العاشر — مفتاح السلطني'],
+[279,'أبو الحارث عن الكسائي — عبدالرشيد صوفي'],[280,'الدوري عن الكسائي — عبدالرشيد صوفي'],[281,'الدوري عن الكسائي — محمد عبدالحكيم سعيد']];
+var $=function(i){return document.getElementById(i)},au=$('au'),rw=$('rw'),su=$('su'),ay=$('ay'),big=$('big'),msg=$('msg'),b1=$('b1');
+var s=1,a=1,playing=false,names=[];
+RW.forEach(function(r){var o=document.createElement('option');o.value=r[0];o.textContent=r[1];rw.appendChild(o);});
+function pad(n){return ('00'+n).slice(-3);}
+function fill(){su.innerHTML='';for(var i=1;i<=114;i++){var o=document.createElement('option');o.value=i;o.textContent=i+'. '+(names[i-1]||'');su.appendChild(o);}su.value=s;}
+fetch('data/douri/meta.json').then(function(r){return r.json()}).then(function(j){names=j.names;fill();}).catch(fill);fill();
+function show(){big.textContent=(names[s-1]||('سورة '+s))+' — '+a;su.value=s;ay.value=a;}
+function load(){au.src='https://files.quranpedia.net/recitations/'+rw.value+'/'+pad(s)+pad(a)+'.mp3';show();msg.textContent='';}
+function play(){load();au.play().then(function(){playing=true;b1.textContent='⏸';}).catch(function(){});}
+au.onended=function(){a++;if(playing)play();else{load();}};
+au.onerror=function(){if(!playing)return;if(a>1&&s<114){s++;a=1;play();}else{playing=false;b1.textContent='▶';msg.textContent='ئەم دەنگە نەدۆزرایەوە';}};
+b1.onclick=function(){if(playing){au.pause();playing=false;b1.textContent='▶';}else{s=+su.value;a=Math.max(1,+ay.value||1);play();}};
+$('b2').onclick=function(){a++;play();};
+$('b0').onclick=function(){if(a>1)a--;play();};
+su.onchange=function(){s=+su.value;a=1;ay.value=1;if(playing)play();else show();};
+ay.onchange=function(){a=Math.max(1,+ay.value||1);if(playing)play();else show();};
+rw.onchange=function(){if(playing)play();};
+show();
+</script></body></html>
