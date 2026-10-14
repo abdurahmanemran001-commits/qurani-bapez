@@ -1,0 +1,42 @@
+name: Probe nquran
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe
+        run: |
+          mkdir -p /tmp/o && cd /tmp/o
+          python3 - <<'PY' > /tmp/o/report.txt
+          import base64,subprocess,re
+          def u(path,n):
+              s=path+':'+str(n)
+              return base64.b64encode(('s:%d:"%s";|_*7H_'%(len(s),s)).encode()).decode()
+          def get(url,ref=None,out=None):
+              c=['curl','-sL','-m','60','-o',out or '/dev/null','-w','%{http_code} %{content_type} %{size_download}','-A','Mozilla/5.0']
+              if ref: c+=['-e',ref]
+              return subprocess.run(c+[url],capture_output=True,text=True).stdout
+          for d in ['khalaf_hamza']:
+              for p in ['001','002','300']:
+                  for n in (0,1,2):
+                      url='https://www.nquran.com/globals/loadimage.php?img='+u('%s/quranpic2/%s.jpg'%(d,p),n)
+                      print(d,p,n,'noref',get(url,None,'/tmp/o/%s_%s_%d.jpg'%(d,p,n)))
+                      print(d,p,n,'ghref',get(url,'https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/'))
+          print(subprocess.run('file /tmp/o/*.jpg',shell=True,capture_output=True,text=True).stdout)
+          r=subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','https://www.nquran.com/ar/quranplayer/?rewayano=13&sorano=0&ayano=0'],capture_output=True,text=True).stdout
+          open('/tmp/o/page.html','w').write(r)
+          print(len(r)); print(re.findall(r'<script[^>]*src=[^>]*>',r)[:20])
+          PY
+          cat report.txt | head -60
+      - name: Push
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/probe2; git rm -rf . -q
+          cp -r /tmp/o probe2; git add probe2; git commit -q -m probe; git push -f origin data/probe2
