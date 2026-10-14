@@ -1,0 +1,10 @@
+files 604 ['/tmp/z/khala__an__hamzah_jp2/khala__an__hamzah_0000.jp2', '/tmp/z/khala__an__hamzah_jp2/khala__an__hamzah_0001.jp2', '/tmp/z/khala__an__hamzah_jp2/khala__an__hamzah_0002.jp2'] ['/tmp/z/khala__an__hamzah_jp2/khala__an__hamzah_0602.jp2', '/tmp/z/khala__an__hamzah_jp2/khala__an__hamzah_0603.jp2']
+size (2481, 3508) RGB
+0 khala__an__hamzah_0000.jp2 (2481, 3508)
+1 khala__an__hamzah_0001.jp2 (2481, 3508)
+2 khala__an__hamzah_0002.jp2 (2481, 3508)
+3 khala__an__hamzah_0003.jp2 (2481, 3508)
+299 khala__an__hamzah_0299.jp2 (2481, 3508)
+300 khala__an__hamzah_0300.jp2 (2481, 3508)
+301 khala__an__hamzah_0301.jp2 (2481, 3508)
+done
