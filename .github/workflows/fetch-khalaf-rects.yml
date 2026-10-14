@@ -18,7 +18,7 @@ jobs:
           import subprocess,re,json,base64,time
           B='https://www.nquran.com/ar/quranplayer/ajax/nindex.php'
           def get(p,s,a):
-              q='currentpage=%d&rewayano=13&sorano=%d&currentsora=%d&currentaya=%d&qareeid=0&sorafrom=1&sorato=1&ayafrom=0&ayato=0&page=qplayer'%(p,s,s,a)
+              q='currentpage=%d&rewayano=13&sorano=%d&currentsora=%d&currentaya=%d&qareeid=0&sorafrom=%d&sorato=%d&ayafrom=0&ayato=0&page=qplayer'%(p,s,s,a,s,s)
               return subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','-e','https://www.nquran.com/ar/quranplayer/','-G',B,'--data-raw',q],capture_output=True,text=True).stdout
           def pagenum(h):
               m=re.search(r'img=([A-Za-z0-9+/=]+)',h)
