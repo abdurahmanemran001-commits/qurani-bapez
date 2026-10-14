@@ -15,16 +15,22 @@ jobs:
         run: |
           mkdir -p /tmp/o && cd /tmp/o
           python3 - <<'PY' > /tmp/o/report.txt 2>&1 || true
-          import subprocess,re
+          import subprocess,re,base64
           B='https://www.nquran.com/ar/quranplayer/ajax/nindex.php'
           def get(q):
               return subprocess.run(['curl','-sL','-m','60','-A','Mozilla/5.0','-e','https://www.nquran.com/ar/quranplayer/','-G',B,'--data-raw',q],capture_output=True,text=True).stdout
-          for q in ['rewayano=13&sorano=18&sorafrom=18&sorato=18&ayafrom=0&ayato=0&page=qplayer',
-                    'rewayano=13&sorano=18&sorafrom=18&sorato=18&ayafrom=0&ayato=0&qareeid=0',
-                    'rewayano=13&sorano=18&currentsora=18&currentaya=1&currentpage=0&page=qplayer',
-                    'rewayano=13&sorano=18&sorafrom=18&sorato=19&ayafrom=0&ayato=0&page=qplayer&action=getplaylist']:
-              h=get(q); m=re.search(r'id="playlist"[^>]*>\s*(.*?)\s*</div>',h,re.S)
-              print(q,len(h),'|',(m.group(1)[:600] if m else None))
+          def pn(h):
+              m=re.findall(r'img=([A-Za-z0-9+/=]+)',h)
+              return [re.search(r'quranpic2/(\d+)',base64.b64decode(x).decode()).group(1) for x in m[:1]]
+          for q in ['currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=1&qareeid=0&sorafrom=2&sorato=2&ayafrom=0&ayato=0&page=qplayer',
+                    'currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&qareeid=0&sorafrom=2&sorato=2&ayafrom=0&ayato=0&page=qplayer',
+                    'currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&qareeid=0&sorafrom=2&sorato=3&ayafrom=0&ayato=0&page=qplayer&action=getplaylist',
+                    'currentpage=3&rewayano=13&sorano=2&currentsora=2&currentaya=8&page=qplayer',
+                    'currentpage=3&rewayano=13&sorano=2&ayano=8',
+                    'currentpage=3&rewayano=13&sorano=0&currentsora=0&currentaya=0&page=qplayer',
+                    'currentpage=50&rewayano=13&sorano=3&currentsora=3&currentaya=1&page=qplayer',
+                    'currentpage=50&rewayano=13&sorano=2&currentsora=2&currentaya=250&page=qplayer']:
+              h=get(q); print(q,'->',pn(h),len(h),re.findall(r"data-aya='(\d+)' data-sora='(\d+)'",h)[:3])
           PY
           cat report.txt | cut -c1-900
       - name: Push
