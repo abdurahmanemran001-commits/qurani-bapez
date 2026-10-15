@@ -22,6 +22,29 @@ header button{background:#e8f3ee;cursor:pointer}
 #pl #pt{flex:1;min-width:90px;font-size:13px;text-align:center}
 #pl select{flex:1;min-width:130px}
 #tip{position:absolute;bottom:10px;left:10px;right:10px;margin:auto;max-width:420px;background:#173f35;color:#fff;border-radius:10px;padding:8px 12px;text-align:center;font-size:14px;display:none}
+#lib{flex:1;min-width:150px;background:#ffd54f;font-weight:700;text-align:center}
+#lb{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45)}
+#lb.on{display:block}
+#lbp{position:absolute;inset:0;margin:auto;max-width:560px;height:100%;background:var(--bg);display:flex;flex-direction:column}
+#lbh{display:flex;align-items:center;gap:8px;padding:10px;padding-top:max(10px,env(safe-area-inset-top));background:var(--g);color:#fff}
+#lbh b{flex:1;font-size:17px}
+#lbh button{border:0;border-radius:8px;padding:6px 12px;font:inherit;background:#e8f3ee}
+#lbl{flex:1;overflow:auto;padding:10px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+#lbl h3{margin:14px 4px 6px;font-size:14px;color:#6f5720}
+.mc{background:#fff;border:1px solid #d9cfa8;border-radius:12px;padding:10px 12px;margin:8px 0}
+.mc.act{border-color:var(--g);box-shadow:0 0 0 2px #b7e4d0}
+.mc .t{display:flex;align-items:center;gap:8px}
+.mc .t b{flex:1;font-size:16px;color:#173f35}
+.mc .t i{font-style:normal;font-size:12px;color:#6f5720}
+.mc p{margin:2px 0 8px;font-size:13px;color:#555}
+.mc .r{display:flex;gap:8px;flex-wrap:wrap}
+.mc button{font:inherit;font-size:14px;border:0;border-radius:8px;padding:7px 12px;background:#e8f3ee;color:#173f35;cursor:pointer}
+.mc button.pri{background:var(--g);color:#fff}
+.mc button.bad{background:#fbe4e1;color:#9b2a1f}
+.mc .bar{height:8px;border-radius:5px;background:#e8e2cc;overflow:hidden;flex:1;min-width:120px;align-self:center}
+.mc .bar>div{height:100%;background:var(--g);width:0}
+#lbf{font-size:13px;text-align:center;margin:14px 0}
+#lbf a{color:#6f5720}
 </style></head><body>
 <div id="app">
 <header>
@@ -31,20 +54,12 @@ header button{background:#e8f3ee;cursor:pointer}
  <input id="pg" type="number" min="1" max="604" inputmode="numeric">
  <button id="prev" title="پێشوو">‹</button>
  <select id="sura"></select>
- <div id="modes">
-  <button data-m="q">مەدینە تەجوید</button>
-  <button data-m="w">وەرش</button>
-  <button data-m="s">شوعبە</button>
-  <button data-m="k">قالون</button>
-  <button data-m="b">قونبول</button><button data-m="d">دووری</button><button data-m="u">سووسی</button>
-  <button data-m="z">بەزی</button>
-  <button data-m="t">تەجوید</button>
-  <a href="riwayat.html" style="padding:6px 10px;border:1px solid #b99a4b;border-radius:8px;color:#6f5720;text-decoration:none;white-space:nowrap">ڕیوایەتی تر (دەنگ)</a>
- </div>
+ <button id="lib" title="موسحەف و قیرائەتەکان">📚 <span id="libn">مەدینە تەجوید</span> ▾</button>
 </header>
 <iframe id="f" title="mushaf"></iframe>
 <div id="pl"><select id="rc"></select><button id="pa" title="ئایەتی پێشوو">⏮</button><button id="pp">▶</button><button id="pn" title="ئایەتی دواتر">⏭</button><span id="pt"></span><button id="px" title="داخستن">✕</button></div>
 <div id="tip"></div>
+<div id="lb"><div id="lbp"><div id="lbh"><b>موسحەف و قیرائەتەکان</b><button id="lbx">✕</button></div><div id="lbl"></div></div></div>
 </div>
 <script>
 var N=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
@@ -58,9 +73,10 @@ var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||pa
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
- [].forEach.call(document.querySelectorAll('#modes button'),function(b){b.classList.toggle('on',b.dataset.m===mode)});
  sv('m',mode);sv('p',page);
- f.src='view.html?m='+mode+'&p='+page;
+ var bp=baseFor(mode);if(bp===null){openLib();return;}
+ document.getElementById('libn').textContent=(PK[mode]||BI[mode]).n;
+ f.src='view.html?m='+mode+'&p='+page+(bp?'&b='+encodeURIComponent(bp):'');
  var a=new Image();
 }
 function go(d){page+=d;show();}
@@ -68,7 +84,7 @@ document.getElementById('next').onclick=function(){go(1)};
 document.getElementById('prev').onclick=function(){go(-1)};
 pg.onchange=function(){page=+pg.value||1;show();};
 sel.onchange=function(){page=S[+sel.value];show();};
-document.getElementById('modes').onclick=function(e){var m=e.target.dataset&&e.target.dataset.m;if(m){if(m!==mode){au.pause();bad();mode=m;fillReciters();}show();}};
+function setMode(m){if(m!==mode){au.pause();bad();mode=m;fillReciters();}show();}
 addEventListener('message',function(e){var d=e.data||{};
  if(d.ready&&cur)frameHl();
  if(d.swipe)go(d.swipe);
@@ -76,7 +92,7 @@ addEventListener('message',function(e){var d=e.data||{};
 });
 addEventListener('keydown',function(e){if(e.target===pg)return;if(e.key==='ArrowLeft')go(1);if(e.key==='ArrowRight')go(-1);});
 fetch('starts.json').then(function(r){return r.json()}).then(function(s){S=s;
- N.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+n;sel.appendChild(o);});show();});
+ N.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=(i+1)+'. '+n;sel.appendChild(o);});READY.then(function(){if(PK[mode]&&NAT&&!inst[mode]&&ld('onl_'+mode)!=='1')mode='q';fillReciters();show();});});
 
 var C=[7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110, 98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88, 75, 85, 54, 53, 89, 59, 37, 35, 38, 29, 18, 45, 60, 49, 62, 55, 78, 96, 29, 22, 24, 13, 14, 11, 11, 18, 12, 12, 30, 52, 52, 44, 28, 28, 20, 56, 40, 31, 50, 40, 46, 42, 29, 19, 36, 25, 22, 17, 19, 26, 30, 20, 15, 21, 11, 8, 8, 19, 5, 8, 8, 11, 11, 8, 3, 9, 5, 4, 7, 3, 6, 3, 5, 4, 5, 6],R=[],au=new Audio(),cur=null,playing=false;
 function pad(n,l){return ('000'+n).slice(-l);}
@@ -127,4 +143,70 @@ function fillReciters(){
  if(!isG()&&!isQ()){var v=ld('rc','');if(v)rc.value=v;}
 }
 fetch('reciters.json').then(function(r){return r.json()}).then(function(l){R=l;fillReciters();});
+
+var NAT=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+var RBASE='https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/data/';
+var BI={q:{n:'مەدینە تەجوید',s:'حەفص عن عاصم',x:'ڕەنگاوڕەنگ، هایلایتی ئایەت و دەنگ. لەناو ئەپەکەدایە.'},t:{n:'تەجوید (دەق)',s:'حەفص عن عاصم',x:'دەقی ڕەنگاوڕەنگی تەجوید. لەناو ئەپەکەدایە.'}};
+var PK={w:{dir:'warshimg',n:'وەرش',s:'عن نافع',k:'img',mb:71,x:'وێنەی ڕەسمی مصحف المدينة بە هایلایت.'},
+ s:{dir:'shubaimg',n:'شوعبە',s:'عن عاصم',k:'img',mb:87,x:'وێنەی مصحف بە هایلایت و دەنگی حوزەیفی.'},
+ k:{dir:'qaloonimg',n:'قالون',s:'عن نافع',k:'img',mb:84,x:'وێنەی مصحف بە هایلایت و دەنگی دوکالی.'},
+ b:{dir:'qunbul',n:'قونبول',s:'عن ابن کثیر',k:'txt',f:'qunbul.otf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
+ z:{dir:'bazzi',n:'بەزی',s:'عن ابن کثیر',k:'txt',f:'bazzi.otf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
+ d:{dir:'douri',n:'دووری',s:'عن أبي عمرو',k:'txt',f:'douri.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
+ u:{dir:'susi',n:'سووسی',s:'عن أبي عمرو',k:'txt',f:'susi.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'}};
+var inst={},dl={},FSP=NAT?Capacitor.registerPlugin('Filesystem'):null;
+function fsp(m){return 'packs/'+PK[m].dir;}
+function sleep(t){return new Promise(function(r){setTimeout(r,t)});}
+async function localBase(m){var r=await FSP.getUri({path:fsp(m),directory:'DATA'});return Capacitor.convertFileSrc(r.uri)+'/';}
+async function isInst(m){try{await FSP.stat({path:fsp(m)+'/DONE',directory:'DATA'});return true;}catch(e){return false;}}
+async function refreshInst(){for(var m in PK){inst[m]=(await isInst(m))?await localBase(m):null;}}
+var READY=NAT?refreshInst().catch(function(){}):Promise.resolve();
+function baseFor(m){if(!PK[m]||!NAT)return '';if(inst[m])return inst[m];if(ld('onl_'+m)==='1')return RBASE+PK[m].dir+'/';return null;}
+function openLib(){renderLib();document.getElementById('lb').classList.add('on');}
+function closeLib(){document.getElementById('lb').classList.remove('on');}
+function card(m){
+ var P=PK[m]||BI[m],bi=!PK[m],act=m===mode,d=dl[m],h='<div class="mc'+(act?' act':'')+'"><div class="t"><b>'+P.n+'</b><i>'+P.s+(act?' · ✓ ئێستا':'')+'</i></div><p>'+P.x+'</p><div class="r">';
+ if(bi||!NAT||inst[m]){h+='<button class="pri" data-a="use" data-m="'+m+'">بەکاریبهێنە</button>';if(NAT&&inst[m])h+='<button class="bad" data-a="del" data-m="'+m+'">سڕینەوە</button>';}
+ else if(d){var pc=Math.round(d.done/d.total*100);h+='<div class="bar"><div style="width:'+pc+'%"></div></div><span>'+pc+'%</span><button class="bad" data-a="stop" data-m="'+m+'">ڕاگرتن</button>';}
+ else{h+='<button class="pri" data-a="get" data-m="'+m+'">داگرتن ('+P.mb+' MB)</button><button data-a="onl" data-m="'+m+'">بینین بە ئینتەرنێت</button>';}
+ return h+'</div></div>';
+}
+function renderLib(){
+ var h='<h3>لەناو ئەپەکە</h3>'+card('q')+card('t')+'<h3>قیرائەتەکان'+(NAT?' (داگرتن پێویستە)':'')+'</h3>';
+ 'wskbzdu'.split('').forEach(function(m){h+=card(m);});
+ h+='<div id="lbf"><a href="riwayat.html">ڕیوایەتەکانی تر (تەنها دەنگ)</a></div>';
+ var l=document.getElementById('lbl');l.innerHTML=h;
+}
+async function getPack(m){
+ var P=PK[m],files=[],i;
+ if(P.k==='img'){for(i=1;i<=604;i++)files.push('pages/'+('00'+i).slice(-3)+'.webp');}else files=['all.json',P.f];
+ var total=files.length,done=0,idx=0,stop=false,fail=null;
+ dl[m]={done:0,total:total,stop:function(){stop=true;}};renderLib();
+ async function worker(){
+  while(!stop&&!fail){var k=idx++;if(k>=total)return;
+   for(var t=0;t<3&&!stop;t++){
+    try{await FSP.downloadFile({url:RBASE+P.dir+'/'+files[k],path:fsp(m)+'/'+files[k],directory:'DATA',recursive:true});break;}
+    catch(e){if(t===2){fail=e;return;}await sleep(700);}
+   }
+   done++;dl[m].done=done;if(done%6===0||done===total)renderLib();
+  }
+ }
+ await Promise.all([0,1,2,3,4].map(worker));
+ try{
+  if(!stop&&!fail){var st=await FSP.stat({path:fsp(m)+'/'+files[total-1],directory:'DATA'});if(!(st.size>200))fail='size';}
+ }catch(e){fail=e;}
+ if(stop||fail){try{await FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true});}catch(e){}delete dl[m];renderLib();if(fail)alert('داگرتن سەرکەوتوو نەبوو. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵبدەرەوە.');return;}
+ await FSP.writeFile({path:fsp(m)+'/DONE',data:'1',directory:'DATA',encoding:'utf8'});
+ inst[m]=await localBase(m);delete dl[m];renderLib();
+}
+document.getElementById('lbl').onclick=function(e){
+ var b=e.target.closest&&e.target.closest('button[data-a]');if(!b)return;var m=b.dataset.m,a=b.dataset.a;
+ if(a==='use'){closeLib();setMode(m);}
+ else if(a==='get'){getPack(m);}
+ else if(a==='stop'){if(dl[m])dl[m].stop();}
+ else if(a==='onl'){sv('onl_'+m,'1');closeLib();setMode(m);}
+ else if(a==='del'){if(confirm('ئەم موسحەفە لەسەر مۆبایلەکەت بسڕدرێتەوە؟'))FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true}).catch(function(){}).then(function(){inst[m]=null;sv('onl_'+m,'0');if(mode===m){mode='q';fillReciters();show();}renderLib();});}
+};
+document.getElementById('lib').onclick=openLib;document.getElementById('lbx').onclick=closeLib;
+document.getElementById('lb').onclick=function(e){if(e.target.id==='lb')closeLib();};
 </script><script>if(location.hostname==='localhost'||location.protocol==='capacitor:'){var h=document.getElementById('home');if(h)h.style.display='none';}</script></body></html>
