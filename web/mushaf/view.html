@@ -27,7 +27,7 @@ tajweed.ghunnah{color:#ff7e1e}
 <script>
 (function(){
 var q=new URLSearchParams(location.search),mode=q.get('m')||'q',page=Math.max(1,Math.min(604,+q.get('p')||1));
-var n=('00'+page).slice(-3),dir={q:'qcf4',w:'warsh',t:'tajweed'}[mode]||'qcf4';
+var RB=(location.hostname==='localhost'||location.protocol==='capacitor:')?'https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/':'';var n=('00'+page).slice(-3),dir={q:'qcf4',w:'warsh',t:'tajweed'}[mode]||'qcf4';
 function get(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.text();});}
 function css(t){var s=document.createElement('style');s.textContent=t;document.head.appendChild(s);}
 function js(t){var s=document.createElement('script');s.textContent=t;document.body.appendChild(s);}
@@ -57,7 +57,7 @@ if(mode==='w'||mode==='s'||mode==='k'){
  var idir={s:'shubaimg',k:'qaloonimg',w:'warshimg'}[mode];
  css("body.wi{margin:0;background:#fffdf5;display:flex;justify-content:center;overflow:hidden}#wp{position:relative;line-height:0}#wp img{width:100%;height:auto;mix-blend-mode:multiply;display:block;user-select:none;-webkit-user-drag:none}#wp .ayah{position:absolute;border-radius:6px;cursor:pointer;mix-blend-mode:multiply}#wp .ayah.audioActive{background:rgba(120,200,160,.45)}#wp .ayah.selected{background:rgba(255,213,79,.5)}");
  document.body.className='wi';
- Promise.all([fetch('data/'+idir+'/ayah/'+n+'.json').then(function(r){return r.json()}),new Promise(function(ok,no){var im=new Image();im.onload=function(){ok(im)};im.onerror=no;im.src='data/'+idir+'/pages/'+n+'.webp';})]).then(function(r){
+ Promise.all([fetch('data/'+idir+'/ayah/'+n+'.json').then(function(r){return r.json()}),new Promise(function(ok,no){var im=new Image();im.onload=function(){ok(im)};im.onerror=no;im.src=RB+'data/'+idir+'/pages/'+n+'.webp';})]).then(function(r){
   var im=r[1],W=im.naturalWidth,H=im.naturalHeight,wp=document.createElement('div');wp.id='wp';wp.appendChild(im);
   r[0].forEach(function(a){var d=document.createElement('div');d.className='ayah';d.dataset.sura=a[0];d.dataset.ayah=a[1];
    d.style.cssText='left:'+(a[3]/W*100)+'%;top:'+(a[4]/H*100)+'%;width:'+((a[5]-a[3])/W*100)+'%;height:'+((a[6]-a[4])/H*100)+'%';wp.appendChild(d);});

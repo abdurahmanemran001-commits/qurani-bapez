@@ -20,3 +20,8 @@ build/
 */crashlytics.properties
 crashlytics-build.properties
 com_crashlytics_export_strings.xml
+mobile/node_modules/
+mobile/www/
+mobile/android/
+mobile/ios/
+mobile/assets/*.png
