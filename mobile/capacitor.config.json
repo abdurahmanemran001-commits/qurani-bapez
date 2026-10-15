@@ -1,0 +1,9 @@
+{
+  "appId": "com.qurani.bapez",
+  "appName": "قورئانی بەپێز",
+  "webDir": "www",
+  "backgroundColor": "#fffdf5",
+  "server": { "androidScheme": "https" },
+  "ios": { "contentInset": "never" },
+  "android": { "allowMixedContent": false }
+}

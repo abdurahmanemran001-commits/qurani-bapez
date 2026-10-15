@@ -6,7 +6,7 @@
 :root{--g:#176b4b;--bg:#fffdf5}
 *{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Tahoma,Arial,sans-serif;background:var(--bg);overflow:hidden}
 #app{display:flex;flex-direction:column;height:100%;height:100dvh}
-header{display:flex;gap:6px;align-items:center;padding:6px;background:var(--g);color:#fff;flex-wrap:wrap}
+header{display:flex;gap:6px;align-items:center;padding:6px;padding-top:max(6px,env(safe-area-inset-top));padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right));background:var(--g);color:#fff;flex-wrap:wrap}
 header select,header input,header button{font:inherit;font-size:14px;border:0;border-radius:8px;padding:6px 8px;background:#fff;color:#173f35;min-height:34px}
 header input{width:62px;text-align:center}
 header button{background:#e8f3ee;cursor:pointer}
@@ -25,7 +25,7 @@ header button{background:#e8f3ee;cursor:pointer}
 </style></head><body>
 <div id="app">
 <header>
- <button onclick="location.href='../'" title="گەڕانەوە">⌂</button>
+ <button id="home" onclick="location.href='../'" title="گەڕانەوە">⌂</button>
  <button onclick="alert('سەرچاوەکان:\nمصحف المدينة (حفص) - QCF / KFGQPC\nوەرش: Quran.com Android\nشعبة: quranpedia.net (مجمع الملك فهد)\nدەنگ: EveryAyah.com, mp3quran.net')" title="سەرچاوەکان">ℹ</button>
  <button id="next" title="دواتر">›</button>
  <input id="pg" type="number" min="1" max="604" inputmode="numeric">
@@ -36,7 +36,7 @@ header button{background:#e8f3ee;cursor:pointer}
   <button data-m="w">وەرش</button>
   <button data-m="s">شوعبە</button>
   <button data-m="k">قالون</button>
-  <button data-m="b">قونبول</button><button data-m="d">دووری</button><button data-m="u">سووسی</button><button data-m="x">خەلەف (تاقی)</button>
+  <button data-m="b">قونبول</button><button data-m="d">دووری</button><button data-m="u">سووسی</button>
   <button data-m="z">بەزی</button>
   <button data-m="t">تەجوید</button>
   <a href="riwayat.html" style="padding:6px 10px;border:1px solid #b99a4b;border-radius:8px;color:#6f5720;text-decoration:none;white-space:nowrap">ڕیوایەتی تر (دەنگ)</a>
@@ -54,7 +54,7 @@ var S=[],mode='q',page=1,f=document.getElementById('f'),pg=document.getElementBy
 function ld(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
 function sv(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 mode=ld('m','q');page=+ld('p',1)||1;
-var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtskbzdux'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
+var qs=new URLSearchParams(location.search);if(qs.get('p'))page=+qs.get('p')||page;if('qwtskbzdu'.indexOf(qs.get('m'))>=0&&qs.get('m'))mode=qs.get('m');
 function suraOf(p){var s=0;for(var i=0;i<114;i++)if(S[i]<=p)s=i;return s;}
 function show(){
  page=Math.max(1,Math.min(604,page));pg.value=page;sel.value=suraOf(page);
@@ -127,4 +127,4 @@ function fillReciters(){
  if(!isG()&&!isQ()){var v=ld('rc','');if(v)rc.value=v;}
 }
 fetch('reciters.json').then(function(r){return r.json()}).then(function(l){R=l;fillReciters();});
-</script></body></html>
+</script><script>if(location.hostname==='localhost'||location.protocol==='capacitor:'){var h=document.getElementById('home');if(h)h.style.display='none';}</script></body></html>

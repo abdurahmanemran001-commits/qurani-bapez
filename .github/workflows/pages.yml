@@ -29,34 +29,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html icon.svg manifest.webmanifest sw.js dist/
-          mkdir -p dist/mushaf/data
-          cp web/mushaf/* dist/mushaf/
-          A=app/src/main/assets
-          cp -r $A/qcf4 dist/mushaf/data/qcf4
-          cp -r $A/tajweed dist/mushaf/data/tajweed
-          rm -f dist/mushaf/data/tajweed/tajweedquran.json
-          git fetch --depth=1 origin data/warshimg2
-          git archive FETCH_HEAD warshimg | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/shubaimg
-          git archive FETCH_HEAD shubaimg | tar -x -C dist/mushaf/data
-          rm -f dist/mushaf/data/shubaimg/mushaf-content.json
-          git fetch --depth=1 origin data/qaloonimg
-          git archive FETCH_HEAD qaloonimg | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/qaloontiming
-          git archive FETCH_HEAD qaloontiming | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/qunbuldata
-          git archive FETCH_HEAD qunbul | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/bazzidata
-          git archive FETCH_HEAD bazzi | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/douridata
-          git archive FETCH_HEAD douri | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/susidata
-          git archive FETCH_HEAD susi | tar -x -C dist/mushaf/data
-          git fetch --depth=1 origin data/khalafrects
-          git archive FETCH_HEAD khalaf | tar -x -C dist/mushaf/data
-          mkdir -p dist/mushaf/data/khalaf/ayah && cp web/mushaf/khalaf_p1.json dist/mushaf/data/khalaf/ayah/001.json
-          git fetch --depth=1 origin data/shubatiming
-          git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
+          tools/assemble_web.sh dist
 
       - name: Verify web data
         run: |
