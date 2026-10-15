@@ -46,6 +46,8 @@ jobs:
           git archive FETCH_HEAD qaloontiming | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/qunbuldata
           git archive FETCH_HEAD qunbul | tar -x -C dist/mushaf/data
+          git fetch --depth=1 origin data/bazzidata
+          git archive FETCH_HEAD bazzi | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/douridata
           git archive FETCH_HEAD douri | tar -x -C dist/mushaf/data
           git fetch --depth=1 origin data/susidata
@@ -55,6 +57,14 @@ jobs:
           mkdir -p dist/mushaf/data/khalaf/ayah && cp web/mushaf/khalaf_p1.json dist/mushaf/data/khalaf/ayah/001.json
           git fetch --depth=1 origin data/shubatiming
           git archive FETCH_HEAD shubatiming | tar -x -C dist/mushaf/data
+
+      - name: Verify web data
+        run: |
+          D=dist/mushaf/data; miss=0
+          for f in warshimg/pages/001.webp warshimg/ayah/001.json shubaimg/pages/604.webp shubaimg/ayah/604.json shubatiming/timing.json qaloonimg/pages/001.webp qaloonimg/ayah/001.json qaloontiming/t208.json qunbul/meta.json qunbul/pages/604.json qunbul/qunbul.otf bazzi/meta.json bazzi/pages/604.json bazzi/bazzi.otf douri/meta.json douri/pages/604.json douri/douri.ttf susi/meta.json susi/pages/604.json susi/susi.ttf khalaf/ayah/001.json khalaf/ayah/604.json qcf4/qcf.js tajweed/noorehira.ttf; do
+            [ -s "$D/$f" ] || { echo "MISSING $f"; miss=1; }
+          done
+          [ $miss = 0 ] || exit 1
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
