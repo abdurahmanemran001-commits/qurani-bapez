@@ -67,6 +67,10 @@ public class MushafLibraryActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     web = new WebView(this);
     setContentView(web);
+    if (Build.VERSION.SDK_INT >= 19
+        && (getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+      WebView.setWebContentsDebuggingEnabled(true);
+    }
     WebSettings s = web.getSettings();
     s.setJavaScriptEnabled(true);
     s.setDomStorageEnabled(true);
