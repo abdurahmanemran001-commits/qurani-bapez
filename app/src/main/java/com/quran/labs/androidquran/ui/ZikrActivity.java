@@ -2,6 +2,7 @@ package com.quran.labs.androidquran.ui;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -174,13 +175,16 @@ public class ZikrActivity extends AppCompatActivity {
       number++;
       LinearLayout card = column();
       card.setPadding(18, 18, 18, 18);
+      card.setBackgroundColor(Color.WHITE);
       TextView num = new TextView(this);
       num.setText("زیکر " + number);
       num.setTextSize(14);
+      num.setTextColor(Color.BLACK);
       card.addView(num);
       TextView arabic = new TextView(this);
       arabic.setText(c.getString(1));
       arabic.setTextSize(23);
+      arabic.setTextColor(Color.BLACK);
       arabic.setGravity(Gravity.RIGHT);
       arabic.setTextIsSelectable(true);
       arabic.setPadding(0, 12, 0, 12);
@@ -190,6 +194,7 @@ public class ZikrActivity extends AppCompatActivity {
         TextView translated = new TextView(this);
         translated.setText(translation);
         translated.setTextSize(18);
+        translated.setTextColor(Color.BLACK);
         translated.setGravity(Gravity.RIGHT);
         translated.setTextIsSelectable(true);
         translated.setPadding(0, 0, 0, 12);
@@ -200,6 +205,7 @@ public class ZikrActivity extends AppCompatActivity {
         TextView source = new TextView(this);
         source.setText("سەرچاوە: " + reference);
         source.setTextSize(13);
+        source.setTextColor(Color.DKGRAY);
         card.addView(source);
       }
       Button counter = new Button(this);
@@ -231,6 +237,7 @@ public class ZikrActivity extends AppCompatActivity {
     TextView back = new TextView(this);
     back.setText(label);
     back.setTextSize(16);
+    back.setTextColor(Color.BLACK);
     back.setGravity(Gravity.CENTER_VERTICAL);
     back.setPadding(20, 18, 20, 18);
     back.setOnClickListener(v -> action.run());
@@ -241,6 +248,7 @@ public class ZikrActivity extends AppCompatActivity {
     TextView heading = new TextView(this);
     heading.setText(title);
     heading.setTextSize(22);
+    heading.setTextColor(Color.BLACK);
     heading.setGravity(Gravity.CENTER);
     heading.setPadding(20, 8, 20, 18);
     root.addView(heading);
@@ -250,9 +258,10 @@ public class ZikrActivity extends AppCompatActivity {
     TextView row = new TextView(this);
     row.setText(title + "   " + trailing);
     row.setTextSize(18);
+    row.setTextColor(Color.BLACK);
     row.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
     row.setPadding(18, 18, 18, 18);
-    row.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
+    row.setBackgroundColor(Color.WHITE);
     row.setOnClickListener(v -> click.run());
     LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
     p.setMargins(0, 0, 0, 10);
