@@ -21,7 +21,7 @@ jobs:
         run: |
           gh release download app-main -p '*.apk' -O /tmp/app.apk
           ls -l /tmp/app.apk
-          pip install playwright -q
+          pip install websockets -q
       - name: Run emulator test
         uses: reactivecircus/android-emulator-runner@v2
         with:
