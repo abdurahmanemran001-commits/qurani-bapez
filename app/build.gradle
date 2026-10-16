@@ -148,6 +148,43 @@ dependencies {
   androidTestImplementation "com.android.support:support-annotations:${supportLibVersion}"
 }
  
+// Bundle the official My Prayers Muslim Data database so azkar work offline.
+// Database source: https://github.com/my-prayers/muslim-data-android (MIT license).
+def muslimDataDir = file("$projectDir/src/main/assets/database")
+def muslimDataDb = file("$muslimDataDir/muslim_db_v2.5.1.db")
+def muslimDataDbUrl = "https://raw.githubusercontent.com/my-prayers/muslim-data-android/main/muslim-data/src/main/assets/database/muslim_db_v2.5.1.db"
+
+task downloadMuslimDataDatabase {
+  outputs.file muslimDataDb
+  doLast {
+    muslimDataDir.mkdirs()
+    if (!muslimDataDb.exists() || muslimDataDb.length() < 1000000) {
+      def connection = new URL(muslimDataDbUrl).openConnection()
+      connection.setConnectTimeout(20000)
+      connection.setReadTimeout(120000)
+      connection.setRequestProperty("User-Agent", "qurani-bapez-build")
+      connection.connect()
+      if (connection.responseCode != 200) {
+        throw new IOException("HTTP " + connection.responseCode + " downloading My Prayers database")
+      }
+      def bytes = connection.inputStream.bytes
+      if (bytes.length < 1000000 || new String(bytes, 0, Math.min(bytes.length, 16), "UTF-8").indexOf("SQLite format 3") != 0) {
+        throw new IOException("Downloaded My Prayers database is invalid")
+      }
+      def temp = new File(muslimDataDir, "muslim_db_v2.5.1.db.tmp")
+      temp.bytes = bytes
+      if (!temp.renameTo(muslimDataDb)) {
+        muslimDataDb.bytes = bytes
+        temp.delete()
+      }
+    }
+    if (!muslimDataDb.exists() || muslimDataDb.length() < 1000000) {
+      throw new GradleException("My Prayers database was not downloaded")
+    }
+  }
+}
+preBuild.dependsOn downloadMuslimDataDatabase
+
 // Bundle the Tajweed Quran data used by the optional Color Mushaf mode.
 // Source is MIT licensed and provides Uthmani text with Tajweed HTML markup.
 def tajweedAssetsDir = file("$projectDir/src/main/assets/tajweed")
