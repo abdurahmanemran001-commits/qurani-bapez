@@ -85,14 +85,20 @@ public class ZikrActivity extends AppCompatActivity {
 
     for (int i = 0; i < array.length(); i++) {
       JSONObject item = array.getJSONObject(i);
-      // The API's TEXT field is not a category URL. Match the web app:
-      // category data files are numbered 1.json, 2.json, ... in index order.
-      int categoryNumber = i + 1;
-      int categoryId = item.optInt("ID", categoryNumber);
+      // TEXT contains the actual category JSON URL. The index is not sorted
+      // by ID, so using i + 1 here opens the wrong section for many entries.
+      int categoryId = item.optInt("ID", i + 1);
+      String categoryUrl = item.optString("TEXT", "");
+      if (categoryUrl == null || categoryUrl.trim().isEmpty()) {
+        categoryUrl = CATEGORY_URL_BASE + categoryId + ".json";
+      } else {
+        // Keep requests on HTTPS even though the API currently returns HTTP URLs.
+        categoryUrl = categoryUrl.replace("http://", "https://");
+      }
       categories.add(new Category(
           categoryId,
           item.optString("TITLE", "زیکر"),
-          CATEGORY_URL_BASE + categoryNumber + ".json"));
+          categoryUrl));
     }
 
     ArrayList<String> titles = new ArrayList<>();
@@ -107,7 +113,10 @@ public class ZikrActivity extends AppCompatActivity {
   }
 
   private void loadCategory(Category category) {
-    String key = "category_" + category.id;
+    // Include the data URL in the cache key so old incorrectly mapped cached
+    // sections are not reused after correcting the category URL mapping.
+    String key = "category_" + category.id + "_" +
+        category.url.substring(category.url.lastIndexOf('/') + 1);
     String cached = getSharedPreferences(PREFS, MODE_PRIVATE).getString(key, null);
     if (cached != null) {
       try {
@@ -256,8 +265,10 @@ public class ZikrActivity extends AppCompatActivity {
               .putString(INDEX_CACHE, json).apply();
           parseIndex(json);
         } else {
+          String cacheKey = "category_" + category.id + "_" +
+              category.url.substring(category.url.lastIndexOf('/') + 1);
           getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-              .putString("category_" + category.id, json).apply();
+              .putString(cacheKey, json).apply();
           showCategory(category.title, json);
         }
       } catch (Exception e) {
