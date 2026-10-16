@@ -1,0 +1,14 @@
+size: 74M
+     3363  1980-00-00 00:00   assets/mushaf/data/qunbul/meta.json
+     3375  1980-00-00 00:00   assets/mushaf/data/susi/meta.json
+     1573  1980-00-00 00:00   assets/mushaf/data/susi/meta2.json
+      220  1980-00-00 00:00   assets/mushaf/data/warshimg/ayah/001.json
+    20265  1980-00-00 00:00   assets/mushaf/index.html
+     4516  1980-00-00 00:00   assets/mushaf/riwayat.html
+    10736  1980-00-00 00:00   assets/mushaf/view.html
+      910  1980-00-00 00:00   res/drawable-hdpi-v4/ic_mushaf_library.png
+      606  1980-00-00 00:00   res/drawable-mdpi-v4/ic_mushaf_library.png
+      911  1980-00-00 00:00   res/drawable-xhdpi-v4/ic_mushaf_library.png
+     1272  1980-00-00 00:00   res/drawable-xxhdpi-v4/ic_mushaf_library.png
+     1563  1980-00-00 00:00   res/drawable-xxxhdpi-v4/ic_mushaf_library.png
+mushaf files: 2436
