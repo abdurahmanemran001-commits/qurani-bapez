@@ -54,6 +54,19 @@ jobs:
           set -o pipefail
           ./gradlew assembleMadaniDebug --no-daemon --stacktrace 2>&1 | tee /tmp/g.log
 
+      - name: Check APK content and publish to Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(ls app/build/outputs/apk/madani/debug/*.apk | head -1)
+          cp "$APK" /tmp/qurani-bapez.apk
+          { echo "size: $(du -h /tmp/qurani-bapez.apk | cut -f1)"; unzip -l /tmp/qurani-bapez.apk | grep -E "assets/mushaf/(index|view|riwayat)\.html|assets/mushaf/data/(qunbul/meta|susi/meta|warshimg/ayah/001)|ic_mushaf_library" ; echo "mushaf files: $(unzip -l /tmp/qurani-bapez.apk | grep -c 'assets/mushaf/')"; } > /tmp/apkcheck.txt
+          cat /tmp/apkcheck.txt
+          gh release view app-main >/dev/null 2>&1 || gh release create app-main --title "Qurani Bapez (main app) - latest debug APK" --notes "Latest build of the main Android app (with the Mushaf & Qira'at library button)." --prerelease
+          gh release upload app-main /tmp/qurani-bapez.apk --clobber
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git checkout --orphan data/apkcheck; git rm -rf . -q; cp /tmp/apkcheck.txt apkcheck.txt; git add apkcheck.txt; git commit -q -m check; git push -f origin data/apkcheck
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
