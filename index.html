@@ -20,6 +20,9 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .status{height:25px;background:#202624;color:#fff;font-size:10px;padding:6px 12px;direction:ltr}
 .appbar{height:58px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;z-index:3}.appbar b{font-size:17px}.icon{border:0;background:transparent;color:#fff;font-size:23px;cursor:pointer;padding:4px}
 .main{height:calc(100% - 129px);overflow:auto;padding:14px}.view{display:none}.view.active{display:block}
+.welcome{text-align:center;padding:26px 8px 18px}.welcome-mark{width:76px;height:76px;margin:0 auto 14px;border-radius:24px;background:linear-gradient(145deg,#176b4b,#2e8b68);color:#fff;display:grid;place-items:center;font-size:42px;box-shadow:0 8px 20px #176b4b30}.welcome h2{font-size:22px;margin:0 0 9px;color:#174f3b}.welcome p{margin:0;color:var(--muted);font-size:13px;line-height:1.9}
+.section-choices{display:grid;gap:13px;margin-top:16px}.section-choice{width:100%;display:flex;align-items:center;gap:13px;text-align:right;padding:19px 15px;border:1px solid var(--line);border-radius:19px;background:#fff;cursor:pointer;box-shadow:0 5px 15px #12251c08;transition:transform .15s,box-shadow .15s}.section-choice:active{transform:scale(.985)}.quran-choice{border-color:#b9d9cb;background:linear-gradient(135deg,#fff,#edf7f1)}.zikr-choice{border-color:#e4d5ad;background:linear-gradient(135deg,#fff,#fbf5e7)}.choice-icon{width:53px;height:53px;flex:0 0 53px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:#e0f0e7;color:var(--green)}.zikr-choice .choice-icon{background:#f4e8c9;color:#8a6828}.choice-copy{flex:1}.choice-copy b{display:block;font-size:18px;margin-bottom:6px;color:#20372d}.choice-copy small{display:block;color:var(--muted);font-size:12px;line-height:1.7}.choice-arrow{font-size:26px;color:#71857a}.welcome-note{margin-top:19px;text-align:center;color:var(--muted);font-size:11px;line-height:1.8;padding:0 12px}
+.bottom.hidden{display:none}
 .hero{background:linear-gradient(135deg,#f4fbf7,#e7f3ed);border:1px solid #cfe1d9;border-radius:18px;padding:17px;text-align:center}.hero h2{margin:0 0 6px;font-size:21px}.hero p{margin:0;color:#566660;font-size:13px}
 .search{display:flex;gap:7px;margin:12px 0}.search input{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;outline:none}.search button,.primary{background:var(--green);color:#fff;border:0;border-radius:12px;padding:10px 13px;cursor:pointer}
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.tab{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px;cursor:pointer}.tab.on{background:var(--green2);border-color:#b8d6c9;color:var(--green);font-weight:bold}
@@ -43,7 +46,16 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <div class="status">9:41 &nbsp; 4G</div>
 <div class="appbar"><button class="icon" onclick="openSettings()">☰</button><b id="barTitle">قرآن الکریم</b><button class="icon" onclick="showSearch()">⌕</button></div>
 <div class="main">
-<section id="home" class="view active">
+<section id="startScreen" class="view active">
+<div class="welcome"><div class="welcome-mark">۞</div><h2>بەخێربێیت بۆ قورئانی پیرۆز</h2><p>تکایە ئەو بەشە هەڵبژێرە کە دەتەوێت بەکاری بهێنیت.</p></div>
+<div class="section-choices">
+<button class="section-choice quran-choice" onclick="enterQuran()"><span class="choice-icon">📖</span><span class="choice-copy"><b>قورئانی پیرۆز</b><small>خوێندنەوەی قورئان و موسحەف</small></span><span class="choice-arrow">‹</span></button>
+<button class="section-choice zikr-choice" onclick="enterDhikr()"><span class="choice-icon">☀</span><span class="choice-copy"><b>زیکرەکانم</b><small>زیکری بەیانی و ئێوارە و پێش خەوتن</small></span><span class="choice-arrow">‹</span></button>
+</div>
+<div class="welcome-note">هەردوو بەشەکە لە هەمان ئەپدان، بەڵام هەر یەکەیان ڕووکاری تایبەتی خۆی هەیە.</div>
+</section>
+
+<section id="home" class="view">
 <div class="hero"><h2>قورئانی پیرۆز</h2><p>ئەم ئەپە لەسەر ئەندرۆید، ئایفۆن، کۆمپیوتەر و هەموو وێبگەڕێک کار دەکات.</p><button id="installBtn" class="primary" onclick="installApp()">دابەزاندنی ئەپ</button></div>
 <div class="search"><input id="surahSearch" placeholder="گەڕان بە ناوی سورەت..." oninput="filterSurahs()"><button onclick="openPage(1)">موسحەف</button><button onclick="location.href='mushaf/'" style="background:#ffd54f;color:#173f35">ڕەنگاوڕەنگ 🎨</button></div>
 <div class="tabs"><button id="tabSurah" class="tab on" onclick="setHomeTab('surah')">سورەتەکان</button><button id="tabJuz" class="tab" onclick="setHomeTab('juz')">جوز</button><button id="tabBookmark" class="tab" onclick="setHomeTab('bookmark')">نیشانکراوەکان</button></div>
@@ -59,17 +71,17 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 </section>
 
 <section id="zikr" class="view">
-<div class="row"><div><h2 style="margin:0">زیکرەکانم</h2><span class="muted">بەشەکانی ئەذکار</span></div><button class="readerhead" onclick="goHome()">‹</button></div>
+<div class="row"><div><h2 style="margin:0">زیکرەکانم</h2><span class="muted">بەشەکانی ئەذکار</span></div><button class="readerhead" onclick="goSections()">‹ بەشەکان</button></div>
 <div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
 </section>
 
 <section id="detail" class="view">
-<div class="row"><button onclick="showZikr()">‹ هەموو بەشەکان</button><span id="zikrCount" class="badge"></span></div>
+<div class="row"><button onclick="showZikr()">‹ هەموو بەشەکان</button><button onclick="goSections()">گەڕانەوە بۆ سەرەتا</button><span id="zikrCount" class="badge"></span></div>
 <h2 id="detailTitle"></h2><div id="detailList" class="list"></div>
 </section>
 </div>
 <div class="bottom">
-<button id="navHome" class="nav on" onclick="showView('home','قرآن الکریم')"><span>⌂</span>سەرەتا</button>
+<button id="navHome" class="nav on" onclick="showView('startScreen','بەشەکان')"><span>⌂</span>سەرەتا</button>
 <button id="navReader" class="nav" onclick="openPage(currentPage)"><span>📖</span>قورئان</button>
 <button id="navZikr" class="nav" onclick="showZikr()"><span>☀</span>زیکر</button>
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
@@ -94,8 +106,11 @@ const fallbackSurahs=[
 ];
 let surahs=fallbackSurahs;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on');if(id==='zikr'||id==='detail')navZikr.classList.add('on')}
-function goHome(){showView('home','قرآن الکریم');renderSurahs()}
+function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));const bottom=document.querySelector('.bottom');bottom.classList.toggle('hidden',id==='startScreen'||id==='zikr'||id==='detail');document.querySelector('.appbar .icon:last-child').style.visibility=id==='startScreen'||id==='zikr'||id==='detail'?'hidden':'visible';document.querySelector('.appbar .icon:first-child').onclick=(id==='startScreen')?()=>{}:openSettings;if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on');if(id==='zikr'||id==='detail')navZikr.classList.add('on')}
+function enterQuran(){showView('home','قورئانی پیرۆز');renderSurahs()}
+function enterDhikr(){showZikr()}
+function goSections(){showView('startScreen','بەشەکان')}
+function goHome(){showView('home','قورئانی پیرۆز');renderSurahs()}
 function renderSurahs(){const q=(document.getElementById('surahSearch').value||'').trim();let a=surahs.filter(x=>!q||x[0].includes(q)||String(x[1])===q);if(homeTab==='juz'){a=Array.from({length:30},(_,i)=>['جوزی '+(i+1),i+1,0,Math.min(604,1+i*20)]);}if(homeTab==='bookmark'){a=[];try{const b=JSON.parse(localStorage.getItem('preview_bookmarks')||'[]');a=b.map(p=>['پەڕەی '+p,0,0,p])}catch{}}document.getElementById('surahList').innerHTML=a.length?a.map(x=>'<div class="surah" onclick="openPage('+x[3]+')"><span class="num">'+x[1]+'</span><div class="name"><b>'+esc(x[0])+'</b><small>'+x[2]+' ئایەت · پەڕە '+x[3]+'</small></div><span class="arrow">‹</span></div>').join(''):'<div class="card muted">هیچ شتێک نەدۆزرایەوە.</div>'}
 function setHomeTab(t){homeTab=t;['surah','juz','bookmark'].forEach(x=>document.getElementById('tab'+x[0].toUpperCase()+x.slice(1)).classList.toggle('on',x===t));renderSurahs()}
 function filterSurahs(){homeTab='surah';renderSurahs()}
