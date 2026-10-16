@@ -80,8 +80,26 @@ public class ZikrActivity extends AppCompatActivity {
 
   private void parseIndex(String json) throws Exception {
     categories.clear();
-    JSONObject object = new JSONObject(json.replace("\uFEFF", ""));
-    JSONArray array = object.getJSONArray(object.keys().next());
+    JSONObject object = new JSONObject(json.replace("\\uFEFF", ""));
+    // API responses may change property order or shape. Find the actual
+    // category array instead of blindly reading the first JSON property.
+    JSONArray array = null;
+    Iterator<String> indexKeys = object.keys();
+    while (indexKeys.hasNext()) {
+      Object value = object.opt(indexKeys.next());
+      if (!(value instanceof JSONArray)) continue;
+      JSONArray candidate = (JSONArray) value;
+      if (candidate.length() == 0) continue;
+      JSONObject first = candidate.optJSONObject(0);
+      if (first != null && first.has("TITLE") &&
+          (first.has("TEXT") || first.has("ID"))) {
+        array = candidate;
+        break;
+      }
+    }
+    if (array == null) {
+      throw new IllegalStateException("No category list found in index response");
+    }
 
     for (int i = 0; i < array.length(); i++) {
       JSONObject item = array.getJSONObject(i);
@@ -99,6 +117,10 @@ public class ZikrActivity extends AppCompatActivity {
           categoryId,
           item.optString("TITLE", "زیکر"),
           categoryUrl));
+    }
+
+    if (categories.isEmpty()) {
+      throw new IllegalStateException("Category list is empty");
     }
 
     ArrayList<String> titles = new ArrayList<>();
