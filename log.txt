@@ -1,0 +1,93 @@
++ adb install -r /tmp/app.apk
+Performing Streamed Install
+Success
++ adb root
++ sleep 3
++ adb shell pm grant com.quran.labs.androidquran.debug android.permission.WRITE_EXTERNAL_STORAGE
++ adb logcat -c
++ adb shell pm list packages
++ grep -i quran
+package:com.quran.labs.androidquran.debug
++ adb shell dumpsys package com.quran.labs.androidquran
++ grep -iE 'versionName|MushafLibrary|Activity Resolver'
++ head -20
++ unzip -p /tmp/app.apk AndroidManifest.xml
++ strings -el
++ grep -iE 'Mushaf|ZikrActivity'
++ head
+++ unzip -l /tmp/app.apk
+++ grep -o 'classes[0-9]*\.dex'
++ for d in $(unzip -l /tmp/app.apk | grep -o 'classes[0-9]*\.dex')
++ echo classes.dex
+classes.dex
++ unzip -p /tmp/app.apk classes.dex
++ strings
++ grep -c MushafLibraryActivity
+8
++ adb shell am start -n com.quran.labs.androidquran.debug/com.quran.labs.androidquran.ui.MushafLibraryActivity
+Starting: Intent { cmp=com.quran.labs.androidquran.debug/com.quran.labs.androidquran.ui.MushafLibraryActivity }
++ adb shell am start -n com.quran.labs.androidquran.debug/com.quran.labs.androidquran.QuranDataActivity
+Starting: Intent { cmp=com.quran.labs.androidquran.debug/com.quran.labs.androidquran.QuranDataActivity }
++ sleep 10
++ adb exec-out screencap -p
++ adb shell am start -n com.quran.labs.androidquran.debug/com.quran.labs.androidquran.ui.MushafLibraryActivity
+Starting: Intent { cmp=com.quran.labs.androidquran.debug/com.quran.labs.androidquran.ui.MushafLibraryActivity }
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
++ sleep 8
++ adb exec-out screencap -p
+++ adb shell cat /proc/net/unix
+++ grep -o 'webview_devtools_remote_[0-9]*'
+++ head -1
++ SOCK=webview_devtools_remote_3427
++ echo sock=webview_devtools_remote_3427
+sock=webview_devtools_remote_3427
++ adb forward tcp:9222 localabstract:webview_devtools_remote_3427
+9222
++ python3 tools/emulator_drive.py
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 520, in wait_for
+    return await fut
+           ^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py", line 74, in <module>
+    asyncio.run(main())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py", line 51, in main
+    await c.shot('10_lib_%s.png' % m)
+  File "/home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py", line 33, in shot
+    r = await self.call('Page.captureScreenshot', {'format': 'png'})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py", line 26, in call
+    return (await asyncio.wait_for(fut, 60))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/tasks.py", line 519, in wait_for
+    async with timeouts.timeout(timeout):
+  File "/usr/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<CDP.pump() done, defined at /home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py:9> exception=ConnectionClosedError(None, None, None)>
+Traceback (most recent call last):
+  File "/home/runner/work/qurani-bapez/qurani-bapez/tools/emulator_drive.py", line 10, in pump
+    async for raw in self.ws:
+  File "/home/runner/.local/lib/python3.12/site-packages/websockets/asyncio/connection.py", line 237, in __aiter__
+    yield await self.recv()
+          ^^^^^^^^^^^^^^^^^
+  File "/home/runner/.local/lib/python3.12/site-packages/websockets/asyncio/connection.py", line 317, in recv
+    raise self.protocol.close_exc from self.recv_exc
+websockets.exceptions.ConnectionClosedError: no close frame received or sent
++ adb logcat -d -s chromium:I AndroidRuntime:E
++ tail -80
++ adb exec-out screencap -p

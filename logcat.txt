@@ -1,0 +1,4 @@
+--------- beginning of system
+--------- beginning of main
+--------- beginning of kernel
+10-16 11:07:28.364  3427  3427 E chromium: [ERROR:filesystem_posix.cc(62)] mkdir /data/user/0/com.quran.labs.androidquran.debug/cache/WebView/Crashpad: No such file or directory (2)
