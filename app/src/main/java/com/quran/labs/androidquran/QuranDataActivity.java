@@ -526,8 +526,7 @@ public class QuranDataActivity extends Activity implements
   }
 
   protected void runListView() {
-    Intent i = new Intent(this, QuranActivity.class);
-    i.putExtra(QuranActivity.EXTRA_SHOW_TRANSLATION_UPGRADE, quranSettings.haveUpdatedTranslations());
+    Intent i = new Intent(this, SectionChooserActivity.class);
     startActivity(i);
     finish();
   }
