@@ -31,6 +31,7 @@ import okhttp3.Response;
 
 public class ZikrActivity extends AppCompatActivity {
   private static final String INDEX_URL = "https://www.hisnmuslim.com/api/ar/husn_ar.json";
+  private static final String CATEGORY_URL_BASE = "https://www.hisnmuslim.com/api/ar/";
   private static final String PREFS = "zikr_cache";
   private static final String INDEX_CACHE = "index";
 
@@ -84,10 +85,14 @@ public class ZikrActivity extends AppCompatActivity {
 
     for (int i = 0; i < array.length(); i++) {
       JSONObject item = array.getJSONObject(i);
+      // The API's TEXT field is not a category URL. Match the web app:
+      // category data files are numbered 1.json, 2.json, ... in index order.
+      int categoryNumber = i + 1;
+      int categoryId = item.optInt("ID", categoryNumber);
       categories.add(new Category(
-          item.optInt("ID"),
-          item.optString("TITLE"),
-          item.optString("TEXT")));
+          categoryId,
+          item.optString("TITLE", "زیکر"),
+          CATEGORY_URL_BASE + categoryNumber + ".json"));
     }
 
     ArrayList<String> titles = new ArrayList<>();
