@@ -144,7 +144,7 @@ function fillReciters(){
 }
 fetch('reciters.json').then(function(r){return r.json()}).then(function(l){R=l;fillReciters();});
 
-var NAT=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+var QB=window.QPK||null;var NAT=!!QB||!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
 var RBASE='https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/data/';
 var BI={q:{n:'مەدینە تەجوید',s:'حەفص عن عاصم',x:'ڕەنگاوڕەنگ، هایلایتی ئایەت و دەنگ. لەناو ئەپەکەدایە.'},t:{n:'تەجوید (دەق)',s:'حەفص عن عاصم',x:'دەقی ڕەنگاوڕەنگی تەجوید. لەناو ئەپەکەدایە.'}};
 var PK={w:{dir:'warshimg',n:'وەرش',s:'عن نافع',k:'img',mb:71,x:'وێنەی ڕەسمی مصحف المدينة بە هایلایت.'},
@@ -154,11 +154,11 @@ var PK={w:{dir:'warshimg',n:'وەرش',s:'عن نافع',k:'img',mb:71,x:'وێن
  z:{dir:'bazzi',n:'بەزی',s:'عن ابن کثیر',k:'txt',f:'bazzi.otf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
  d:{dir:'douri',n:'دووری',s:'عن أبي عمرو',k:'txt',f:'douri.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
  u:{dir:'susi',n:'سووسی',s:'عن أبي عمرو',k:'txt',f:'susi.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'}};
-var inst={},dl={},FSP=NAT?Capacitor.registerPlugin('Filesystem'):null;
+var inst={},dl={},FSP=(NAT&&!QB)?Capacitor.registerPlugin('Filesystem'):null;
 function fsp(m){return 'packs/'+PK[m].dir;}
 function sleep(t){return new Promise(function(r){setTimeout(r,t)});}
-async function localBase(m){var r=await FSP.getUri({path:fsp(m),directory:'DATA'});return Capacitor.convertFileSrc(r.uri)+'/';}
-async function isInst(m){try{await FSP.stat({path:fsp(m)+'/DONE',directory:'DATA'});return true;}catch(e){return false;}}
+async function localBase(m){if(QB)return 'https://app.local/packs/'+PK[m].dir+'/';var r=await FSP.getUri({path:fsp(m),directory:'DATA'});return Capacitor.convertFileSrc(r.uri)+'/';}
+async function isInst(m){if(QB)return !!QB.has(PK[m].dir);try{await FSP.stat({path:fsp(m)+'/DONE',directory:'DATA'});return true;}catch(e){return false;}}
 async function refreshInst(){for(var m in PK){inst[m]=(await isInst(m))?await localBase(m):null;}}
 var READY=NAT?refreshInst().catch(function(){}):Promise.resolve();
 function baseFor(m){if(!PK[m]||!NAT)return '';if(inst[m])return inst[m];if(ld('onl_'+m)==='1')return RBASE+PK[m].dir+'/';return null;}
@@ -180,6 +180,7 @@ function renderLib(){
 async function getPack(m){
  var P=PK[m],files=[],i;
  if(P.k==='img'){for(i=1;i<=604;i++)files.push('pages/'+('00'+i).slice(-3)+'.webp');}else files=['all.json',P.f];
+ if(QB){dl[m]={done:0,total:files.length,stop:function(){QB.cancel(P.dir);}};renderLib();QB.download(P.dir,JSON.stringify(files));return;}
  var total=files.length,done=0,idx=0,stop=false,fail=null;
  dl[m]={done:0,total:total,stop:function(){stop=true;}};renderLib();
  async function worker(){
@@ -205,8 +206,14 @@ document.getElementById('lbl').onclick=function(e){
  else if(a==='get'){getPack(m);}
  else if(a==='stop'){if(dl[m])dl[m].stop();}
  else if(a==='onl'){sv('onl_'+m,'1');closeLib();setMode(m);}
- else if(a==='del'){if(confirm('ئەم موسحەفە لەسەر مۆبایلەکەت بسڕدرێتەوە؟'))FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true}).catch(function(){}).then(function(){inst[m]=null;sv('onl_'+m,'0');if(mode===m){mode='q';fillReciters();show();}renderLib();});}
+ else if(a==='del'){if(confirm('ئەم موسحەفە لەسەر مۆبایلەکەت بسڕدرێتەوە؟'))(QB?Promise.resolve(QB.remove(PK[m].dir)):FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true})).catch(function(){}).then(function(){inst[m]=null;sv('onl_'+m,'0');if(mode===m){mode='q';fillReciters();show();}renderLib();});}
 };
+window.__pk=function(dir,done,total,st){var m=null;for(var k in PK)if(PK[k].dir===dir)m=k;if(!m)return;
+ if(st==='progress'){dl[m]={done:done,total:total,stop:function(){QB.cancel(dir);}};}
+ else if(st==='done'){delete dl[m];inst[m]='https://app.local/packs/'+dir+'/';}
+ else{delete dl[m];if(st==='error')alert('داگرتن سەرکەوتوو نەبوو. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵبدەرەوە.');}
+ renderLib();};
+if(QB){for(var k in PK){var a=QB.active(PK[k].dir);if(a){var pr=a.split('/');dl[k]={done:+pr[0],total:+pr[1],stop:(function(d){return function(){QB.cancel(d);};})(PK[k].dir)};}}}
 document.getElementById('lib').onclick=openLib;document.getElementById('lbx').onclick=closeLib;
 document.getElementById('lb').onclick=function(e){if(e.target.id==='lb')closeLib();};
-</script><script>if(location.hostname==='localhost'||location.protocol==='capacitor:'){var h=document.getElementById('home');if(h)h.style.display='none';}</script></body></html>
+</script><script>if(location.hostname==='localhost'||location.hostname==='app.local'||location.protocol==='capacitor:'){var h=document.getElementById('home');if(h)h.style.display='none';}</script></body></html>

@@ -196,6 +196,10 @@ public class QuranActivity extends QuranActionBarActivity
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
+      case R.id.mushaf_library: {
+        startActivity(new Intent(this, MushafLibraryActivity.class));
+        return true;
+      }
       case R.id.zikr: {
         Intent i = new Intent(this, ZikrActivity.class);
         startActivity(i);

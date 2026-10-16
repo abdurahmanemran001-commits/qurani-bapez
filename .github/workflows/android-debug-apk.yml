@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -15,6 +15,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Web mushaf (qira'at library). Only the light core goes into the APK; big packs are downloaded on demand.
+      - name: Bundle web mushaf into the app
+        run: |
+          tools/assemble_web.sh /tmp/w --app
+          mkdir -p app/src/main/assets/mushaf
+          cp -r /tmp/w/mushaf/. app/src/main/assets/mushaf/
+          rm -rf app/src/main/assets/mushaf/data/qcf4 app/src/main/assets/mushaf/data/tajweed
+          du -sh app/src/main/assets/mushaf
 
       - name: Set up Java 17 for Android SDK tools
         uses: actions/setup-java@v5
@@ -42,7 +51,8 @@ jobs:
       - name: Build Madani debug APK
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleMadaniDebug --no-daemon --stacktrace
+          set -o pipefail
+          ./gradlew assembleMadaniDebug --no-daemon --stacktrace 2>&1 | tee /tmp/g.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -50,5 +60,14 @@ jobs:
           name: qurani-bapez-debug-apk
           path: app/build/outputs/apk/madani/debug/*.apk
           if-no-files-found: error
+
+      - name: Push build log on failure
+        if: failure()
+        run: |
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          grep -nE "error:|FAILED|What went wrong" -A3 /tmp/g.log | head -80 > /tmp/err.txt || true
+          tail -60 /tmp/g.log >> /tmp/err.txt
+          git checkout --orphan data/buildlog-java; git rm -rf . -q
+          cp /tmp/err.txt build-error.txt; git add build-error.txt; git commit -q -m log; git push -f origin data/buildlog-java
 
 # retry after Crashlytics compatibility fix

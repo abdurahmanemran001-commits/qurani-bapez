@@ -44,6 +44,10 @@
         android:name=".ui.ZikrActivity"
         android:theme="@style/QuranToolBar"/>
     <activity
+        android:name=".ui.MushafLibraryActivity"
+        android:configChanges="orientation|screenSize|keyboardHidden"
+        android:theme="@style/QuranToolBar"/>
+    <activity
         android:name=".AboutUsActivity"
         android:theme="@style/QuranToolBar"/>
     <activity android:name=".HelpActivity"/>

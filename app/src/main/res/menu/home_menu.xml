@@ -20,6 +20,11 @@
     </menu>
   </item>
   <item
+      android:id="@+id/mushaf_library"
+      android:icon="@drawable/ic_mushaf_library"
+      android:title="@string/menu_mushaf_library"
+      app:showAsAction="always" />
+  <item
       android:id="@+id/last_page"
       android:icon="@drawable/ic_goto_quran"
       android:title="@string/menu_jump_last_page"
