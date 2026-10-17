@@ -169,11 +169,15 @@ async function openChapter(i,j){
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
   $('detailList').innerHTML=h.items.map((it,k)=>{
     const tr=it[zlang]||it.ckb;
-    return '<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button onclick="tick(this)">0</button></div></div>';
+    const target=Math.max(1,Number(it.repeat)||1);
+    const targetLabel=target.toLocaleString('ar');
+    const countLabel=target===1?'جارێک':'جار';
+    return '<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" onclick="tick(this)">٠ / '+targetLabel+'</button></div></div>';
   }).join('');
 }
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
-function tick(b){b.textContent=(Number(b.textContent)||0)+1}
+function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const raw=b.textContent.split('/')[0].replace(/[^0-9٠-٩]/g,'');const currentValue=Number(raw.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)))||0;const current=Math.min(target,currentValue+1);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar'}}
+
 
 async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
 (async()=>{renderSurahs();applyStyle();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
