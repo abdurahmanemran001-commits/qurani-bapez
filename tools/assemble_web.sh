@@ -41,8 +41,8 @@ python3 - "$DEST/azkar.json" <<'PY'
 import json,sys
 with open(sys.argv[1],encoding='utf8') as f: data=json.load(f)
 items=sum(len(ch.get('items',[])) for cat in data for ch in cat.get('chapters',[]))
-if len(data)<100 or items<100:
-    raise SystemExit(f'Incomplete azkar data: {len(data)} categories, {items} items')
-print(f'Verified full azkar dataset: {len(data)} categories, {items} items')
+if len(data)<40 or items<800:
+    raise SystemExit(f'Incomplete adhkar data: {len(data)} categories, {items} items')
+print(f'Verified Sorani adhkar dataset: {len(data)} categories, {items} items')
 PY
 echo "assembled: $(du -sh "$D" | cut -f1)"
