@@ -28,11 +28,11 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}.tab{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px;cursor:pointer}.tab.on{background:var(--green2);border-color:#b8d6c9;color:var(--green);font-weight:bold}
 .list{display:grid;gap:8px}.surah{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px;cursor:pointer}.num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--green2);color:var(--green);font-weight:bold;font-size:12px}.surah .name{flex:1}.surah b{display:block}.surah small{color:var(--muted)}.arrow{color:#94a09b}
 .card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin-top:11px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.muted{color:var(--muted);font-size:13px}
-.bottom{height:71px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);position:absolute;bottom:0;left:0;right:0;z-index:4}.nav{border:0;background:#fff;color:#73807b;font-size:11px;cursor:pointer}.nav span{display:block;font-size:20px;margin-bottom:3px}.nav.on{color:var(--green);font-weight:bold}
+.bottom{height:71px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);position:absolute;bottom:0;left:0;right:0;z-index:4}.nav{border:0;background:#fff;color:#73807b;font-size:11px;cursor:pointer}.nav span{display:block;font-size:20px;margin-bottom:3px}.nav.on{color:var(--green);font-weight:bold}
 .mushaf{background:#eeeae0;border-radius:10px;padding:7px;min-height:530px;display:flex;align-items:center;justify-content:center;overflow:hidden}.mushaf img{width:100%;height:auto;display:block;max-height:610px;object-fit:contain;background:#fff;box-shadow:0 4px 16px #0002}.mushaf-fallback{padding:30px;text-align:center;color:#6c716e}.readerbar{display:grid;grid-template-columns:45px 1fr 45px;gap:7px;align-items:center;margin-top:9px}.readerbar button{border:0;background:#fff;border:1px solid var(--line);border-radius:11px;height:42px;cursor:pointer}.readerbar input{width:100%;border:1px solid var(--line);border-radius:11px;height:42px;text-align:center}.readerhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.readerhead button{border:0;background:var(--green2);color:var(--green);border-radius:10px;padding:8px 10px;cursor:pointer}
 .settings .option{padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff;cursor:pointer}.settings .option.on{border-color:#a8cbbd;background:var(--green2)}
 .modal{position:absolute;inset:0;background:#0007;z-index:20;display:none;padding:14px;overflow:auto}.modal.open{display:block}.sheet{background:#f9fbfa;border-radius:20px;padding:16px;max-width:390px;margin:18px auto}.sheet h3{margin:0 0 12px}.close{float:left;border:0;background:#e8eeeb;border-radius:9px;padding:6px 9px;cursor:pointer}
-.zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
+.zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.zikr-tr{font-size:16px;line-height:1.9;margin:6px 0 8px;color:#2c3f37}.zikr-ref{font-size:12px;line-height:1.7;margin-top:6px}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
 .commit{font-family:monospace;font-size:11px;direction:ltr;text-align:left;word-break:break-all;background:#f3f6f5;padding:9px;border-radius:9px}
 #installBtn{display:none;margin-top:10px}
 @media(max-width:500px){.wrap{padding:0}.top{display:none}.status{display:none}.phone{width:100%;height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}.appbar{padding-top:env(safe-area-inset-top);height:calc(58px + env(safe-area-inset-top))}.main{height:calc(100% - 129px)}.bottom{padding-bottom:env(safe-area-inset-bottom);height:calc(71px + env(safe-area-inset-bottom))}}
@@ -71,19 +71,20 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 </section>
 
 <section id="zikr" class="view">
-<div class="row"><div><h2 style="margin:0">زیکرەکانم</h2><span class="muted">بەشەکانی ئەذکار</span></div><button class="readerhead" onclick="goSections()">‹ بەشەکان</button></div>
+<div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div>
+<button id="langBtn" class="tab" onclick="toggleLang()" style="width:100%;margin-top:10px">زمان ↻</button>
 <div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
 </section>
 
 <section id="detail" class="view">
-<div class="row"><button onclick="showZikr()">‹ هەموو بەشەکان</button><button onclick="goSections()">گەڕانەوە بۆ سەرەتا</button><span id="zikrCount" class="badge"></span></div>
-<h2 id="detailTitle"></h2><div id="detailList" class="list"></div>
+<div class="row"><button class="tab" onclick="backToChapters()">‹ بابەتەکان</button><button class="tab" onclick="toggleLang()">↻ زمان</button><button class="tab" onclick="goSections()">⌂ سەرەتا</button></div>
+<div class="row" style="margin-top:10px"><h2 id="detailTitle" style="margin:0"></h2><span id="zikrCount" class="badge"></span></div>
+<div id="detailList" class="list" style="margin-top:10px"></div>
 </section>
 </div>
 <div class="bottom">
 <button id="navHome" class="nav on" onclick="showView('startScreen','بەشەکان')"><span>⌂</span>سەرەتا</button>
 <button id="navReader" class="nav" onclick="openPage(currentPage)"><span>📖</span>قورئان</button>
-<button id="navZikr" class="nav" onclick="showZikr()"><span>☀</span>زیکر</button>
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
 </div>
 
@@ -106,7 +107,7 @@ const fallbackSurahs=[
 ];
 let surahs=fallbackSurahs;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));const bottom=document.querySelector('.bottom');bottom.classList.toggle('hidden',id==='startScreen'||id==='zikr'||id==='detail');document.querySelector('.appbar .icon:last-child').style.visibility=id==='startScreen'||id==='zikr'||id==='detail'?'hidden':'visible';document.querySelector('.appbar .icon:first-child').onclick=(id==='startScreen')?()=>{}:openSettings;if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on');if(id==='zikr'||id==='detail')navZikr.classList.add('on')}
+function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));const bottom=document.querySelector('.bottom');bottom.classList.toggle('hidden',id==='startScreen'||id==='zikr'||id==='detail');document.querySelector('.appbar .icon:last-child').style.visibility=id==='startScreen'||id==='zikr'||id==='detail'?'hidden':'visible';document.querySelector('.appbar .icon:first-child').onclick=(id==='startScreen')?()=>{}:openSettings;if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on')}
 function enterQuran(){showView('home','قورئانی پیرۆز');renderSurahs()}
 function enterDhikr(){showZikr()}
 function goSections(){showView('startScreen','بەشەکان')}
@@ -123,10 +124,57 @@ function openSettings(){document.getElementById('settingsModal').classList.add('
 function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
 function setStyle(el){style=el.dataset.style;localStorage.setItem('preview_style',style);document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x===el));applyStyle()}
 function applyStyle(){document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x.dataset.style===style));document.querySelector('.phone').style.filter=style==='night'?'brightness(.78)':style==='warm'?'sepia(.08)':'none'}
+
+/* ---- زیکرەکانم: full azkar (Arabic + Kurdish) from azkar.json, built from the My Prayers database ---- */
+// Small built-in list, only used if azkar.json cannot be loaded.
 const localDhikr=[{title:'زیکری بەیانی',items:[['أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ','١'],['رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا','٣'],['سُبْحَانَ اللَّهِ وَبِحَمْدِهِ','١٠٠']]},{title:'زیکری ئێوارە',items:[['أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ','١'],['رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا','٣'],['أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ','١٠٠']]},{title:'زیکری پێش خەوتن',items:[['بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا','١'],['سُبْحَانَ اللَّهِ','٣٣'],['الْحَمْدُ لِلَّهِ','٣٣'],['اللَّهُ أَكْبَرُ','٣٤']]},{title:'زیکری دوای نوێژ',items:[['أَسْتَغْفِرُ اللَّهَ','٣'],['اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ','١'],['سُبْحَانَ اللَّهِ','٣٣'],['الْحَمْدُ لِلَّهِ','٣٣'],['اللَّهُ أَكْبَرُ','٣٣']]},{title:'زیکری لە خەو هەستان',items:[['الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ','١']]}];
-function loadZikr(){const box=document.getElementById('zikrList');box.innerHTML=localDhikr.map((x,i)=>'<div class="zikr-item" onclick="loadZikrDetail('+i+')"><b>'+esc(x.title)+'</b><div class="muted">'+x.items.length+' زیکر</div></div>').join('')}
-function loadZikrDetail(i){const x=localDhikr[i];if(!x)return;showView('detail','زیکرەکانم');const box=document.getElementById('detailList');document.getElementById('detailTitle').textContent=x.title;document.getElementById('zikrCount').textContent=x.items.length+' دانە';box.innerHTML=x.items.map((item,k)=>'<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(item[0])+'</div><div class="counter"><span class="badge">دووبارەکردنەوە: '+item[1]+'</span></div></div>').join('')}
-function showZikr(){showView('zikr','زیکرەکانم');loadZikr()}
+const LANG_NAMES={ckb:'کوردیی سۆرانی',bad:'کوردیی بادینی'};
+let azkar=null,zcat=-1,zchap=-1,zlang='ckb';
+try{if(localStorage.getItem('zikr_lang')==='bad')zlang='bad'}catch{}
+const $=id=>document.getElementById(id);
+function pick(o,k){return (o&&(o[k]||o.ckb||o.ar))||''}
+function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:g.title,chapters:[{ar:g.title,ckb:g.title,bad:g.title,items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',ref:'دووبارەکردنەوە: '+x[1]}))}]}))}
+async function ensureAzkar(){
+  if(azkar)return azkar;
+  try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length){azkar=j;return azkar}}}catch{}
+  return fallbackAzkar();
+}
+function setLangLabel(){$('langBtn').textContent='زمان: '+LANG_NAMES[zlang]+'  ↻'}
+function toggleLang(){
+  zlang=zlang==='ckb'?'bad':'ckb';
+  try{localStorage.setItem('zikr_lang',zlang)}catch{}
+  if($('detail').classList.contains('active'))openChapter(zcat,zchap);
+  else if(zcat>=0)openCategory(zcat);
+  else showCategories();
+}
+function showZikr(){showView('zikr','زیکرەکانم');showCategories()}
+async function showCategories(){
+  zcat=-1;zchap=-1;setLangLabel();
+  $('zikrTitle').textContent='زیکرەکانم';$('zikrSub').textContent='بەشەکانی ئەذکار';
+  $('zikrBack').textContent='‹ بەشەکان';$('zikrBack').onclick=goSections;
+  const box=$('zikrList');box.innerHTML='<div class="card muted">بارکردنی زیکرەکان...</div>';
+  const data=await ensureAzkar();
+  box.innerHTML=data.map((c,i)=>'<div class="zikr-item" onclick="openCategory('+i+')"><b>'+esc(pick(c,zlang))+'</b><div class="muted">'+c.chapters.length+' بابەت · '+c.chapters.reduce((n,h)=>n+h.items.length,0)+' زیکر</div></div>').join('');
+}
+async function openCategory(i){
+  const data=await ensureAzkar();const c=data[i];if(!c)return;
+  zcat=i;zchap=-1;showView('zikr','زیکرەکانم');setLangLabel();
+  $('zikrTitle').textContent=pick(c,zlang);$('zikrSub').textContent=c.chapters.length+' بابەت';
+  $('zikrBack').textContent='‹ هەموو بەشەکان';$('zikrBack').onclick=showCategories;
+  $('zikrList').innerHTML=c.chapters.map((h,j)=>'<div class="zikr-item" onclick="openChapter('+i+','+j+')"><b>'+esc(pick(h,zlang))+'</b><div class="muted">'+h.items.length+' زیکر</div></div>').join('');
+}
+async function openChapter(i,j){
+  const data=await ensureAzkar();const c=data[i],h=c&&c.chapters[j];if(!h)return;
+  zcat=i;zchap=j;showView('detail','زیکرەکانم');
+  $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
+  $('detailList').innerHTML=h.items.map((it,k)=>{
+    const tr=it[zlang]||it.ckb;
+    return '<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button onclick="tick(this)">0</button></div></div>';
+  }).join('');
+}
+function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
+function tick(b){b.textContent=(Number(b.textContent)||0)+1}
+
 async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
 (async()=>{renderSurahs();applyStyle();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
 

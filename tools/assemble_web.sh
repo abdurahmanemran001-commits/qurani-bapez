@@ -33,4 +33,7 @@ if [ "$NOIMG" = "--app" ]; then
   rm -f "$D"/qunbul/all.json "$D"/qunbul/*.otf "$D"/bazzi/all.json "$D"/bazzi/*.otf \
         "$D"/douri/all.json "$D"/douri/*.ttf "$D"/susi/all.json "$D"/susi/*.ttf
 fi
+# Full azkar (Arabic + Kurdish) from the My Prayers database -> $DEST/azkar.json.
+# If this ever fails the page still works and falls back to its small built-in azkar list.
+python3 tools/build_azkar.py "$DEST/azkar.json" || echo "azkar.json could not be built; using built-in fallback"
 echo "assembled: $(du -sh "$D" | cut -f1)"

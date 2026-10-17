@@ -200,11 +200,6 @@ public class QuranActivity extends QuranActionBarActivity
         startActivity(new Intent(this, MushafLibraryActivity.class));
         return true;
       }
-      case R.id.zikr: {
-        Intent i = new Intent(this, ZikrActivity.class);
-        startActivity(i);
-        return true;
-      }
       case R.id.settings: {
         Intent i = new Intent(this, QuranPreferenceActivity.class);
         startActivity(i);
