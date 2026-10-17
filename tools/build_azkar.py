@@ -87,8 +87,8 @@ def main():
         if tmp and os.path.exists(tmp):
             os.remove(tmp)
     total = sum(len(h["items"]) for c in data for h in c["chapters"])
-    if len(data) < 5 or total < 100:
-        raise RuntimeError("azkar data looks incomplete: %d categories, %d items" % (len(data), total))
+    if len(data) < 100 or total < 100:
+        raise RuntimeError("azkar data looks incomplete: expected at least 100 categories and 100 items; got %d categories, %d items" % (len(data), total))
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     with open(out_path, "w", encoding="utf8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
