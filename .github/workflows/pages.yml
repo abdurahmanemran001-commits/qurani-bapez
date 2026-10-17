@@ -29,7 +29,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html icon.svg manifest.webmanifest sw.js dist/
-          tools/assemble_web.sh dist
+          bash tools/assemble_web.sh dist
 
       - name: Verify web data
         run: |
