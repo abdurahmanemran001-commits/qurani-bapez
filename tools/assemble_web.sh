@@ -34,6 +34,15 @@ if [ "$NOIMG" = "--app" ]; then
         "$D"/douri/all.json "$D"/douri/*.ttf "$D"/susi/all.json "$D"/susi/*.ttf
 fi
 # Full azkar (Arabic + Kurdish) from the My Prayers database -> $DEST/azkar.json.
-# If this ever fails the page still works and falls back to its small built-in azkar list.
-python3 tools/build_azkar.py "$DEST/azkar.json" || echo "azkar.json could not be built; using built-in fallback"
+# Fail deployment instead of silently publishing only the five-item fallback.
+python3 tools/build_azkar.py "$DEST/azkar.json"
+test -s "$DEST/azkar.json"
+python3 - "$DEST/azkar.json" <<'PY'
+import json,sys
+with open(sys.argv[1],encoding='utf8') as f: data=json.load(f)
+items=sum(len(ch.get('items',[])) for cat in data for ch in cat.get('chapters',[]))
+if len(data)<100 or items<100:
+    raise SystemExit(f'Incomplete azkar data: {len(data)} categories, {items} items')
+print(f'Verified full azkar dataset: {len(data)} categories, {items} items')
+PY
 echo "assembled: $(du -sh "$D" | cut -f1)"
