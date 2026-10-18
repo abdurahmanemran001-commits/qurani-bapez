@@ -33,6 +33,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .settings .option{padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff;cursor:pointer}.settings .option.on{border-color:#a8cbbd;background:var(--green2)}
 .modal{position:absolute;inset:0;background:#0007;z-index:20;display:none;padding:14px;overflow:auto}.modal.open{display:block}.sheet{background:#f9fbfa;border-radius:20px;padding:16px;max-width:390px;margin:18px auto}.sheet h3{margin:0 0 12px}.close{float:left;border:0;background:#e8eeeb;border-radius:9px;padding:6px 9px;cursor:pointer}
 .zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.zikr-tr{font-size:16px;line-height:1.9;margin:6px 0 8px;color:#2c3f37}.zikr-ref{font-size:12px;line-height:1.7;margin-top:6px}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
+.play{padding:6px 11px;font-size:12px;white-space:nowrap}
 .commit{font-family:monospace;font-size:11px;direction:ltr;text-align:left;word-break:break-all;background:#f3f6f5;padding:9px;border-radius:9px}
 #installBtn{display:none;margin-top:10px}
 @media(max-width:500px){.wrap{padding:0}.top{display:none}.status{display:none}.phone{width:100%;height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}.appbar{padding-top:env(safe-area-inset-top);height:calc(58px + env(safe-area-inset-top))}.main{height:calc(100% - 129px)}.bottom{padding-bottom:env(safe-area-inset-bottom);height:calc(71px + env(safe-area-inset-bottom))}}
@@ -72,12 +73,12 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 
 <section id="zikr" class="view">
 <div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div>
-<button id="langBtn" class="tab" onclick="toggleLang()" style="width:100%;margin-top:10px">زمان ↻</button>
+<button id="langBtn" class="tab langbtn" onclick="toggleLang()" style="width:100%;margin-top:10px">زمان ↻</button>
 <div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
 </section>
 
 <section id="detail" class="view">
-<div class="row"><button class="tab" onclick="backToChapters()">‹ بابەتەکان</button><button class="tab" onclick="toggleLang()">↻ زمان</button><button class="tab" onclick="goSections()">⌂ سەرەتا</button></div>
+<div class="row"><button class="tab" onclick="backToChapters()">‹ بابەتەکان</button><button class="tab langbtn" onclick="toggleLang()">↻ زمان</button><button class="tab" onclick="goSections()">⌂ سەرەتا</button></div>
 <div class="row" style="margin-top:10px"><h2 id="detailTitle" style="margin:0"></h2><span id="zikrCount" class="badge"></span></div>
 <div id="detailList" class="list" style="margin-top:10px"></div>
 </section>
@@ -107,7 +108,7 @@ const fallbackSurahs=[
 ];
 let surahs=fallbackSurahs;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showView(id,title){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));const bottom=document.querySelector('.bottom');bottom.classList.toggle('hidden',id==='startScreen'||id==='zikr'||id==='detail');document.querySelector('.appbar .icon:last-child').style.visibility=id==='startScreen'||id==='zikr'||id==='detail'?'hidden':'visible';document.querySelector('.appbar .icon:first-child').onclick=(id==='startScreen')?()=>{}:openSettings;if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on')}
+function showView(id,title){stopAudio();document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.getElementById('barTitle').textContent=title;document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));const bottom=document.querySelector('.bottom');bottom.classList.toggle('hidden',id==='startScreen'||id==='zikr'||id==='detail');document.querySelector('.appbar .icon:last-child').style.visibility=id==='startScreen'||id==='zikr'||id==='detail'?'hidden':'visible';document.querySelector('.appbar .icon:first-child').onclick=(id==='startScreen')?()=>{}:openSettings;if(id==='home')navHome.classList.add('on');if(id==='reader')navReader.classList.add('on')}
 function enterQuran(){showView('home','قورئانی پیرۆز');renderSurahs()}
 function enterDhikr(){showZikr()}
 function goSections(){showView('startScreen','بەشەکان')}
@@ -125,20 +126,22 @@ function closeSettings(){document.getElementById('settingsModal').classList.remo
 function setStyle(el){style=el.dataset.style;localStorage.setItem('preview_style',style);document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x===el));applyStyle()}
 function applyStyle(){document.querySelectorAll('.option').forEach(x=>x.classList.toggle('on',x.dataset.style===style));document.querySelector('.phone').style.filter=style==='night'?'brightness(.78)':style==='warm'?'sepia(.08)':'none'}
 
-/* ---- زیکرەکانم: full azkar (Arabic + Kurdish) from azkar.json, built from the My Prayers database ---- */
+/* ---- زیکرەکانم: full azkar (Arabic + Kurdish + audio) from azkar.json, built by tools/build_azkar.py ---- */
 // Small built-in list, only used if azkar.json cannot be loaded.
 const localDhikr=[{title:'زیکری بەیانی',items:[['أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ','١'],['رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا','٣'],['سُبْحَانَ اللَّهِ وَبِحَمْدِهِ','١٠٠']]},{title:'زیکری ئێوارە',items:[['أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ','١'],['رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا','٣'],['أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ','١٠٠']]},{title:'زیکری پێش خەوتن',items:[['بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا','١'],['سُبْحَانَ اللَّهِ','٣٣'],['الْحَمْدُ لِلَّهِ','٣٣'],['اللَّهُ أَكْبَرُ','٣٤']]},{title:'زیکری دوای نوێژ',items:[['أَسْتَغْفِرُ اللَّهَ','٣'],['اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ','١'],['سُبْحَانَ اللَّهِ','٣٣'],['الْحَمْدُ لِلَّهِ','٣٣'],['اللَّهُ أَكْبَرُ','٣٣']]},{title:'زیکری لە خەو هەستان',items:[['الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ','١']]}];
 const LANG_NAMES={ckb:'کوردیی سۆرانی',bad:'کوردیی بادینی'};
-let azkar=null,zcat=-1,zchap=-1,zlang='ckb';
+let azkar=null,zcat=-1,zchap=-1,zlang='ckb',hasBad=false;
 try{if(localStorage.getItem('zikr_lang')==='bad')zlang='bad'}catch{}
 const $=id=>document.getElementById(id);
 function pick(o,k){return (o&&(o[k]||o.ckb||o.ar))||''}
 function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:g.title,chapters:[{ar:g.title,ckb:g.title,bad:g.title,items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',ref:'دووبارەکردنەوە: '+x[1]}))}]}))}
+function detectBad(data){return data.some(c=>c.chapters.some(h=>h.items.some(it=>it.bad)))}
 async function ensureAzkar(){
   if(azkar)return azkar;
-  try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length){azkar=j;return azkar}}}catch{}
-  return fallbackAzkar();
+  try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length){azkar=j;hasBad=detectBad(j);return azkar}}}catch{}
+  hasBad=false;return fallbackAzkar();
 }
+function updateLangButtons(){document.querySelectorAll('.langbtn').forEach(b=>{b.style.display=hasBad?'':'none'})}
 function setLangLabel(){$('langBtn').textContent='زمان: '+LANG_NAMES[zlang]+'  ↻'}
 function toggleLang(){
   zlang=zlang==='ckb'?'bad':'ckb';
@@ -153,30 +156,52 @@ async function showCategories(){
   $('zikrTitle').textContent='زیکرەکانم';$('zikrSub').textContent='بەشەکانی ئەذکار';
   $('zikrBack').textContent='‹ بەشەکان';$('zikrBack').onclick=goSections;
   const box=$('zikrList');box.innerHTML='<div class="card muted">بارکردنی زیکرەکان...</div>';
-  const data=await ensureAzkar();
+  const data=await ensureAzkar();updateLangButtons();
   box.innerHTML=data.map((c,i)=>'<div class="zikr-item" onclick="openCategory('+i+')"><b>'+esc(pick(c,zlang))+'</b><div class="muted">'+c.chapters.length+' بابەت · '+c.chapters.reduce((n,h)=>n+h.items.length,0)+' زیکر</div></div>').join('');
 }
 async function openCategory(i){
   const data=await ensureAzkar();const c=data[i];if(!c)return;
-  zcat=i;zchap=-1;showView('zikr','زیکرەکانم');setLangLabel();
+  zcat=i;zchap=-1;showView('zikr','زیکرەکانم');setLangLabel();updateLangButtons();
   $('zikrTitle').textContent=pick(c,zlang);$('zikrSub').textContent=c.chapters.length+' بابەت';
   $('zikrBack').textContent='‹ هەموو بەشەکان';$('zikrBack').onclick=showCategories;
   $('zikrList').innerHTML=c.chapters.map((h,j)=>'<div class="zikr-item" onclick="openChapter('+i+','+j+')"><b>'+esc(pick(h,zlang))+'</b><div class="muted">'+h.items.length+' زیکر</div></div>').join('');
 }
 async function openChapter(i,j){
   const data=await ensureAzkar();const c=data[i],h=c&&c.chapters[j];if(!h)return;
-  zcat=i;zchap=j;showView('detail','زیکرەکانم');
+  zcat=i;zchap=j;showView('detail','زیکرەکانم');updateLangButtons();
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
   $('detailList').innerHTML=h.items.map((it,k)=>{
     const tr=it[zlang]||it.ckb;
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
     const countLabel=target===1?'جارێک':'جار';
-    return '<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button></div></div>';
+    const hasAudio=Array.isArray(it.audio)?it.audio.length>0:!!it.audio;
+    const title=it.title||('زیکری '+(k+1));
+    return '<div class="card"><div class="row"><b>'+esc(title)+'</b>'+(hasAudio?'<button class="tab play" onclick="playItem(this,'+i+','+j+','+k+')">'+PLAY_LABEL+'</button>':'')+'</div><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button><button style="background:#9aa8a2" onclick="resetTick(this)">↺</button></div></div>';
   }).join('');
 }
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
 function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
+function resetTick(r){const t=r.previousElementSibling;t.dataset.current='0';t.style.background='';t.textContent='٠ / '+(Number(t.dataset.target)||1).toLocaleString('ar')}
+
+/* ---- audio: one shared player; an item may have one mp3 or a list that plays one after another ---- */
+const PLAY_LABEL='▶ گوێگرتن';
+let player=null,playBtn=null;
+function stopAudio(){
+  if(player){player.onended=null;player.onerror=null;player.pause();player=null}
+  if(playBtn){playBtn.textContent=PLAY_LABEL;playBtn.classList.remove('on');playBtn=null}
+}
+async function playItem(btn,i,j,k){
+  if(playBtn===btn){stopAudio();return}
+  stopAudio();
+  const data=await ensureAzkar();const it=data[i]&&data[i].chapters[j]&&data[i].chapters[j].items[k];if(!it)return;
+  const queue=(Array.isArray(it.audio)?it.audio:[it.audio]).filter(Boolean);if(!queue.length)return;
+  const a=new Audio();player=a;playBtn=btn;btn.textContent='⏸ وەستاندن';btn.classList.add('on');
+  let n=0;
+  const fail=()=>{if(player!==a)return;stopAudio();btn.textContent='دەنگ بەردەست نییە'};
+  const next=()=>{if(player!==a)return;if(n>=queue.length){stopAudio();return}a.src=queue[n++];a.play().catch(fail)};
+  a.onended=next;a.onerror=fail;next();
+}
 
 async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
 (async()=>{renderSurahs();applyStyle();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
