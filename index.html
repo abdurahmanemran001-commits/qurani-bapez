@@ -32,7 +32,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .mushaf{background:#eeeae0;border-radius:10px;padding:7px;min-height:530px;display:flex;align-items:center;justify-content:center;overflow:hidden}.mushaf img{width:100%;height:auto;display:block;max-height:610px;object-fit:contain;background:#fff;box-shadow:0 4px 16px #0002}.mushaf-fallback{padding:30px;text-align:center;color:#6c716e}.readerbar{display:grid;grid-template-columns:45px 1fr 45px;gap:7px;align-items:center;margin-top:9px}.readerbar button{border:0;background:#fff;border:1px solid var(--line);border-radius:11px;height:42px;cursor:pointer}.readerbar input{width:100%;border:1px solid var(--line);border-radius:11px;height:42px;text-align:center}.readerhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.readerhead button{border:0;background:var(--green2);color:var(--green);border-radius:10px;padding:8px 10px;cursor:pointer}
 .settings .option{padding:12px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff;cursor:pointer}.settings .option.on{border-color:#a8cbbd;background:var(--green2)}
 .modal{position:absolute;inset:0;background:#0007;z-index:20;display:none;padding:14px;overflow:auto}.modal.open{display:block}.sheet{background:#f9fbfa;border-radius:20px;padding:16px;max-width:390px;margin:18px auto}.sheet h3{margin:0 0 12px}.close{float:left;border:0;background:#e8eeeb;border-radius:9px;padding:6px 9px;cursor:pointer}
-.zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.zikr-tr{font-size:16px;line-height:1.9;margin:6px 0 8px;color:#2c3f37}.zikr-ref{font-size:12px;line-height:1.7;margin-top:6px}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
+.zikr-item{padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer}.zall{width:100%;padding:12px;margin:0 0 10px;border:0;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:bold;cursor:pointer}.zon{outline:3px solid #b48a3c;background:#fffaf0}.zikr-text{font-family:serif;font-size:20px;line-height:2;text-align:right}.zikr-tr{font-size:16px;line-height:1.9;margin:6px 0 8px;color:#2c3f37}.zikr-ref{font-size:12px;line-height:1.7;margin-top:6px}.counter{display:flex;justify-content:center;align-items:center;gap:15px;margin-top:12px}.counter button{width:52px;height:52px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:20px;cursor:pointer}.badge{display:inline-block;background:var(--green2);color:var(--green);border-radius:20px;padding:5px 9px;font-size:11px}
 .commit{font-family:monospace;font-size:11px;direction:ltr;text-align:left;word-break:break-all;background:#f3f6f5;padding:9px;border-radius:9px}
 #installBtn{display:none;margin-top:10px}
 @media(max-width:500px){.wrap{padding:0}.top{display:none}.status{display:none}.phone{width:100%;height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}.appbar{padding-top:env(safe-area-inset-top);height:calc(58px + env(safe-area-inset-top))}.main{height:calc(100% - 129px)}.bottom{padding-bottom:env(safe-area-inset-bottom);height:calc(71px + env(safe-area-inset-bottom))}}
@@ -169,16 +169,16 @@ async function openChapter(i,j){
   const data=await ensureAzkar();const c=data[i],h=c&&c.chapters[j];if(!h)return;
   zcat=i;zchap=j;showView('detail','زیکرەکانم');
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
-  $('detailList').innerHTML=h.items.map((it,k)=>{
+  $('detailList').innerHTML='<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
     const tr=it[zlang]||it.ckb;
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
     const countLabel=target===1?'جارێک':'جار';
-    return '<div class="card"><b>زیکری '+(k+1)+(it.title?' · '+esc(it.title):'')+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button> <button class="zplay" data-i="'+k+'" onclick="zplay(this,'+i+','+j+')">▶ گوێگرتن</button></div></div>';
+    return '<div class="card" id="zc'+k+'"><b>زیکری '+(k+1)+(it.title?' · '+esc(it.title):'')+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button> <button class="zplay" data-i="'+k+'" onclick="zplay(this,'+i+','+j+')">▶ گوێگرتن</button></div></div>';
   }).join('');
 }
 let zAudio=null,zBtn=null,zSeq=0;
-function zstop(){zSeq++;if(zAudio){try{zAudio.pause()}catch{}zAudio=null}try{speechSynthesis.cancel()}catch{}if(zBtn){zBtn.textContent='▶ گوێگرتن';zBtn=null}}
+function zstop(){zSeq++;if(zAudio){try{zAudio.pause()}catch{}zAudio=null}try{speechSynthesis.cancel()}catch{}document.querySelectorAll('.zon').forEach(x=>x.classList.remove('zon'));if(zBtn){zBtn.textContent=zBtn.dataset.l||'▶ گوێگرتن';zBtn=null}}
 async function zplay(b,i,j){
   if(zBtn===b){zstop();return}
   zstop();
@@ -197,6 +197,32 @@ async function zplay(b,i,j){
     speechSynthesis.speak(u);
   }catch{zstop()}
 }
+
+const KU_RE=/[ەێۆڕڵ]/;
+function zKuVoice(){try{return speechSynthesis.getVoices().find(v=>/^(ckb|ku)/i.test(v.lang))||null}catch{return null}}
+function zsay(text,lang,voice,seq){return new Promise(res=>{if(seq!==zSeq)return res();try{const u=new SpeechSynthesisUtterance(text);u.lang=lang;if(voice)u.voice=voice;u.onend=u.onerror=()=>res();speechSynthesis.speak(u)}catch{res()}})}
+function zurls(urls,seq){return new Promise(res=>{let n=0;const next=()=>{if(seq!==zSeq||n>=urls.length)return res();const a=new Audio(urls[n++]);zAudio=a;a.onended=next;a.onerror=()=>next();a.play().catch(()=>next())};next()})}
+async function zall(b,i,j){
+  if(zBtn===b){zstop();return}
+  zstop();
+  const data=await ensureAzkar();const h=data[i].chapters[j];if(!h)return;
+  const seq=zSeq;zBtn=b;b.textContent='■ وەستاندن';
+  const ku=zKuVoice();
+  if(!ku&&!zKuNote){zKuNote=true;alert('دەنگی کوردی لەسەر ئەم ئامێرە دانەمەزراوە. عەرەبییەکە دەخوێندرێتەوە و کوردییەکە لەسەر شاشە دەمێنێتەوە.')}
+  for(let k=0;k<h.items.length;k++){
+    if(seq!==zSeq)return;
+    const it=h.items[k];
+    document.querySelectorAll('.zon').forEach(x=>x.classList.remove('zon'));
+    const card=$('zc'+k);if(card){card.classList.add('zon');card.scrollIntoView({behavior:'smooth',block:'center'})}
+    const urls=it.ayah&&it.ayah.length?it.ayah:(it.audio?[it.audio]:null);
+    if(urls)await zurls(urls,seq);else await zsay(it.ar.replace(/[﴿﴾*]/g,' '),'ar',null,seq);
+    if(seq!==zSeq)return;
+    const tr=it[zlang]||it.ckb;
+    if(ku&&tr&&KU_RE.test(tr))await zsay(tr,ku.lang,ku,seq);
+  }
+  if(seq===zSeq)zstop();
+}
+let zKuNote=false;
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
 function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
 

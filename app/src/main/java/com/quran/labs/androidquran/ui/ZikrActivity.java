@@ -300,11 +300,22 @@ public class ZikrActivity extends AppCompatActivity {
     c.close();
     ArrayList<Entry> cards = new ArrayList<>();
     for (Entry e : entries) expand(e, cards);
+    final ArrayList<View> views = new ArrayList<>();
+    final Button all = new Button(this);
+    all.setText(ALL_LABEL);
+    all.setOnClickListener(v -> {
+      if (allOn) { stopAudio(); return; }
+      playAll(all, cards, views);
+    });
+    list.addView(all);
     int number = 0;
     for (Entry e : cards) {
       number++;
-      list.addView(buildCard(e, number), cardParams());
+      View card = buildCard(e, number);
+      views.add(card);
+      list.addView(card, cardParams());
     }
+    allScroll = scroll;
     scroll.addView(list);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
   }
@@ -384,10 +395,119 @@ public class ZikrActivity extends AppCompatActivity {
   private Button playingButton;
   private String playingLabel;
 
+  private static final String ALL_LABEL = "▶  هەمووی بخوێنەوە (عەرەبی + کوردی)";
+  private boolean allOn;
+  private int token;
+  private Button allBtn;
+  private ScrollView allScroll;
+  private ArrayList<View> allViews;
+  private Runnable stepDone;
+  private boolean kuNoted;
+
   private void stopAudio() {
+    token++;
+    allOn = false;
+    stepDone = null;
     if (player != null) { try { player.release(); } catch (Exception ignored) { } player = null; }
     if (tts != null) { try { tts.stop(); } catch (Exception ignored) { } }
     if (playingButton != null) { playingButton.setText(playingLabel); playingButton = null; }
+    if (allBtn != null) { allBtn.setText(ALL_LABEL); allBtn = null; }
+    if (allViews != null) for (View v : allViews) v.setBackgroundColor(Color.WHITE);
+  }
+
+  // ---- "play everything": Arabic, then Kurdish, card after card -----------------------
+  private void playAll(Button button, final ArrayList<Entry> cards, ArrayList<View> views) {
+    stopAudio();
+    allOn = true;
+    allBtn = button;
+    allViews = views;
+    button.setText("■  وەستاندن");
+    final int my = token;
+    if (tts == null) {
+      tts = new TextToSpeech(getApplicationContext(), status -> runOnUiThread(() -> {
+        if (token == my && allOn) runCard(cards, 0, my);
+      }));
+    } else {
+      runCard(cards, 0, my);
+    }
+  }
+
+  private void runCard(final ArrayList<Entry> cards, final int index, final int my) {
+    if (token != my || !allOn) return;
+    if (index >= cards.size()) { stopAudio(); return; }
+    final Entry e = cards.get(index);
+    for (int i = 0; i < allViews.size(); i++) allViews.get(i).setBackgroundColor(i == index ? Color.parseColor("#FFF6DD") : Color.WHITE);
+    if (allScroll != null) allScroll.smoothScrollTo(0, Math.max(0, allViews.get(index).getTop() - 40));
+    Runnable kurdish = () -> {
+      if (token != my) return;
+      String tr = e.translation == null ? "" : e.translation.trim();
+      boolean sorani = tr.matches("(?s).*[ەێۆڕڵ].*");
+      Locale ku = kurdishLocale();
+      if (ku != null && sorani) speakStep(tr, ku, my, () -> runCard(cards, index + 1, my));
+      else {
+        if (ku == null && !kuNoted) {
+          kuNoted = true;
+          Toast.makeText(this, "دەنگی کوردی لەسەر ئەم مۆبایلە نییە؛ تەنها عەرەبی دەخوێندرێتەوە", Toast.LENGTH_LONG).show();
+        }
+        runCard(cards, index + 1, my);
+      }
+    };
+    if (e.audio != null) chain(e.audio, 0, my, kurdish);
+    else speakStep(e.arabic.replace("﴿", " ").replace("﴾", " ").replace("*", " "), new Locale("ar"), my, kurdish);
+  }
+
+  private Locale kurdishLocale() {
+    if (tts == null) return null;
+    for (String code : new String[]{"ckb", "ku"}) {
+      try {
+        Locale l = new Locale(code);
+        int r = tts.isLanguageAvailable(l);
+        if (r >= TextToSpeech.LANG_AVAILABLE) return l;
+      } catch (Exception ignored) { }
+    }
+    return null;
+  }
+
+  private void chain(final String[] files, final int i, final int my, final Runnable done) {
+    if (token != my) return;
+    if (i >= files.length) { done.run(); return; }
+    try {
+      if (player != null) player.release();
+      player = new MediaPlayer();
+      player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+      player.setDataSource(AUDIO_BASE + files[i] + ".mp3");
+      player.setOnPreparedListener(MediaPlayer::start);
+      player.setOnCompletionListener(mp -> chain(files, i + 1, my, done));
+      player.setOnErrorListener((mp, w, x) -> { chain(files, i + 1, my, done); return true; });
+      player.prepareAsync();
+    } catch (Exception ex) { chain(files, i + 1, my, done); }
+  }
+
+  private void speakStep(String text, Locale locale, final int my, Runnable done) {
+    if (token != my) return;
+    int r = tts.setLanguage(locale);
+    if (r < 0) { done.run(); return; }
+    stepDone = done;
+    tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+      @Override public void onStart(String id) { }
+      @Override public void onError(String id) { finish(id); }
+      @Override public void onDone(String id) { finish(id); }
+      private void finish(String id) {
+        runOnUiThread(() -> {
+          if (id != null && id.startsWith("step") && token == my && stepDone != null) {
+            Runnable d = stepDone; stepDone = null; d.run();
+          } else if ("end".equals(id)) stopAudio();
+        });
+      }
+    });
+    int pos = 0, n = 0;
+    while (pos < text.length()) {
+      int end = Math.min(text.length(), pos + 3000);
+      HashMap<String, String> params = new HashMap<>();
+      params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, end >= text.length() ? "step" + my : "part" + n);
+      tts.speak(text.substring(pos, end), n == 0 ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, params);
+      pos = end; n++;
+    }
   }
 
   private void playEveryAyah(final String[] files, final int index) {
@@ -432,11 +552,8 @@ public class ZikrActivity extends AppCompatActivity {
 
   private void speakNow(String text) {
     if (playingButton == null) return;
-    if (!ttsReady) {
-      stopAudio();
-      Toast.makeText(this, "دەنگی عەرەبی لەسەر ئەم مۆبایلە دانەمەزراوە", Toast.LENGTH_LONG).show();
-      return;
-    }
+    ttsReady = tts.setLanguage(new Locale("ar")) >= 0;
+    if (!ttsReady) { stopAudio(); Toast.makeText(this, "دەنگی عەرەبی لەسەر ئەم مۆبایلە دانەمەزراوە", Toast.LENGTH_LONG).show(); return; }
     tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
       @Override public void onStart(String id) { }
       @Override public void onError(String id) { runOnUiThread(ZikrActivity.this::stopAudio); }
