@@ -2,6 +2,10 @@ package com.quran.labs.androidquran.ui;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +28,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 
 public class ZikrActivity extends AppCompatActivity {
   private static final String DB_ASSET = "database/muslim_db_v2.5.1.db";
@@ -135,6 +141,7 @@ public class ZikrActivity extends AppCompatActivity {
   }
 
   private void showChapters(int categoryId, String title) {
+    stopAudio();
     currentCategory = categoryId;
     root.removeAllViews();
     addBack("‹  هەموو بەشەکان", this::showCategories);
@@ -156,74 +163,288 @@ public class ZikrActivity extends AppCompatActivity {
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
   }
 
+  // ---- entries -------------------------------------------------------------
+  private static class Entry {
+    long id; String title; String arabic; String translation; String reference;
+    int target = 1;
+    String[] audio; // everyayah file names ("SSSAAA"), null -> device speech
+  }
+
+  private static final String AUDIO_BASE = "https://everyayah.com/data/Alafasy_128kbps/";
+  private static final String BISMILLAH = "بسم الله الرَّحْمَنِ الرَّحِيمِ";
+  private static final String T_KURSI = "ئایەتولکورسی";
+  private static final String T_IKHLAS = "سوڕەتی ئیخلاس";
+  private static final String T_FALAQ = "سوڕەتی فەلەق";
+  private static final String T_NAS = "سوڕەتی ناس";
+
+  private static String[] range(int sura, int from, int to, boolean bism) {
+    ArrayList<String> out = new ArrayList<>();
+    if (bism) out.add("001001");
+    for (int a = from; a <= to; a++) out.add(String.format(Locale.US, "%03d%03d", sura, a));
+    return out.toArray(new String[0]);
+  }
+
+  private static String[] join(String[]... parts) {
+    ArrayList<String> out = new ArrayList<>();
+    for (String[] p : parts) for (String x : p) out.add(x);
+    return out.toArray(new String[0]);
+  }
+
+  private static int parseCount(long id, String arabic) {
+    if (id == 126) return 100; // 33 + 33 + 34
+    if (arabic.contains("مائة مرة")) return 100;
+    if (arabic.contains("عشر مرات")) return 10;
+    if (arabic.contains("سبع مرات")) return 7;
+    if (arabic.contains("أربع مرات")) return 4;
+    if (arabic.contains("ثلاث مرات") || arabic.contains("ثلاثاً")) return 3;
+    return 1;
+  }
+
+  private static String[] splitOn(String text, String sep) {
+    ArrayList<String> out = new ArrayList<>();
+    int i = 0;
+    while (true) {
+      int j = text.indexOf(sep, i);
+      if (j < 0) { out.add(text.substring(i)); break; }
+      out.add(text.substring(i, j));
+      i = j + sep.length();
+    }
+    return out.toArray(new String[0]);
+  }
+
+  private Entry copy(Entry e, String title, String ar, String tr, int target, String[] audio) {
+    Entry n = new Entry();
+    n.id = e.id; n.title = title; n.arabic = ar.trim(); n.translation = tr.trim();
+    n.reference = e.reference; n.target = target; n.audio = audio;
+    return n;
+  }
+
+  /** Splits the three-surah items into separate cards and attaches recitation audio. */
+  private void expand(Entry e, ArrayList<Entry> out) {
+    long id = e.id;
+    if (id == 75 || id == 98 || id == 120) {
+      out.add(copy(e, T_KURSI, e.arabic, e.translation, 1, range(2, 255, 255, false)));
+      return;
+    }
+    if (id == 76 || id == 99 || id == 119) {
+      String[] ar = splitOn(e.arabic, BISMILLAH);
+      String[] tr = splitOn(e.translation, "بەناوی خودای بەخشندە و میهرەبان");
+      if (ar.length == 4 && tr.length == 4) {
+        boolean sleep = id == 119;
+        String intro = ar[0].trim(), introTr = tr[0].trim();
+        String last = ar[3];
+        int k = last.indexOf('﴾');
+        String tail = "", tailTr = "";
+        if (k >= 0 && k + 1 < last.length()) { tail = last.substring(k + 1); last = last.substring(0, k + 1); }
+        String lastTr = tr[3];
+        if (sleep) {
+          int t2 = lastTr.indexOf("\nپاشان");
+          if (t2 >= 0) { tailTr = lastTr.substring(t2); lastTr = lastTr.substring(0, t2); }
+        } else {
+          int t = lastTr.lastIndexOf("(سێ جار)");
+          if (t >= 0) lastTr = lastTr.substring(0, t);
+        }
+        int n = sleep ? 3 : 3;
+        String a1 = (sleep && !intro.isEmpty() ? intro + "\n" : "") + BISMILLAH + ar[1];
+        String t1 = (sleep && !introTr.isEmpty() ? introTr + "\n" : "") + "بەناوی خودای بەخشندە و میهرەبان" + tr[1];
+        out.add(copy(e, T_IKHLAS, a1, t1, n, range(112, 1, 4, true)));
+        out.add(copy(e, T_FALAQ, BISMILLAH + ar[2], "بەناوی خودای بەخشندە و میهرەبان" + tr[2], n, range(113, 1, 5, true)));
+        out.add(copy(e, T_NAS, BISMILLAH + last + (sleep ? "\n" + tail : ""),
+            "بەناوی خودای بەخشندە و میهرەبان" + lastTr + (sleep ? tailTr : ""), n, range(114, 1, 6, true)));
+        return;
+      }
+    }
+    if (id == 121) e.audio = range(2, 285, 286, false);
+    else if (id == 130) e.audio = join(range(32, 1, 30, true), range(67, 1, 30, true));
+    e.target = parseCount(id, e.arabic);
+    out.add(e);
+  }
+
   private void showItems(int chapterId, String chapterTitle, String categoryTitle) {
+    stopAudio();
     root.removeAllViews();
     addBack("‹  " + categoryTitle, () -> showChapters(currentCategory, categoryTitle));
     addHeading(chapterTitle);
     ScrollView scroll = new ScrollView(this);
     LinearLayout list = column();
     String sql = "SELECT item._id, item.item, COALESCE(transl.item_translation,''), " +
-        "COALESCE(ref_transl.reference,''), COALESCE(ref_transl.reference,'') " +
+        "COALESCE(ref_transl.reference,'') " +
         "FROM azkar_item item " +
         "LEFT JOIN azkar_item_translation transl ON transl.item_id=item._id AND transl.language=? " +
         "LEFT JOIN azkar_reference ref ON ref.item_id=item._id " +
         "LEFT JOIN azkar_reference_translation ref_transl ON ref_transl.reference_id=ref._id AND ref_transl.language=? " +
         "WHERE item.chapter_id=? ORDER BY item._id";
     Cursor c = db.rawQuery(sql, new String[]{language(), language(), String.valueOf(chapterId)});
-    int number = 0;
+    ArrayList<Entry> entries = new ArrayList<>();
+    long lastId = -1;
     while (c.moveToNext()) {
-      number++;
-      LinearLayout card = column();
-      card.setPadding(18, 18, 18, 18);
-      card.setBackgroundColor(Color.WHITE);
-      TextView num = new TextView(this);
-      num.setText("زیکر " + number);
-      num.setTextSize(14);
-      num.setTextColor(Color.BLACK);
-      card.addView(num);
-      TextView arabic = new TextView(this);
-      arabic.setText(c.getString(1));
-      arabic.setTextSize(23);
-      arabic.setTextColor(Color.BLACK);
-      arabic.setGravity(Gravity.RIGHT);
-      arabic.setTextIsSelectable(true);
-      arabic.setPadding(0, 12, 0, 12);
-      card.addView(arabic);
-      String translation = c.getString(2);
-      if (translation != null && !translation.trim().isEmpty()) {
-        TextView translated = new TextView(this);
-        translated.setText(translation);
-        translated.setTextSize(18);
-        translated.setTextColor(Color.BLACK);
-        translated.setGravity(Gravity.RIGHT);
-        translated.setTextIsSelectable(true);
-        translated.setPadding(0, 0, 0, 12);
-        card.addView(translated);
+      long id = c.getLong(0);
+      String ref = c.getString(3);
+      if (id == lastId) { // several references for one item: join instead of repeating the card
+        Entry prev = entries.get(entries.size() - 1);
+        if (ref != null && !ref.trim().isEmpty() && !prev.reference.contains(ref)) prev.reference += "\n" + ref;
+        continue;
       }
-      String reference = c.getString(3);
-      if (reference != null && !reference.trim().isEmpty()) {
-        TextView source = new TextView(this);
-        source.setText("سەرچاوە: " + reference);
-        source.setTextSize(13);
-        source.setTextColor(Color.DKGRAY);
-        card.addView(source);
-      }
-      Button counter = new Button(this);
-      int target = 1;
-      counter.setText("ژمارە: 0 / " + target);
-      final int[] count = {0};
-      counter.setOnClickListener(v -> {
-        if (count[0] < target) count[0]++;
-        counter.setText("ژمارە: " + count[0] + " / " + target);
-      });
-      card.addView(counter);
-      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
-      p.setMargins(0, 0, 0, 16);
-      list.addView(card, p);
+      lastId = id;
+      Entry e = new Entry();
+      e.id = id; e.arabic = c.getString(1); e.translation = c.getString(2);
+      e.reference = ref == null ? "" : ref;
+      entries.add(e);
     }
     c.close();
+    ArrayList<Entry> cards = new ArrayList<>();
+    for (Entry e : entries) expand(e, cards);
+    int number = 0;
+    for (Entry e : cards) {
+      number++;
+      list.addView(buildCard(e, number), cardParams());
+    }
     scroll.addView(list);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
+  }
+
+  private LinearLayout.LayoutParams cardParams() {
+    LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
+    p.setMargins(0, 0, 0, 16);
+    return p;
+  }
+
+  private View buildCard(final Entry e, int number) {
+    LinearLayout card = column();
+    card.setPadding(18, 18, 18, 18);
+    card.setBackgroundColor(Color.WHITE);
+    TextView num = new TextView(this);
+    num.setText(e.title != null ? e.title : "زیکر " + number);
+    num.setTextSize(e.title != null ? 17 : 14);
+    num.setTextColor(e.title != null ? Color.parseColor("#1B5E20") : Color.BLACK);
+    card.addView(num);
+    TextView arabic = new TextView(this);
+    arabic.setText(e.arabic);
+    arabic.setTextSize(23);
+    arabic.setTextColor(Color.BLACK);
+    arabic.setGravity(Gravity.RIGHT);
+    arabic.setTextIsSelectable(true);
+    arabic.setPadding(0, 12, 0, 12);
+    card.addView(arabic);
+    if (e.translation != null && !e.translation.trim().isEmpty()) {
+      TextView translated = new TextView(this);
+      translated.setText(e.translation);
+      translated.setTextSize(18);
+      translated.setTextColor(Color.BLACK);
+      translated.setGravity(Gravity.RIGHT);
+      translated.setTextIsSelectable(true);
+      translated.setPadding(0, 0, 0, 12);
+      card.addView(translated);
+    }
+    if (e.reference != null && !e.reference.trim().isEmpty()) {
+      TextView source = new TextView(this);
+      source.setText("سەرچاوە: " + e.reference.trim());
+      source.setTextSize(13);
+      source.setTextColor(Color.DKGRAY);
+      card.addView(source);
+    }
+    final Button play = new Button(this);
+    play.setText(e.audio != null ? "▶  گوێگرتن (قورئان)" : "▶  گوێگرتن (دەنگی ئامێر)");
+    play.setOnClickListener(v -> {
+      if (playingButton == play) { stopAudio(); return; }
+      stopAudio();
+      playingButton = play;
+      playingLabel = play.getText().toString();
+      play.setText("■  وەستاندن");
+      if (e.audio != null) playEveryAyah(e.audio, 0); else speak(e.arabic);
+    });
+    card.addView(play);
+    final int target = e.target;
+    final Button counter = new Button(this);
+    counter.setText("ژمارە: 0 / " + target);
+    final int[] count = {0};
+    counter.setOnClickListener(v -> {
+      if (count[0] < target) count[0]++;
+      counter.setText("ژمارە: " + count[0] + " / " + target + (count[0] >= target ? "  ✓" : ""));
+    });
+    counter.setOnLongClickListener(v -> {
+      count[0] = 0;
+      counter.setText("ژمارە: 0 / " + target);
+      return true;
+    });
+    card.addView(counter);
+    return card;
+  }
+
+  // ---- audio ----------------------------------------------------------------
+  private MediaPlayer player;
+  private TextToSpeech tts;
+  private boolean ttsReady;
+  private Button playingButton;
+  private String playingLabel;
+
+  private void stopAudio() {
+    if (player != null) { try { player.release(); } catch (Exception ignored) { } player = null; }
+    if (tts != null) { try { tts.stop(); } catch (Exception ignored) { } }
+    if (playingButton != null) { playingButton.setText(playingLabel); playingButton = null; }
+  }
+
+  private void playEveryAyah(final String[] files, final int index) {
+    final Button owner = playingButton;
+    if (owner == null) return;
+    if (index >= files.length) { stopAudio(); return; }
+    try {
+      if (player != null) player.release();
+      player = new MediaPlayer();
+      player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+      player.setDataSource(AUDIO_BASE + files[index] + ".mp3");
+      player.setOnPreparedListener(MediaPlayer::start);
+      player.setOnCompletionListener(mp -> { if (playingButton == owner) playEveryAyah(files, index + 1); });
+      player.setOnErrorListener((mp, what, extra) -> {
+        if (playingButton == owner) {
+          stopAudio();
+          Toast.makeText(ZikrActivity.this, "ئینتەرنێت بپشکنە بۆ گوێگرتن", Toast.LENGTH_LONG).show();
+        }
+        return true;
+      });
+      player.prepareAsync();
+    } catch (Exception ex) {
+      stopAudio();
+      Toast.makeText(this, "نەتوانرا دەنگەکە بکرێتەوە", Toast.LENGTH_LONG).show();
+    }
+  }
+
+  private void speak(final String arabic) {
+    final String text = arabic.replace("﴿", " ").replace("﴾", " ").replace("*", " ");
+    if (tts == null) {
+      tts = new TextToSpeech(getApplicationContext(), status -> {
+        if (status == TextToSpeech.SUCCESS) {
+          int r = tts.setLanguage(new Locale("ar"));
+          ttsReady = r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED;
+        }
+        runOnUiThread(() -> speakNow(text));
+      });
+    } else {
+      speakNow(text);
+    }
+  }
+
+  private void speakNow(String text) {
+    if (playingButton == null) return;
+    if (!ttsReady) {
+      stopAudio();
+      Toast.makeText(this, "دەنگی عەرەبی لەسەر ئەم مۆبایلە دانەمەزراوە", Toast.LENGTH_LONG).show();
+      return;
+    }
+    tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+      @Override public void onStart(String id) { }
+      @Override public void onError(String id) { runOnUiThread(ZikrActivity.this::stopAudio); }
+      @Override public void onDone(String id) { if ("end".equals(id)) runOnUiThread(ZikrActivity.this::stopAudio); }
+    });
+    int pos = 0, n = 0;
+    while (pos < text.length()) {
+      int end = Math.min(text.length(), pos + 3000);
+      boolean last = end >= text.length();
+      HashMap<String, String> params = new HashMap<>();
+      params.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, last ? "end" : "p" + n);
+      tts.speak(text.substring(pos, end), n == 0 ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, params);
+      pos = end; n++;
+    }
   }
 
   private LinearLayout column() {
@@ -268,7 +489,14 @@ public class ZikrActivity extends AppCompatActivity {
     parent.addView(row, p);
   }
 
+  @Override protected void onPause() {
+    stopAudio();
+    super.onPause();
+  }
+
   @Override protected void onDestroy() {
+    stopAudio();
+    if (tts != null) { tts.shutdown(); tts = null; }
     if (db != null && db.isOpen()) db.close();
     super.onDestroy();
   }
