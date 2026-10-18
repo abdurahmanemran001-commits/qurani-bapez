@@ -2,7 +2,7 @@
 // - app pages (html/js/css/json): NETWORK FIRST, so every change you push shows up right away;
 //   cached copy is only used when offline.
 // - heavy mushaf data (fonts / page images under /data/): cache first, size-limited.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL = 'shell-' + VERSION;
 const PAGES = 'pages-' + VERSION;
 const DATA = 'data-' + VERSION;
