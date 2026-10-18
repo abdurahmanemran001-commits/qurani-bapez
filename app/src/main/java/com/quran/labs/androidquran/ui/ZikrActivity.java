@@ -307,6 +307,21 @@ public class ZikrActivity extends AppCompatActivity {
       if (allOn) { stopAudio(); return; }
       playAll(all, cards, views);
     });
+    final String video = videoFor(chapterId);
+    if (video != null) {
+      Button watch = new Button(this);
+      watch.setText("▶  بینینی ڤیدیۆ (NRT لە یوتوب)");
+      watch.setOnClickListener(v -> {
+        stopAudio();
+        try {
+          startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,
+              android.net.Uri.parse("https://www.youtube.com/watch?v=" + video)));
+        } catch (Exception ex) {
+          Toast.makeText(this, "نەتوانرا یوتوب بکرێتەوە", Toast.LENGTH_LONG).show();
+        }
+      });
+      list.addView(watch);
+    }
     list.addView(all);
     int number = 0;
     for (Entry e : cards) {
@@ -318,6 +333,14 @@ public class ZikrActivity extends AppCompatActivity {
     allScroll = scroll;
     scroll.addView(list);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
+  }
+
+  /** Official YouTube videos (opened in YouTube, nothing is copied). Chapter id -> video id. */
+  private static String videoFor(int chapterId) {
+    switch (chapterId) {
+      case 27: return "tSIDOt0bg74"; // morning azkar
+      default: return null;          // 28 evening, 29 sleep: add when links are available
+    }
   }
 
   private LinearLayout.LayoutParams cardParams() {
