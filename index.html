@@ -170,7 +170,7 @@ async function openChapter(i,j){
   zcat=i;zchap=j;showView('detail','زیکرەکانم');
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
   const vid=ZVIDEO[(h.ckb||'').trim()]||'';
-  $('detailList').innerHTML=(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ بینینی ڤیدیۆ (NRT)</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
+  $('detailList').innerHTML=(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ گوێگرتن بە دەنگی زیکرەکان</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
     const tr=it[zlang]||it.ckb;
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
@@ -225,8 +225,8 @@ async function zall(b,i,j){
 }
 let zKuNote=false;
 // Official YouTube videos (played by YouTube itself, nothing is copied): chapter name -> video id
-const ZVIDEO={'ویردەکانی بەیانیان':'tSIDOt0bg74','ویردەکانی ئێواران':'','ویردەکانی خەوتن':''};
-function zvideo(b,id){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent='▶ بینینی ڤیدیۆ (NRT)';return}
+const ZVIDEO={'ویردەکانی بەیانیان':'tSIDOt0bg74','ویردەکانی ئێواران':'uihTLgzqFAs','ویردەکانی خەوتن':''};
+function zvideo(b,id){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent='▶ گوێگرتن بە دەنگی زیکرەکان';return}
   zstop();box.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?rel=0" style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe>';b.textContent='■ داخستنی ڤیدیۆ'}
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
 function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
