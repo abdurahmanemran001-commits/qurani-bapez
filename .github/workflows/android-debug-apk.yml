@@ -19,7 +19,7 @@ jobs:
       # Web mushaf (qira'at library). Only the light core goes into the APK; big packs are downloaded on demand.
       - name: Bundle web mushaf into the app
         run: |
-          tools/assemble_web.sh /tmp/w --app
+          bash tools/assemble_web.sh /tmp/w --app
           mkdir -p app/src/main/assets/mushaf
           cp -r /tmp/w/mushaf/. app/src/main/assets/mushaf/
           rm -rf app/src/main/assets/mushaf/data/qcf4 app/src/main/assets/mushaf/data/tajweed
