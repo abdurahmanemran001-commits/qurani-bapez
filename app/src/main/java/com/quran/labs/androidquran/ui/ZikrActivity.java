@@ -228,8 +228,14 @@ public class ZikrActivity extends AppCompatActivity {
     }
     if (id == 76 || id == 99 || id == 119) {
       String[] ar = splitOn(e.arabic, BISMILLAH);
-      String[] tr = splitOn(e.translation, "بەناوی خودای بەخشندە و میهرەبان");
-      if (ar.length == 4 && tr.length == 4) {
+      String sepT = "بەناوی خودای بەخشندە و میهرەبان";
+      String[] tr = splitOn(e.translation, sepT);
+      if (tr.length != 4) { tr = splitOn(e.translation, BISMILLAH); sepT = BISMILLAH; }
+      if (tr.length != 4) { // unknown layout: keep the whole translation on the first card
+        tr = new String[]{"", e.translation, "", ""};
+        sepT = "";
+      }
+      if (ar.length == 4) {
         boolean sleep = id == 119;
         String intro = ar[0].trim(), introTr = tr[0].trim();
         String last = ar[3];
@@ -246,11 +252,11 @@ public class ZikrActivity extends AppCompatActivity {
         }
         int n = sleep ? 3 : 3;
         String a1 = (sleep && !intro.isEmpty() ? intro + "\n" : "") + BISMILLAH + ar[1];
-        String t1 = (sleep && !introTr.isEmpty() ? introTr + "\n" : "") + "بەناوی خودای بەخشندە و میهرەبان" + tr[1];
+        String t1 = (sleep && !introTr.isEmpty() ? introTr + "\n" : "") + (tr[1].isEmpty() ? "" : sepT) + tr[1];
         out.add(copy(e, T_IKHLAS, a1, t1, n, range(112, 1, 4, true)));
-        out.add(copy(e, T_FALAQ, BISMILLAH + ar[2], "بەناوی خودای بەخشندە و میهرەبان" + tr[2], n, range(113, 1, 5, true)));
+        out.add(copy(e, T_FALAQ, BISMILLAH + ar[2], (tr[2].isEmpty() ? "" : sepT) + tr[2], n, range(113, 1, 5, true)));
         out.add(copy(e, T_NAS, BISMILLAH + last + (sleep ? "\n" + tail : ""),
-            "بەناوی خودای بەخشندە و میهرەبان" + lastTr + (sleep ? tailTr : ""), n, range(114, 1, 6, true)));
+            (lastTr.isEmpty() ? "" : sepT) + lastTr + (sleep ? tailTr : ""), n, range(114, 1, 6, true)));
         return;
       }
     }
