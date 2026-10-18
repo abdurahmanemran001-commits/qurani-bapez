@@ -157,6 +157,7 @@ async function showCategories(){
   box.innerHTML=data.map((c,i)=>'<div class="zikr-item" onclick="openCategory('+i+')"><b>'+esc(pick(c,zlang))+'</b><div class="muted">'+c.chapters.length+' بابەت · '+c.chapters.reduce((n,h)=>n+h.items.length,0)+' زیکر</div></div>').join('');
 }
 async function openCategory(i){
+  zstop();
   const data=await ensureAzkar();const c=data[i];if(!c)return;
   zcat=i;zchap=-1;showView('zikr','زیکرەکانم');setLangLabel();
   $('zikrTitle').textContent=pick(c,zlang);$('zikrSub').textContent=c.chapters.length+' بابەت';
@@ -164,6 +165,7 @@ async function openCategory(i){
   $('zikrList').innerHTML=c.chapters.map((h,j)=>'<div class="zikr-item" onclick="openChapter('+i+','+j+')"><b>'+esc(pick(h,zlang))+'</b><div class="muted">'+h.items.length+' زیکر</div></div>').join('');
 }
 async function openChapter(i,j){
+  zstop();
   const data=await ensureAzkar();const c=data[i],h=c&&c.chapters[j];if(!h)return;
   zcat=i;zchap=j;showView('detail','زیکرەکانم');
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
@@ -172,8 +174,28 @@ async function openChapter(i,j){
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
     const countLabel=target===1?'جارێک':'جار';
-    return '<div class="card"><b>زیکری '+(k+1)+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button></div></div>';
+    return '<div class="card"><b>زیکری '+(k+1)+(it.title?' · '+esc(it.title):'')+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button> <button class="zplay" data-i="'+k+'" onclick="zplay(this,'+i+','+j+')">▶ گوێگرتن</button></div></div>';
   }).join('');
+}
+let zAudio=null,zBtn=null,zSeq=0;
+function zstop(){zSeq++;if(zAudio){try{zAudio.pause()}catch{}zAudio=null}try{speechSynthesis.cancel()}catch{}if(zBtn){zBtn.textContent='▶ گوێگرتن';zBtn=null}}
+async function zplay(b,i,j){
+  if(zBtn===b){zstop();return}
+  zstop();
+  const data=await ensureAzkar();const it=data[i].chapters[j].items[Number(b.dataset.i)];if(!it)return;
+  const seq=zSeq;zBtn=b;b.textContent='■ وەستاندن';
+  const urls=it.ayah&&it.ayah.length?it.ayah:(it.audio?[it.audio]:null);
+  if(urls){
+    let n=0;
+    const next=()=>{if(seq!==zSeq)return;if(n>=urls.length){zstop();return}
+      const a=new Audio(urls[n++]);zAudio=a;a.onended=next;a.onerror=()=>{if(seq===zSeq){zstop();alert('ئینتەرنێت بپشکنە بۆ گوێگرتن')}};a.play().catch(()=>{if(seq===zSeq)zstop()})};
+    next();return;
+  }
+  try{
+    const u=new SpeechSynthesisUtterance(it.ar.replace(/[﴿﴾*]/g,' '));u.lang='ar';
+    u.onend=()=>{if(seq===zSeq)zstop()};u.onerror=()=>{if(seq===zSeq)zstop()};
+    speechSynthesis.speak(u);
+  }catch{zstop()}
 }
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
 function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
