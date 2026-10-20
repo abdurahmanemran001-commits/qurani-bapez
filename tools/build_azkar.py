@@ -162,6 +162,112 @@ def apply_core_chapters(result, morning_ar):
     sleep["chapters"] = [chap(29)] + sleep["chapters"][1:]
     db.close()
 
+
+def apply_badini_translations(result):
+    """Fill Badini text from the My Prayers database wherever a verified entry exists.
+
+    The generated masnun-dua dataset is Sorani-only. The My Prayers database also
+    contains ckb_BADINI translations, so match by normalized Arabic rather than
+    silently treating Sorani as Badini.
+    """
+    db = open_mp_db()
+    bad_by_ar = {}
+    chapter_by_ar = {}
+    try:
+        rows = db.execute(
+            "SELECT i.item, COALESCE(t.item_translation,''), i.chapter_id "
+            "FROM azkar_item i "
+            "LEFT JOIN azkar_item_translation t "
+            "ON t.item_id=i._id AND t.language='ckb_BADINI'"
+        ).fetchall()
+        for arabic, badini, chapter_id in rows:
+            key = norm_arabic(arabic or "")
+            badini = (badini or "").strip()
+            if not key:
+                continue
+            if badini:
+                bad_by_ar.setdefault(key, []).append(badini)
+            chapter_by_ar.setdefault(key, []).append(chapter_id)
+
+        chapter_names = {}
+        try:
+            for cid, name in db.execute(
+                "SELECT chapter_id, chapter_name FROM azkar_chapter_translation "
+                "WHERE language='ckb_BADINI'"
+            ).fetchall():
+                if name and name.strip():
+                    chapter_names[cid] = name.strip()
+        except sqlite3.Error:
+            pass
+
+        # Some versions of the source database also provide translated category
+        # names. Read them defensively; the build still works if that table is absent.
+        name_pairs = {"chapter": {}, "category": {}}
+        tables = [r[0] for r in db.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%translation%'"
+        ).fetchall()]
+        for table in tables:
+            kind = "category" if "category" in table.lower() else ("chapter" if "chapter" in table.lower() else "")
+            if not kind:
+                continue
+            try:
+                cols = [r[1] for r in db.execute(f'PRAGMA table_info("{table}")').fetchall()]
+                id_col = next((c for c in cols if c.lower() in (kind + "_id", "id")), None)
+                lang_col = next((c for c in cols if c.lower() in ("language", "lang", "locale")), None)
+                text_col = next((c for c in cols if c.lower() in (kind + "_name", "name", "title", "translation", "label")), None)
+                if not (id_col and lang_col and text_col):
+                    continue
+                query = f'SELECT "{id_col}", "{lang_col}", "{text_col}" FROM "{table}"'
+                grouped = {}
+                for ident, lang, label in db.execute(query).fetchall():
+                    if label and str(label).strip():
+                        grouped.setdefault(ident, {})[str(lang)] = str(label).strip()
+                for langs in grouped.values():
+                    sorani = langs.get("ckb", "")
+                    badini = langs.get("ckb_BADINI", "")
+                    if sorani and badini:
+                        name_pairs[kind][sorani.strip()] = badini.strip()
+            except sqlite3.Error:
+                continue
+    finally:
+        db.close()
+
+    def best(values):
+        if not values:
+            return ""
+        counts = {}
+        for value in values:
+            counts[value] = counts.get(value, 0) + 1
+        return max(counts, key=lambda value: (counts[value], len(value)))
+
+    filled = 0
+    missing = 0
+    for category in result:
+        if not (category.get("bad") or "").strip():
+            category["bad"] = name_pairs["category"].get((category.get("ckb") or "").strip(), "")
+        for chapter in category.get("chapters", []):
+            if not (chapter.get("bad") or "").strip():
+                chapter["bad"] = name_pairs["chapter"].get((chapter.get("ckb") or "").strip(), "")
+                if not chapter["bad"]:
+                    inferred = []
+                    for item in chapter.get("items", []):
+                        key = norm_arabic(item.get("ar", ""))
+                        for cid in chapter_by_ar.get(key, []):
+                            if cid in chapter_names:
+                                inferred.append(chapter_names[cid])
+                    chapter["bad"] = best(inferred)
+            for item in chapter.get("items", []):
+                if (item.get("bad") or "").strip():
+                    filled += 1
+                    continue
+                key = norm_arabic(item.get("ar", ""))
+                item["bad"] = best(bad_by_ar.get(key, []))
+                if item["bad"]:
+                    filled += 1
+                else:
+                    missing += 1
+    print(f"Badini translations matched from My Prayers database: {filled} items; missing: {missing}")
+
 AUDIO_RAW = "https://raw.githubusercontent.com/islamicapi/masnun-dua/main/audio/"
 
 def masnun_audio_ids():
@@ -300,6 +406,7 @@ def build():
         raise RuntimeError(f"Could not verify all three short surahs from the reference dataset; found {len(short_surahs)}")
 
     apply_core_chapters(result, morning_ar)
+    apply_badini_translations(result)
     return result
 
 def main():
