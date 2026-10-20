@@ -24,6 +24,8 @@ jobs:
           cp -r /tmp/w/mushaf/. app/src/main/assets/mushaf/
           rm -rf app/src/main/assets/mushaf/data/qcf4 app/src/main/assets/mushaf/data/tajweed
           du -sh app/src/main/assets/mushaf
+          cp /tmp/w/azkar.json app/src/main/assets/azkar.json
+          test -s app/src/main/assets/azkar.json
 
       - name: Set up Java 17 for Android SDK tools
         uses: actions/setup-java@v5
