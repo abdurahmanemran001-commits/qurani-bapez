@@ -41,7 +41,10 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 /* Dedicated adhkar appearance controls */
 :root{--dhikr-ar-size:24px;--dhikr-tr-size:17px;--dhikr-ink:#20372d;--dhikr-paper:#f7f3e8}
 #zikr.active,#detail.active{border-radius:16px;padding:10px;background-color:var(--dhikr-paper);background-size:cover;background-position:center;min-height:100%}
-#zikr.active .zikr-item,#detail.active .card{background:rgba(255,255,255,.91);backdrop-filter:blur(2px)}
+/* Let the selected Islamic background remain visible behind the adhkar text. */
+#zikr.active .zikr-item,#detail.active .card{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.42);backdrop-filter:blur(1px);-webkit-backdrop-filter:blur(1px);box-shadow:0 3px 12px rgba(0,0,0,.06)}
+#zikr.active .zikr-item .muted,#detail.active .card .muted{color:var(--muted)}
+#zikr.active .zikr-item:active{background:rgba(255,255,255,.36)}
 #detail .zikr-text{font-size:var(--dhikr-ar-size);color:var(--dhikr-ink)}
 #detail .zikr-tr{font-size:var(--dhikr-tr-size);color:var(--dhikr-ink)}
 .dhikr-toolbar{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;padding:3px 2px}.dhikr-toolbar-mark{font-size:23px;color:#b08b45}.dhikr-settings-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid #d7dce2;border-radius:50%;background:linear-gradient(145deg,#fff,#e9edf1);color:#364452;font-size:22px;box-shadow:0 2px 7px #14202b18;cursor:pointer}.dhikr-settings-icon:active{transform:scale(.94)}
