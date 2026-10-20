@@ -196,7 +196,7 @@ const LANG_NAMES={ckb:'کوردیی سۆرانی',bad:'کوردیی بادینی
 let azkar=null,zcat=-1,zchap=-1,zlang='ckb';
 try{if(localStorage.getItem('zikr_lang')==='bad')zlang='bad'}catch{}
 const $=id=>document.getElementById(id);
-function pick(o,k){return (o&&(o[k]||o.ckb||o.ar))||''}
+function pick(o,k){if(!o)return '';if(o[k])return o[k];return k==='bad'?'وەرگێڕانا بادینی بۆ ئەم بەشە نەهاتییە ئامادەکرن.':(o.ckb||o.ar||'')}
 function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:g.title,chapters:[{ar:g.title,ckb:g.title,bad:g.title,items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',ref:'دووبارەکردنەوە: '+x[1]}))}]}))}
 async function ensureAzkar(){
   if(azkar)return azkar;
@@ -237,7 +237,7 @@ async function openChapter(i,j){
   const za=ZAUDIO[(h.ckb||'').trim()];
   const zaHtml=za?'<button class="zall" data-l="🎧 گوێگرتن بە دەنگی '+za[2]+'" style="background:#176b4b" onclick="zlong(this,\''+za[0]+'\')">🎧 گوێگرتن بە دەنگی '+za[2]+'</button><div style="margin:0 0 4px"></div><div class="muted" style="margin:0 0 10px;font-size:12px">'+za[1]+'</div>':'';
   $('detailList').innerHTML=zaHtml+(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ گوێگرتن بە دەنگی زیکرەکان</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
-    const tr=it[zlang]||it.ckb;
+    const tr=it[zlang]||(zlang==='bad'?'وەرگێڕانا بادینی بۆ ڤی زیکری نەهاتییە ئامادەکرن.':'');
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
     const countLabel=target===1?'جارێک':'جار';
