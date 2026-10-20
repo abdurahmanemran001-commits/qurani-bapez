@@ -170,7 +170,9 @@ async function openChapter(i,j){
   zcat=i;zchap=j;showView('detail','زیکرەکانم');
   $('detailTitle').textContent=pick(h,zlang);$('zikrCount').textContent=h.items.length+' دانە';
   const vid=ZVIDEO[(h.ckb||'').trim()]||'';
-  $('detailList').innerHTML=(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ گوێگرتن بە دەنگی زیکرەکان</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
+  const za=ZAUDIO[(h.ckb||'').trim()];
+  const zaHtml=za?'<button class="zall" data-l="🎧 گوێگرتن بە دەنگی بێشەوا قادر" style="background:#176b4b" onclick="zlong(this,\''+za[0]+'\')">🎧 گوێگرتن بە دەنگی بێشەوا قادر</button><div style="margin:0 0 4px"></div><div class="muted" style="margin:0 0 10px;font-size:12px">'+za[1]+'</div>':'';
+  $('detailList').innerHTML=zaHtml+(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ گوێگرتن بە دەنگی زیکرەکان</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
     const tr=it[zlang]||it.ckb;
     const target=Math.max(1,Number(it.repeat)||1);
     const targetLabel=target.toLocaleString('ar');
@@ -224,6 +226,10 @@ async function zall(b,i,j){
   if(seq===zSeq)zstop();
 }
 let zKuNote=false;
+// Full recordings used with the reciter's permission: chapter name -> [url, credit]
+const ZAUDIO={'ویردەکانی بەیانیان':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3','بە دەنگی بێشەوا قادر ئەلکوردی (بە مۆڵەتی خۆی)']};
+function zlong(b,url){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent=b.dataset.l;return}
+  zstop();box.innerHTML='<audio controls autoplay preload="none" style="width:100%" src="'+url+'"></audio>';b.textContent='■ داخستنی دەنگ'}
 // Official YouTube videos (played by YouTube itself, nothing is copied): chapter name -> video id
 const ZVIDEO={'ویردەکانی بەیانیان':'tSIDOt0bg74','ویردەکانی ئێواران':'uihTLgzqFAs','ویردەکانی خەوتن':''};
 function zvideo(b,id){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent='▶ گوێگرتن بە دەنگی زیکرەکان';return}

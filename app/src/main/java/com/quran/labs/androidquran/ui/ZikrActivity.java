@@ -322,6 +322,25 @@ public class ZikrActivity extends AppCompatActivity {
       });
       list.addView(watch);
     }
+    final String longUrl = longAudioFor(chapterId);
+    if (longUrl != null) {
+      final Button longBtn = new Button(this);
+      longBtn.setText("🎧  گوێگرتن بە دەنگی بێشەوا قادر ئەلکوردی");
+      longBtn.setOnClickListener(v -> {
+        if (playingButton == longBtn) { stopAudio(); return; }
+        stopAudio();
+        playingButton = longBtn;
+        playingLabel = "🎧  گوێگرتن بە دەنگی بێشەوا قادر ئەلکوردی";
+        longBtn.setText("■  وەستاندن");
+        playLong(longUrl);
+      });
+      list.addView(longBtn);
+      TextView credit = new TextView(this);
+      credit.setText("دەنگ: بێشەوا قادر ئەلکوردی (بە مۆڵەتی خۆی)");
+      credit.setTextSize(12);
+      credit.setTextColor(Color.DKGRAY);
+      list.addView(credit);
+    }
     list.addView(all);
     int number = 0;
     for (Entry e : cards) {
@@ -340,6 +359,34 @@ public class ZikrActivity extends AppCompatActivity {
     switch (chapterId) {
       case 27: return "tSIDOt0bg74"; // morning azkar
       default: return null;          // 28 evening, 29 sleep: add when links are available
+    }
+  }
+
+  /** Full recordings used with the reciter's permission. Chapter id -> mp3 url. */
+  private static String longAudioFor(int chapterId) {
+    if (chapterId == 27) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3";
+    return null;
+  }
+
+  private void playLong(String url) {
+    final Button owner = playingButton;
+    try {
+      player = new MediaPlayer();
+      player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+      player.setDataSource(url);
+      player.setOnPreparedListener(MediaPlayer::start);
+      player.setOnCompletionListener(mp -> { if (playingButton == owner) stopAudio(); });
+      player.setOnErrorListener((mp, what, extra) -> {
+        if (playingButton == owner) {
+          stopAudio();
+          Toast.makeText(ZikrActivity.this, "ئینتەرنێت بپشکنە بۆ گوێگرتن", Toast.LENGTH_LONG).show();
+        }
+        return true;
+      });
+      player.prepareAsync();
+    } catch (Exception ex) {
+      stopAudio();
+      Toast.makeText(this, "نەتوانرا دەنگەکە بکرێتەوە", Toast.LENGTH_LONG).show();
     }
   }
 
