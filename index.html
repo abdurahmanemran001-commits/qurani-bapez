@@ -60,7 +60,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .dhikr-bg[data-bg=sky]{background:linear-gradient(150deg,#d7eee9,#8ebbb1 50%,#3d7168);color:#163d37;text-shadow:none}
 .dhikr-bg[data-bg=geometric]{background:repeating-linear-gradient(45deg,#174c43 0 12px,#22695a 12px 24px);outline:1px solid #c8a75b}
 .dhikr-bg[data-bg=sand]{background:linear-gradient(140deg,#f4dfb0,#b78a50);color:#50361a;text-shadow:none}
-#detail.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
+#detail.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}\n#zikr.dhikr-light-text .zikr-item,#detail.dhikr-light-text .card{background:rgba(12,20,38,.86);color:#fff;border-color:#59647a}\n#zikr.dhikr-light-text .muted,#detail.dhikr-light-text .muted{color:#e1e6f0}\n#detail.dhikr-light-text .badge{background:#263b57;color:#fff}
 #zikr.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
 
 </style>
@@ -302,7 +302,7 @@ function applyDhikrSettings(bg,save){
 function updateDhikrSettings(){
  const ar=Number($('dhikrArabicSize').value)||24,tr=Number($('dhikrTranslationSize').value)||17,color=$('dhikrTextColor').value||'#20372d';
  $('dhikrArabicSizeLabel').textContent=ar;$('dhikrTranslationSizeLabel').textContent=tr;
- document.documentElement.style.setProperty('--dhikr-ar-size',ar+'px');document.documentElement.style.setProperty('--dhikr-tr-size',tr+'px');document.documentElement.style.setProperty('--dhikr-ink',color);
+ document.documentElement.style.setProperty('--dhikr-ar-size',ar+'px');document.documentElement.style.setProperty('--dhikr-tr-size',tr+'px');document.documentElement.style.setProperty('--dhikr-ink',color);document.querySelectorAll('#zikr,#detail').forEach(el=>el.classList.toggle('dhikr-light-text',color==='#ffffff'));
  let s={};try{s=JSON.parse(localStorage.getItem('dhikr_appearance')||'{}')}catch{}s.arSize=ar;s.trSize=tr;s.color=color;
  const selected=document.querySelector('.dhikr-bg.selected');s.bg=selected?selected.dataset.bg:(s.bg||'emerald');
  localStorage.setItem('dhikr_appearance',JSON.stringify(s));
