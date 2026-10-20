@@ -1,0 +1,20 @@
+name: Convert zikr audio
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download original, convert to small mp3, upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download zikr-audio -R "$GITHUB_REPOSITORY" -p videoplayback.webm
+          ffmpeg -loglevel error -y -i videoplayback.webm -vn -ac 1 -ar 32000 -b:a 56k morning.mp3
+          ls -la morning.mp3
+          gh release upload zikr-audio morning.mp3 -R "$GITHUB_REPOSITORY" --clobber
