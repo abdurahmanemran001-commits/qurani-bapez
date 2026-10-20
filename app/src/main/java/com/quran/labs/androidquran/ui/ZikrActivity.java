@@ -325,18 +325,19 @@ public class ZikrActivity extends AppCompatActivity {
     final String longUrl = longAudioFor(chapterId);
     if (longUrl != null) {
       final Button longBtn = new Button(this);
-      longBtn.setText("🎧  گوێگرتن بە دەنگی بێشەوا قادر ئەلکوردی");
+      final String label = "🎧  گوێگرتن بە دەنگی " + longNameFor(chapterId);
+      longBtn.setText(label);
       longBtn.setOnClickListener(v -> {
         if (playingButton == longBtn) { stopAudio(); return; }
         stopAudio();
         playingButton = longBtn;
-        playingLabel = "🎧  گوێگرتن بە دەنگی بێشەوا قادر ئەلکوردی";
+        playingLabel = label;
         longBtn.setText("■  وەستاندن");
         playLong(longUrl);
       });
       list.addView(longBtn);
       TextView credit = new TextView(this);
-      credit.setText("دەنگ: بێشەوا قادر ئەلکوردی (بە مۆڵەتی خۆی)");
+      credit.setText("دەنگ: " + longNameFor(chapterId) + " (بە مۆڵەتی خۆی)");
       credit.setTextSize(12);
       credit.setTextColor(Color.DKGRAY);
       list.addView(credit);
@@ -367,6 +368,10 @@ public class ZikrActivity extends AppCompatActivity {
     if (chapterId == 27) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3";
     if (chapterId == 28) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/evening.mp3";
     return null;
+  }
+
+  private static String longNameFor(int chapterId) {
+    return chapterId == 28 ? "هەڵۆ ئەمین" : "بێشەوا قادر ئەلکوردی";
   }
 
   private void playLong(String url) {
