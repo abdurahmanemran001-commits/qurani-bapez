@@ -172,8 +172,6 @@ public class ZikrActivity extends AppCompatActivity {
     return e;
   }
 
-  private static final String ALL_LABEL = "▶  هەمووی بخوێنەوە (عەرەبی + کوردی)";
-
   private void showItems(final int categoryIndex, int chapterIndex) {
     stopAudio();
     JSONObject category = data.optJSONObject(categoryIndex);
