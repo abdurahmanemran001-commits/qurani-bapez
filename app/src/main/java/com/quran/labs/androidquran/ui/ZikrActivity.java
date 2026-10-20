@@ -365,6 +365,7 @@ public class ZikrActivity extends AppCompatActivity {
   /** Full recordings used with the reciter's permission. Chapter id -> mp3 url. */
   private static String longAudioFor(int chapterId) {
     if (chapterId == 27) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3";
+    if (chapterId == 28) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/evening.mp3";
     return null;
   }
 

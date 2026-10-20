@@ -2,6 +2,16 @@ name: Convert zikr audio
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag holding the original
+        default: zikr-ewaran
+      asset:
+        description: Original asset name
+        default: default.mp3
+      out:
+        description: Output name uploaded to release zikr-audio
+        default: evening.mp3
 
 permissions:
   contents: write
@@ -10,12 +20,16 @@ jobs:
   convert:
     runs-on: ubuntu-latest
     steps:
-      - name: Download original, convert to small mp3, upload to the release
+      - name: Download original, convert to small mp3, upload to release zikr-audio
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          ASSET: ${{ inputs.asset }}
+          OUT: ${{ inputs.out }}
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-          gh release download zikr-audio -R "$GITHUB_REPOSITORY" -p videoplayback.webm
-          ffmpeg -loglevel error -y -i videoplayback.webm -vn -ac 1 -ar 32000 -b:a 56k morning.mp3
-          ls -la morning.mp3
-          gh release upload zikr-audio morning.mp3 -R "$GITHUB_REPOSITORY" --clobber
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "$ASSET" -O original.bin
+          ffprobe -hide_banner original.bin 2>&1 | grep -E "Duration|Stream" || true
+          ffmpeg -loglevel error -y -i original.bin -vn -ac 1 -ar 32000 -b:a 56k "$OUT"
+          ls -la "$OUT"
+          gh release upload zikr-audio "$OUT" -R "$GITHUB_REPOSITORY" --clobber
