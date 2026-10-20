@@ -37,6 +37,32 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 #installBtn{display:none;margin-top:10px}
 @media(max-width:500px){.wrap{padding:0}.top{display:none}.status{display:none}.phone{width:100%;height:100vh;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}.appbar{padding-top:env(safe-area-inset-top);height:calc(58px + env(safe-area-inset-top))}.main{height:calc(100% - 129px)}.bottom{padding-bottom:env(safe-area-inset-bottom);height:calc(71px + env(safe-area-inset-bottom))}}
 @media(display-mode:standalone) and (min-width:501px){.wrap{padding:0}.top{display:none}.phone{height:100vh;margin:0 auto}}
+
+/* Dedicated adhkar appearance controls */
+:root{--dhikr-ar-size:24px;--dhikr-tr-size:17px;--dhikr-ink:#20372d;--dhikr-paper:#f7f3e8}
+#zikr.active,#detail.active{border-radius:16px;padding:10px;background-color:var(--dhikr-paper);background-size:cover;background-position:center;min-height:100%}
+#zikr.active .zikr-item,#detail.active .card{background:rgba(255,255,255,.91);backdrop-filter:blur(2px)}
+#detail .zikr-text{font-size:var(--dhikr-ar-size);color:var(--dhikr-ink)}
+#detail .zikr-tr{font-size:var(--dhikr-tr-size);color:var(--dhikr-ink)}
+.dhikr-settings-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0;padding:12px;border:1px solid #c6ad70;border-radius:13px;background:linear-gradient(135deg,#fff9e8,#f1e3bf);color:#634d1d;font-weight:bold;cursor:pointer}
+.dhikr-controls label{display:block;font-weight:bold;margin:14px 0 7px}
+.dhikr-controls input[type=range]{width:100%;accent-color:#176b4b}
+.dhikr-controls select{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.dhikr-bg-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:8px}
+.dhikr-bg{min-height:78px;border:2px solid transparent;border-radius:13px;padding:8px;color:white;font-weight:bold;text-shadow:0 1px 3px #0009;cursor:pointer;display:flex;align-items:end;justify-content:center;text-align:center}
+.dhikr-bg.selected{border-color:#b48a3c;box-shadow:0 0 0 2px #fff inset}
+.dhikr-bg[data-bg=emerald]{background:radial-gradient(circle at 50% 10%,#4a9a77,#073c2b 70%);background-image:repeating-linear-gradient(45deg,#ffffff0b 0 2px,transparent 2px 13px),radial-gradient(circle at 50% 10%,#4a9a77,#073c2b 70%)}
+.dhikr-bg[data-bg=mosque]{background:linear-gradient(180deg,#111d48,#394f78 58%,#d0a65c);position:relative}
+.dhikr-bg[data-bg=mosque]::before{content:'☾  ۞  ☽';position:absolute;top:7px;font-size:20px;color:#f8df9b}
+.dhikr-bg[data-bg=parchment]{background:repeating-linear-gradient(0deg,#f6edcf,#f6edcf 8px,#eee0b9 9px);color:#5d4825;text-shadow:none}
+.dhikr-bg[data-bg=midnight]{background:radial-gradient(circle at top,#243b6b,#090f24 78%)}
+.dhikr-bg[data-bg=rose]{background:radial-gradient(circle at 15% 10%,#d7b2a5,#73515d 75%)}
+.dhikr-bg[data-bg=sky]{background:linear-gradient(150deg,#d7eee9,#8ebbb1 50%,#3d7168);color:#163d37;text-shadow:none}
+.dhikr-bg[data-bg=geometric]{background:repeating-linear-gradient(45deg,#174c43 0 12px,#22695a 12px 24px);outline:1px solid #c8a75b}
+.dhikr-bg[data-bg=sand]{background:linear-gradient(140deg,#f4dfb0,#b78a50);color:#50361a;text-shadow:none}
+#detail.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
+#zikr.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
+
 </style>
 </head>
 <body>
@@ -71,7 +97,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 </section>
 
 <section id="zikr" class="view">
-<div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div>
+<div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div><button class="dhikr-settings-btn" onclick="openDhikrSettings()">⚙ ڕێکخستنی زیکرەکان · قەبارە، ڕەنگ و باگراوند</button>
 <button id="langBtn" class="tab" onclick="toggleLang()" style="width:100%;margin-top:10px">زمان ↻</button>
 <div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
 </section>
@@ -88,6 +114,21 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
 </div>
 
+<div id="dhikrSettingsModal" class="modal"><div class="sheet dhikr-controls"><button class="close" onclick="closeDhikrSettings()">×</button><h3>⚙ ڕێکخستنی تایبەتی زیکرەکان</h3><p class="muted">گۆڕانکارییەکان لەسەر ئەم ئامێرە دەپارێزرێن و بۆ بەشی زیکرەکان جێبەجێ دەبن.</p>
+<label for="dhikrArabicSize">قەبارەی دەقی عەرەبی: <span id="dhikrArabicSizeLabel">24</span>px</label><input id="dhikrArabicSize" type="range" min="18" max="40" value="24" oninput="updateDhikrSettings()">
+<label for="dhikrTranslationSize">قەبارەی تەرجومە: <span id="dhikrTranslationSizeLabel">17</span>px</label><input id="dhikrTranslationSize" type="range" min="12" max="28" value="17" oninput="updateDhikrSettings()">
+<label for="dhikrTextColor">ڕەنگی نوسین</label><select id="dhikrTextColor" onchange="updateDhikrSettings()"><option value="#20372d">سەوزی تۆخ</option><option value="#171717">ڕەشی ڕوون</option><option value="#173d70">شینی ئیسلامی</option><option value="#6b321e">قاوەیی</option><option value="#7a2346">مۆر/سور</option><option value="#ffffff">سپی (بۆ باگراوندی تۆخ)</option></select>
+<label>باگراوندی ئیسلامی و ئەذکارانە</label><div class="muted">هەر شێوازێک هەڵبژێرە؛ پێشاندانی ڕەنگ و نەخشەکە لەسەر خۆیەتی، پێویستی بە داگرتنی وێنە نییە.</div>
+<div class="dhikr-bg-grid">
+<button class="dhikr-bg" data-bg="emerald" onclick="chooseDhikrBg('emerald')">سەوزی مزگەوت · ئیسلامی</button>
+<button class="dhikr-bg" data-bg="mosque" onclick="chooseDhikrBg('mosque')">شەوی مزگەوت · مانگ و ئەستێرە</button>
+<button class="dhikr-bg" data-bg="parchment" onclick="chooseDhikrBg('parchment')">کاغەزی قورئانی</button>
+<button class="dhikr-bg" data-bg="midnight" onclick="chooseDhikrBg('midnight')">شەوی ئارام</button>
+<button class="dhikr-bg" data-bg="rose" onclick="chooseDhikrBg('rose')">گوڵاوی نەرم</button>
+<button class="dhikr-bg" data-bg="sky" onclick="chooseDhikrBg('sky')">سەوزی بەهەشتی</button>
+<button class="dhikr-bg" data-bg="geometric" onclick="chooseDhikrBg('geometric')">نەخشەی هەندەسی ئیسلامی</button>
+<button class="dhikr-bg" data-bg="sand" onclick="chooseDhikrBg('sand')">ڕەنگی زێڕ و لم</button>
+</div><button class="primary" style="width:100%;margin-top:15px" onclick="closeDhikrSettings()">تەواو · پاشەکەوتکرا</button></div></div>
 <div id="settingsModal" class="modal"><div class="sheet settings"><button class="close" onclick="closeSettings()">×</button><h3>ڕێکخستنەکان</h3><p class="muted">ئەم بەشە بۆ تاقیکردنەوەی ڕووکاری Preview ـە و لە APK جیاوازە.</p>
 <b>شێوازی موسحەف</b>
 <div class="option on" data-style="normal" onclick="setStyle(this)">موسحەفی ئاسایی</div>
@@ -234,11 +275,49 @@ function zlong(b,url){const box=b.nextElementSibling;if(box.firstChild){box.inne
 const ZVIDEO={'ویردەکانی بەیانیان':'tSIDOt0bg74','ویردەکانی ئێواران':'uihTLgzqFAs','ویردەکانی خەوتن':''};
 function zvideo(b,id){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent='▶ گوێگرتن بە دەنگی زیکرەکان';return}
   zstop();box.innerHTML='<iframe src="https://www.youtube.com/embed/'+id+'?rel=0" style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px" allow="accelerometer;encrypted-media;picture-in-picture" allowfullscreen></iframe>';b.textContent='■ داخستنی ڤیدیۆ'}
+
+const DHIKR_BG={
+ emerald:'radial-gradient(circle at 50% 0%,#d7eee2,#a8cdb8 45%,#eaf4ed)',
+ mosque:'linear-gradient(160deg,#18264e,#465b83 48%,#e5c783)',
+ parchment:'repeating-linear-gradient(0deg,#f6edcf,#f6edcf 8px,#eee0b9 9px)',
+ midnight:'radial-gradient(circle at top,#354b78,#10182e 78%)',
+ rose:'radial-gradient(circle at 15% 10%,#f0ddd5,#d7b2a5 45%,#a7828e)',
+ sky:'linear-gradient(150deg,#e4f4ef,#b6d8ce 50%,#79aaa0)',
+ geometric:'repeating-linear-gradient(45deg,#e1eee5 0 12px,#c7dfd2 12px 24px)',
+ sand:'linear-gradient(140deg,#f4e6c8,#d4b57e)'
+};
+function openDhikrSettings(){ $('dhikrSettingsModal').classList.add('open');loadDhikrSettings(); }
+function closeDhikrSettings(){ $('dhikrSettingsModal').classList.remove('open'); }
+function loadDhikrSettings(){
+ let s={};try{s=JSON.parse(localStorage.getItem('dhikr_appearance')||'{}')}catch{}
+ $('dhikrArabicSize').value=s.arSize||24;$('dhikrTranslationSize').value=s.trSize||17;$('dhikrTextColor').value=s.color||'#20372d';
+ applyDhikrSettings(s.bg||'emerald',false);updateDhikrSettings();
+}
+function chooseDhikrBg(bg){applyDhikrSettings(bg,true)}
+function applyDhikrSettings(bg,save){
+ document.querySelectorAll('.dhikr-bg').forEach(b=>b.classList.toggle('selected',b.dataset.bg===bg));
+ document.documentElement.style.setProperty('--dhikr-background',DHIKR_BG[bg]||DHIKR_BG.emerald);
+ if(save){let s={};try{s=JSON.parse(localStorage.getItem('dhikr_appearance')||'{}')}catch{}s.bg=bg;localStorage.setItem('dhikr_appearance',JSON.stringify(s))}
+}
+function updateDhikrSettings(){
+ const ar=Number($('dhikrArabicSize').value)||24,tr=Number($('dhikrTranslationSize').value)||17,color=$('dhikrTextColor').value||'#20372d';
+ $('dhikrArabicSizeLabel').textContent=ar;$('dhikrTranslationSizeLabel').textContent=tr;
+ document.documentElement.style.setProperty('--dhikr-ar-size',ar+'px');document.documentElement.style.setProperty('--dhikr-tr-size',tr+'px');document.documentElement.style.setProperty('--dhikr-ink',color);
+ let s={};try{s=JSON.parse(localStorage.getItem('dhikr_appearance')||'{}')}catch{}s.arSize=ar;s.trSize=tr;s.color=color;
+ const selected=document.querySelector('.dhikr-bg.selected');s.bg=selected?selected.dataset.bg:(s.bg||'emerald');
+ localStorage.setItem('dhikr_appearance',JSON.stringify(s));
+}
+function initDhikrSettings(){
+ let s={};try{s=JSON.parse(localStorage.getItem('dhikr_appearance')||'{}')}catch{}
+ $('dhikrArabicSize').value=s.arSize||24;$('dhikrTranslationSize').value=s.trSize||17;$('dhikrTextColor').value=s.color||'#20372d';
+ applyDhikrSettings(s.bg||'emerald',false);updateDhikrSettings();
+}
+
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
 function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
 
 async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
-(async()=>{renderSurahs();applyStyle();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
+(async()=>{renderSurahs();applyStyle();initDhikrSettings();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
 
 /* ---- PWA: install button + service worker ---- */
 let deferredPrompt=null;
