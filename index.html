@@ -44,7 +44,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 #zikr.active .zikr-item,#detail.active .card{background:rgba(255,255,255,.91);backdrop-filter:blur(2px)}
 #detail .zikr-text{font-size:var(--dhikr-ar-size);color:var(--dhikr-ink)}
 #detail .zikr-tr{font-size:var(--dhikr-tr-size);color:var(--dhikr-ink)}
-.dhikr-settings-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0;padding:12px;border:1px solid #c6ad70;border-radius:13px;background:linear-gradient(135deg,#fff9e8,#f1e3bf);color:#634d1d;font-weight:bold;cursor:pointer}
+.dhikr-toolbar{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;padding:3px 2px}.dhikr-toolbar-mark{font-size:23px;color:#b08b45}.dhikr-settings-icon{width:42px;height:42px;display:grid;place-items:center;border:1px solid #d7dce2;border-radius:50%;background:linear-gradient(145deg,#fff,#e9edf1);color:#364452;font-size:22px;box-shadow:0 2px 7px #14202b18;cursor:pointer}.dhikr-settings-icon:active{transform:scale(.94)}
 .dhikr-controls label{display:block;font-weight:bold;margin:14px 0 7px}
 .dhikr-controls input[type=range]{width:100%;accent-color:#176b4b}
 .dhikr-controls select{width:100%;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff}
@@ -60,6 +60,17 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 .dhikr-bg[data-bg=sky]{background:linear-gradient(150deg,#d7eee9,#8ebbb1 50%,#3d7168);color:#163d37;text-shadow:none}
 .dhikr-bg[data-bg=geometric]{background:repeating-linear-gradient(45deg,#174c43 0 12px,#22695a 12px 24px);outline:1px solid #c8a75b}
 .dhikr-bg[data-bg=sand]{background:linear-gradient(140deg,#f4dfb0,#b78a50);color:#50361a;text-shadow:none}
+.dhikr-bg[data-bg=lantern]{background:radial-gradient(ellipse at 50% 110%,#a95b23,#271c3f 72%);position:relative;overflow:hidden;animation:lanternGlow 5s ease-in-out infinite alternate}
+.dhikr-bg[data-bg=lantern]::before{content:'☾  🏮  ✦  🏮  ☪';position:absolute;inset:8px 0 auto;text-align:center;font-size:20px;animation:lanternFloat 3s ease-in-out infinite alternate}
+.dhikr-bg[data-bg=stars]{background:radial-gradient(circle at 18% 22%,#fff 0 1px,transparent 2px),radial-gradient(circle at 76% 38%,#f8df9b 0 1px,transparent 2px),radial-gradient(circle at 40% 65%,#fff 0 1px,transparent 2px),linear-gradient(145deg,#101c43,#253b68 55%,#10152d);background-size:65px 55px,85px 70px,55px 60px,cover;animation:starDrift 12s linear infinite}
+.dhikr-bg[data-bg=dawn]{background:linear-gradient(180deg,#1d3155,#b07b77 50%,#f0c985);position:relative;overflow:hidden}
+.dhikr-bg[data-bg=dawn]::before{content:'☾   ۞   ☽';position:absolute;top:8px;left:0;right:0;text-align:center;font-size:24px;color:#ffe6a5;text-shadow:0 0 12px #fff2b0;animation:lanternFloat 4s ease-in-out infinite alternate}
+.dhikr-bg[data-bg=ocean]{background:linear-gradient(130deg,#0d3442,#19716c,#0d3442);background-size:220% 220%;animation:oceanFlow 7s ease-in-out infinite}
+@keyframes lanternGlow{from{filter:brightness(.88)}to{filter:brightness(1.2)}}
+@keyframes lanternFloat{from{transform:translateY(0)}to{transform:translateY(5px)}}
+@keyframes starDrift{from{background-position:0 0,0 0,0 0,center}to{background-position:65px 55px,-85px 70px,55px -60px,center}}
+@keyframes oceanFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@media(prefers-reduced-motion:reduce){.dhikr-bg[data-bg=lantern],.dhikr-bg[data-bg=stars],.dhikr-bg[data-bg=dawn],.dhikr-bg[data-bg=ocean]{animation:none}}
 #detail.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}\n#zikr.dhikr-light-text .zikr-item,#detail.dhikr-light-text .card{background:rgba(12,20,38,.86);color:#fff;border-color:#59647a}\n#zikr.dhikr-light-text .muted,#detail.dhikr-light-text .muted{color:#e1e6f0}\n#detail.dhikr-light-text .badge{background:#263b57;color:#fff}
 #zikr.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
 
@@ -97,13 +108,13 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 </section>
 
 <section id="zikr" class="view">
-<div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div><button class="dhikr-settings-btn" onclick="openDhikrSettings()">⚙ ڕێکخستنی زیکرەکان · قەبارە، ڕەنگ و باگراوند</button>
+<div class="row"><div><h2 id="zikrTitle" style="margin:0">زیکرەکانم</h2><span id="zikrSub" class="muted">بەشەکانی ئەذکار</span></div><button id="zikrBack" class="tab">‹ بەشەکان</button></div><div class="dhikr-toolbar"><span class="dhikr-toolbar-mark">۞</span><button class="dhikr-settings-icon" aria-label="Appearance settings" title="⚙" onclick="openDhikrSettings()">⚙</button></div>
 <button id="langBtn" class="tab" onclick="toggleLang()" style="width:100%;margin-top:10px">زمان ↻</button>
 <div id="zikrList" class="list" style="margin-top:12px"><div class="card muted">بارکردنی زیکرەکان...</div></div>
 </section>
 
 <section id="detail" class="view">
-<button class="dhikr-settings-btn" onclick="openDhikrSettings()">⚙ ڕێکخستنی زیکرەکان · قەبارە، ڕەنگ و باگراوند</button>
+<div class="dhikr-toolbar"><span class="dhikr-toolbar-mark">۞</span><button class="dhikr-settings-icon" aria-label="Appearance settings" title="⚙" onclick="openDhikrSettings()">⚙</button></div>
 <div class="row"><button class="tab" onclick="backToChapters()">‹ بابەتەکان</button><button class="tab" onclick="toggleLang()">↻ زمان</button><button class="tab" onclick="goSections()">⌂ سەرەتا</button></div>
 <div class="row" style="margin-top:10px"><h2 id="detailTitle" style="margin:0"></h2><span id="zikrCount" class="badge"></span></div>
 <div id="detailList" class="list" style="margin-top:10px"></div>
@@ -115,11 +126,11 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
 </div>
 
-<div id="dhikrSettingsModal" class="modal"><div class="sheet dhikr-controls"><button class="close" onclick="closeDhikrSettings()">×</button><h3>⚙ ڕێکخستنی تایبەتی زیکرەکان</h3><p class="muted">گۆڕانکارییەکان لەسەر ئەم ئامێرە دەپارێزرێن و بۆ بەشی زیکرەکان جێبەجێ دەبن.</p>
+<div id="dhikrSettingsModal" class="modal"><div class="sheet dhikr-controls"><button class="close" onclick="closeDhikrSettings()">×</button><h3>⚙</h3><p class="muted">گۆڕانکارییەکان لەسەر ئەم ئامێرە دەپارێزرێن و بۆ بەشی زیکرەکان جێبەجێ دەبن.</p>
 <label for="dhikrArabicSize">قەبارەی دەقی عەرەبی: <span id="dhikrArabicSizeLabel">24</span>px</label><input id="dhikrArabicSize" type="range" min="18" max="40" value="24" oninput="updateDhikrSettings()">
 <label for="dhikrTranslationSize">قەبارەی تەرجومە: <span id="dhikrTranslationSizeLabel">17</span>px</label><input id="dhikrTranslationSize" type="range" min="12" max="28" value="17" oninput="updateDhikrSettings()">
 <label for="dhikrTextColor">ڕەنگی نوسین</label><select id="dhikrTextColor" onchange="updateDhikrSettings()"><option value="#20372d">سەوزی تۆخ</option><option value="#171717">ڕەشی ڕوون</option><option value="#173d70">شینی ئیسلامی</option><option value="#6b321e">قاوەیی</option><option value="#7a2346">مۆر/سور</option><option value="#ffffff">سپی (بۆ باگراوندی تۆخ)</option></select>
-<label>باگراوندی ئیسلامی و ئەذکارانە</label><div class="muted">هەر شێوازێک هەڵبژێرە؛ پێشاندانی ڕەنگ و نەخشەکە لەسەر خۆیەتی، پێویستی بە داگرتنی وێنە نییە.</div>
+<label>باگراوندی ئیسلامی و ئەذکارانە</label><div class="muted">شێوازە جوڵاوەکانیش هەڵبژێرە؛ بەبێ داگرتنی ڤیدیۆ کار دەکەن.</div>
 <div class="dhikr-bg-grid">
 <button class="dhikr-bg" data-bg="emerald" onclick="chooseDhikrBg('emerald')">سەوزی مزگەوت · ئیسلامی</button>
 <button class="dhikr-bg" data-bg="mosque" onclick="chooseDhikrBg('mosque')">شەوی مزگەوت · مانگ و ئەستێرە</button>
@@ -129,6 +140,10 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <button class="dhikr-bg" data-bg="sky" onclick="chooseDhikrBg('sky')">سەوزی بەهەشتی</button>
 <button class="dhikr-bg" data-bg="geometric" onclick="chooseDhikrBg('geometric')">نەخشەی هەندەسی ئیسلامی</button>
 <button class="dhikr-bg" data-bg="sand" onclick="chooseDhikrBg('sand')">ڕەنگی زێڕ و لم</button>
+<button class="dhikr-bg" data-bg="lantern" onclick="chooseDhikrBg('lantern')">فانۆسی ڕەمەزان · جوڵاو</button>
+<button class="dhikr-bg" data-bg="stars" onclick="chooseDhikrBg('stars')">ئاسمانی ئەستێرەدار · جوڵاو</button>
+<button class="dhikr-bg" data-bg="dawn" onclick="chooseDhikrBg('dawn')">بەیانی لەسەر گومبەز · جوڵاو</button>
+<button class="dhikr-bg" data-bg="ocean" onclick="chooseDhikrBg('ocean')">شەپۆلی ئارام · جوڵاو</button>
 </div><button class="primary" style="width:100%;margin-top:15px" onclick="closeDhikrSettings()">تەواو · پاشەکەوتکرا</button></div></div>
 <div id="settingsModal" class="modal"><div class="sheet settings"><button class="close" onclick="closeSettings()">×</button><h3>ڕێکخستنەکان</h3><p class="muted">ئەم بەشە بۆ تاقیکردنەوەی ڕووکاری Preview ـە و لە APK جیاوازە.</p>
 <b>شێوازی موسحەف</b>
@@ -285,7 +300,11 @@ const DHIKR_BG={
  rose:'radial-gradient(circle at 15% 10%,#f0ddd5,#d7b2a5 45%,#a7828e)',
  sky:'linear-gradient(150deg,#e4f4ef,#b6d8ce 50%,#79aaa0)',
  geometric:'repeating-linear-gradient(45deg,#e1eee5 0 12px,#c7dfd2 12px 24px)',
- sand:'linear-gradient(140deg,#f4e6c8,#d4b57e)'
+ sand:'linear-gradient(140deg,#f4e6c8,#d4b57e)',
+ lantern:'radial-gradient(ellipse at 50% 110%,#a95b23,#271c3f 72%)',
+ stars:'radial-gradient(circle at 18% 22%,#fff 0 1px,transparent 2px),radial-gradient(circle at 76% 38%,#f8df9b 0 1px,transparent 2px),linear-gradient(145deg,#101c43,#253b68 55%,#10152d)',
+ dawn:'linear-gradient(180deg,#1d3155,#b07b77 50%,#f0c985)',
+ ocean:'linear-gradient(130deg,#0d3442,#19716c,#0d3442)'
 };
 function openDhikrSettings(){ $('dhikrSettingsModal').classList.add('open');loadDhikrSettings(); }
 function closeDhikrSettings(){ $('dhikrSettingsModal').classList.remove('open'); }
