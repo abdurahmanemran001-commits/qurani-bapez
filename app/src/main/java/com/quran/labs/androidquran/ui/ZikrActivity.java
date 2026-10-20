@@ -367,11 +367,12 @@ public class ZikrActivity extends AppCompatActivity {
   private static String longAudioFor(int chapterId) {
     if (chapterId == 27) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3";
     if (chapterId == 28) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/evening.mp3";
+    if (chapterId == 29) return "https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/sleep.mp3";
     return null;
   }
 
   private static String longNameFor(int chapterId) {
-    return chapterId == 28 ? "هەڵۆ ئەمین" : "بێشەوا قادر ئەلکوردی";
+    return chapterId == 28 ? "هەڵۆ ئەمین" : chapterId == 29 ? "عمر عبداللە" : "بێشەوا قادر ئەلکوردی";
   }
 
   private void playLong(String url) {
