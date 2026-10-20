@@ -162,6 +162,24 @@ def apply_core_chapters(result, morning_ar):
     sleep["chapters"] = [chap(29)] + sleep["chapters"][1:]
     db.close()
 
+AUDIO_RAW = "https://raw.githubusercontent.com/islamicapi/masnun-dua/main/audio/"
+
+def masnun_audio_ids():
+    """Ids that have a recording in the masnun-dua repository (audio/<dua id>.mp3)."""
+    local = os.environ.get("MASNUN_AUDIO_DIR")
+    if local:
+        return {f[:-4] for f in os.listdir(local) if f.endswith(".mp3")}
+    try:
+        hdr = dict(HEADERS)
+        if os.environ.get("GITHUB_TOKEN"):
+            hdr["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+        req = urllib.request.Request("https://api.github.com/repos/islamicapi/masnun-dua/contents/audio", headers=hdr)
+        with urllib.request.urlopen(req, timeout=45) as r:
+            return {e["name"][:-4] for e in json.loads(r.read().decode("utf-8")) if e["name"].endswith(".mp3")}
+    except Exception as exc:  # audio is optional
+        print("masnun audio list unavailable:", exc, file=sys.stderr)
+        return set()
+
 def build():
     categories = get_json("categories/ku.json")
     subcategories = get_json("sub-categories/ku.json")
@@ -196,6 +214,7 @@ def build():
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError):
             return dua_id, None
 
+    audio_ids = masnun_audio_ids()
     duas = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as pool:
         for dua_id, obj in pool.map(load_dua, sorted(ids)):
@@ -227,6 +246,8 @@ def build():
                     "transliteration": (d.get("transliteration") or "").strip(),
                     "title": (d.get("title") or "").strip(),
                 })
+                if str(dua_id) in audio_ids:
+                    items[-1]["audio"] = AUDIO_RAW + str(dua_id) + ".mp3"
             if items:
                 # The ku source has Sorani category names but many Latin Kurmanji
                 # subcategory headings. Use a Sorani-script item title instead.
