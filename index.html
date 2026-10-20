@@ -227,7 +227,7 @@ async function zall(b,i,j){
 }
 let zKuNote=false;
 // Full recordings used with the reciter's permission: chapter name -> [url, credit]
-const ZAUDIO={'ویردەکانی بەیانیان':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3','بە دەنگی بێشەوا قادر ئەلکوردی (بە مۆڵەتی خۆی)','بێشەوا قادر'],'ویردەکانی ئێواران':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/evening.mp3','بە دەنگی هەڵۆ ئەمین (بە مۆڵەتی خۆی)','هەڵۆ ئەمین']};
+const ZAUDIO={'ویردەکانی بەیانیان':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/morning.mp3','بە دەنگی بێشەوا قادر ئەلکوردی (بە مۆڵەتی خۆی)','بێشەوا قادر'],'ویردەکانی ئێواران':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/evening.mp3','بە دەنگی هەڵۆ ئەمین (بە مۆڵەتی خۆی)','هەڵۆ ئەمین'],'ویردەکانی خەوتن':['https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/zikr-audio/sleep.mp3','بە دەنگی عمر عبداللە (بە مۆڵەتی خۆی)','عمر عبداللە']};
 function zlong(b,url){const box=b.nextElementSibling;if(box.firstChild){box.innerHTML='';b.textContent=b.dataset.l;return}
   zstop();box.innerHTML='<audio controls autoplay preload="none" style="width:100%" src="'+url+'"></audio>';b.textContent='■ داخستنی دەنگ'}
 // Official YouTube videos (played by YouTube itself, nothing is copied): chapter name -> video id
