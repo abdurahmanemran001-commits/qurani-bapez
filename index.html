@@ -196,8 +196,8 @@ const LANG_NAMES={ckb:'کوردیی سۆرانی',bad:'کوردیی بادینی
 let azkar=null,zcat=-1,zchap=-1,zlang='ckb';
 try{if(localStorage.getItem('zikr_lang')==='bad')zlang='bad'}catch{}
 const $=id=>document.getElementById(id);
-function pick(o,k){if(!o)return '';if(o[k])return o[k];return k==='bad'?'وەرگێڕانا بادینی بۆ ئەم بەشە نەهاتییە ئامادەکرن.':(o.ckb||o.ar||'')}
-function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:g.title,chapters:[{ar:g.title,ckb:g.title,bad:g.title,items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',ref:'دووبارەکردنەوە: '+x[1]}))}]}))}
+function pick(o,k){if(!o)return '';if(o[k]&&String(o[k]).trim())return o[k];return k==='bad'?'وەرگێڕانا بادینی بۆ ئەڤ بەشێ نەهاتییە ئامادەکرن.':(o.ckb||o.ar||'')}
+function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:'',chapters:[{ar:g.title,ckb:g.title,bad:'',items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',repeat:Number(String(x[1]).replace(/[^0-9]/g,''))||1,ref:''}))}]}))}
 async function ensureAzkar(){
   if(azkar)return azkar;
   try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length){azkar=j;return azkar}}}catch{}
