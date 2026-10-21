@@ -164,108 +164,68 @@ def apply_core_chapters(result, morning_ar):
 
 
 def apply_badini_translations(result):
-    """Fill Badini text from the My Prayers database wherever a verified entry exists.
+    """Fill Badini text from the My Prayers database wherever it is clearly the same dua.
 
-    The generated masnun-dua dataset is Sorani-only. The My Prayers database also
-    contains ckb_BADINI translations, so match by normalized Arabic rather than
-    silently treating Sorani as Badini.
+    The masnun-dua dataset is Sorani-only; the My Prayers database is the only Badini source.
+    Texts are matched on their bare Arabic letters (tools/badini_match.py), so small spelling
+    differences no longer hide a translation, but a doubtful match is never used: the page then
+    shows the Sorani text and says so, instead of a wrong Badini text.
     """
+    from badini_match import BadiniIndex
+
     db = open_mp_db()
-    bad_by_ar = {}
-    chapter_by_ar = {}
     try:
         rows = db.execute(
             "SELECT i.item, COALESCE(t.item_translation,''), i.chapter_id "
             "FROM azkar_item i "
-            "LEFT JOIN azkar_item_translation t "
-            "ON t.item_id=i._id AND t.language='ckb_BADINI'"
+            "LEFT JOIN azkar_item_translation t ON t.item_id=i._id AND t.language='ckb_BADINI'"
         ).fetchall()
-        for arabic, badini, chapter_id in rows:
-            key = norm_arabic(arabic or "")
-            badini = (badini or "").strip()
-            if not key:
-                continue
-            if badini:
-                bad_by_ar.setdefault(key, []).append(badini)
-            chapter_by_ar.setdefault(key, []).append(chapter_id)
 
-        chapter_names = {}
-        try:
-            for cid, name in db.execute(
-                "SELECT chapter_id, chapter_name FROM azkar_chapter_translation "
-                "WHERE language='ckb_BADINI'"
-            ).fetchall():
+        def names(table, id_col, name_col):
+            out = {}
+            for ident, lang, name in db.execute(f"SELECT {id_col}, language, {name_col} FROM {table}").fetchall():
                 if name and name.strip():
-                    chapter_names[cid] = name.strip()
-        except sqlite3.Error:
-            pass
+                    out.setdefault(ident, {})[lang] = name.strip()
+            return out
 
-        # Some versions of the source database also provide translated category
-        # names. Read them defensively; the build still works if that table is absent.
-        name_pairs = {"chapter": {}, "category": {}}
-        tables = [r[0] for r in db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%translation%'"
-        ).fetchall()]
-        for table in tables:
-            kind = "category" if "category" in table.lower() else ("chapter" if "chapter" in table.lower() else "")
-            if not kind:
-                continue
-            try:
-                cols = [r[1] for r in db.execute(f'PRAGMA table_info("{table}")').fetchall()]
-                id_col = next((c for c in cols if c.lower() in (kind + "_id", "id")), None)
-                lang_col = next((c for c in cols if c.lower() in ("language", "lang", "locale")), None)
-                text_col = next((c for c in cols if c.lower() in (kind + "_name", "name", "title", "translation", "label")), None)
-                if not (id_col and lang_col and text_col):
-                    continue
-                query = f'SELECT "{id_col}", "{lang_col}", "{text_col}" FROM "{table}"'
-                grouped = {}
-                for ident, lang, label in db.execute(query).fetchall():
-                    if label and str(label).strip():
-                        grouped.setdefault(ident, {})[str(lang)] = str(label).strip()
-                for langs in grouped.values():
-                    sorani = langs.get("ckb", "")
-                    badini = langs.get("ckb_BADINI", "")
-                    if sorani and badini:
-                        name_pairs[kind][sorani.strip()] = badini.strip()
-            except sqlite3.Error:
-                continue
+        chapters = names("azkar_chapter_translation", "chapter_id", "chapter_name")
+        categories = names("azkar_category_translation", "category_id", "category_name")
     finally:
         db.close()
 
-    def best(values):
-        if not values:
-            return ""
-        counts = {}
-        for value in values:
-            counts[value] = counts.get(value, 0) + 1
-        return max(counts, key=lambda value: (counts[value], len(value)))
+    chapter_bad = {c["ckb"]: c["ckb_BADINI"] for c in chapters.values() if c.get("ckb") and c.get("ckb_BADINI")}
+    category_bad = {c["ckb"]: c["ckb_BADINI"] for c in categories.values() if c.get("ckb") and c.get("ckb_BADINI")}
+    chapter_bad_by_id = {i: c["ckb_BADINI"] for i, c in chapters.items() if c.get("ckb_BADINI")}
+    index = BadiniIndex(rows)
 
-    filled = 0
-    missing = 0
+    filled = missing = 0
     for category in result:
         if not (category.get("bad") or "").strip():
-            category["bad"] = name_pairs["category"].get((category.get("ckb") or "").strip(), "")
+            category["bad"] = category_bad.get((category.get("ckb") or "").strip(), "")
         for chapter in category.get("chapters", []):
-            if not (chapter.get("bad") or "").strip():
-                chapter["bad"] = name_pairs["chapter"].get((chapter.get("ckb") or "").strip(), "")
-                if not chapter["bad"]:
-                    inferred = []
-                    for item in chapter.get("items", []):
-                        key = norm_arabic(item.get("ar", ""))
-                        for cid in chapter_by_ar.get(key, []):
-                            if cid in chapter_names:
-                                inferred.append(chapter_names[cid])
-                    chapter["bad"] = best(inferred)
-            for item in chapter.get("items", []):
+            votes = {}
+            items = chapter.get("items", [])
+            for item in items:
                 if (item.get("bad") or "").strip():
                     filled += 1
                     continue
-                key = norm_arabic(item.get("ar", ""))
-                item["bad"] = best(bad_by_ar.get(key, []))
-                if item["bad"]:
+                badini, source_chapter = index.find(item.get("ar", ""))
+                item["bad"] = badini
+                if badini:
                     filled += 1
+                    name = chapter_bad_by_id.get(source_chapter)
+                    if name:
+                        votes[name] = votes.get(name, 0) + 1
                 else:
                     missing += 1
+            if not (chapter.get("bad") or "").strip():
+                name = chapter_bad.get((chapter.get("ckb") or "").strip(), "")
+                if not name and votes:
+                    top = max(votes, key=votes.get)
+                    # only borrow a chapter name when most of this chapter comes from that chapter
+                    if votes[top] >= max(1, 0.6 * len(items)):
+                        name = top
+                chapter["bad"] = name
     print(f"Badini translations matched from My Prayers database: {filled} items; missing: {missing}")
 
 AUDIO_RAW = "https://raw.githubusercontent.com/islamicapi/masnun-dua/main/audio/"
@@ -380,9 +340,9 @@ def build():
     # Guarantee the three short surahs are included in the morning/evening
     # adhkar even if the translated dataset omits or formats them differently.
     surah_map = {
-        "قُلْ هُوَ ٱللَّهُ أَحَدٌ": ("سوڕەتی ئیخلاص", 112),
-        "قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ": ("سوڕەتی فەلەق", 113),
-        "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ": ("سوڕەتی ناس", 114),
+        "قُلْ هُوَ ٱللَّهُ أَحَدٌ": ("سوڕەتی ئیخلاص", 112),
+        "قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ": ("سوڕەتی فەلەق", 113),
+        "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ": ("سوڕەتی ناس", 114),
     }
     short_surahs = []
     seen = set()
@@ -398,7 +358,7 @@ def build():
                     "bad": "",
                     "ref": entry.get("source", ""),
                     "repeat": max(1, int(entry.get("count") or 3)),
-                    "repeatText": entry.get("count_description", "ثَلَاثُ مَرَّاتٍ"),
+                    "repeatText": entry.get("count_description", "ثَلَاثُ مَرَّاتٍ"),
                     "transliteration": "",
                     "title": title,
                 })
