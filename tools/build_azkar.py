@@ -228,6 +228,59 @@ def apply_badini_translations(result):
                 chapter["bad"] = name
     print(f"Badini translations matched from My Prayers database: {filled} items; missing: {missing}")
 
+MANUAL_BADINI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "badini_manual.json")
+REVIEW_MARK = "\u26a0 "
+
+def apply_manual_badini(result):
+    """Use hand-written Badini (tools/badini_manual.json, keyed by dua id) where the database has none.
+
+    A value is either the text, or {"text": "...", "reviewed": true}. Text that has not been
+    reviewed by a Badini speaker yet is shown with a warning sign in front of it.
+    """
+    try:
+        with open(MANUAL_BADINI, encoding="utf-8") as f:
+            manual = json.load(f)
+    except (OSError, ValueError):
+        return
+    used = 0
+    for category in result:
+        for chapter in category.get("chapters", []):
+            for item in chapter.get("items", []):
+                entry = manual.get(str(item.get("id", "")))
+                if isinstance(entry, str):
+                    entry = {"text": entry, "reviewed": False}
+                if not entry or (item.get("bad") or "").strip():
+                    continue
+                text = (entry.get("text") or "").strip()
+                if text:
+                    item["bad"] = text if entry.get("reviewed") else REVIEW_MARK + text
+                    used += 1
+    print(f"Hand-written Badini translations used: {used}")
+
+def write_badini_todo(result, out_dir, chunk=30):
+    """List the items that still have no Badini, in small files that are easy to translate in turns."""
+    todo = []
+    for category in result:
+        for chapter in category.get("chapters", []):
+            for item in chapter.get("items", []):
+                if item.get("id") and not (item.get("bad") or "").strip():
+                    todo.append({"id": item["id"], "chapter": chapter.get("ckb", ""), "title": item.get("title", ""),
+                                 "ar": item.get("ar", ""), "ckb": item.get("ckb", "")})
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    base = ""
+    if "/" in repo:
+        owner, name = repo.split("/", 1)
+        base = f"https://{owner.lower()}.github.io/{name}/"
+    names = []
+    for n in range(0, len(todo), chunk):
+        name = "missing_badini_%02d.json" % (n // chunk + 1)
+        with open(os.path.join(out_dir, name), "w", encoding="utf-8") as f:
+            json.dump(todo[n:n + chunk], f, ensure_ascii=False, indent=1)
+        names.append(base + name)
+    with open(os.path.join(out_dir, "missing_badini_index.json"), "w", encoding="utf-8") as f:
+        json.dump({"count": len(todo), "files": names}, f, ensure_ascii=False, indent=1)
+    print(f"Items still without Badini: {len(todo)}")
+
 AUDIO_RAW = "https://raw.githubusercontent.com/islamicapi/masnun-dua/main/audio/"
 
 def masnun_audio_ids():
@@ -303,6 +356,7 @@ def build():
                 arabic = (d.get("arabic") or "").strip()
                 meta = counts_by_arabic.get(norm_arabic(arabic), {})
                 items.append({
+                    "id": dua_id,
                     "ar": arabic,
                     "ckb": (d.get("translation") or "").strip(),
                     "bad": "",
@@ -367,6 +421,7 @@ def build():
 
     apply_core_chapters(result, morning_ar)
     apply_badini_translations(result)
+    apply_manual_badini(result)
     return result
 
 def main():
@@ -380,6 +435,7 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     print(f"azkar.json: {categories} categories, {items} items, {os.path.getsize(out_path)} bytes")
+    write_badini_todo(data, os.path.dirname(os.path.abspath(out_path)))
 
 if __name__ == "__main__":
     main()
