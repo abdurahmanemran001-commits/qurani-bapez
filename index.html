@@ -82,6 +82,20 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 #zikr.active{background-image:var(--dhikr-background,linear-gradient(135deg,#f7f3e8,#e5eadf))}
 
 </style>
+<script>document.documentElement.classList.add('language-gate');</script>
+<style>
+/* First screen: require a language choice before entering the app. */
+html.language-gate,html.language-gate body{min-height:100%;overflow:hidden}
+html.language-gate .phone>:not(#languageModal){visibility:hidden!important}
+html.language-gate #languageModal{display:block!important;position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#0d4b37,#176b4b 52%,#e0c27c);padding:22px;overflow:auto}
+html.language-gate #languageModal .sheet{max-width:520px;margin:min(12vh,90px) auto 20px;border-radius:24px;padding:22px;background:#fff;box-shadow:0 20px 70px #0004}
+html.language-gate #languageModal .close{display:none}
+html.language-gate #languageModal #languageHeading{font-size:25px;text-align:center;color:#174f3b;margin:6px 0 10px}
+html.language-gate #languageModal #languageIntro{text-align:center;line-height:1.9;margin:0 0 18px}
+html.language-gate #languageModal #languageChoices{display:grid;grid-template-columns:1fr;gap:9px}
+html.language-gate #languageModal #languageChoices .section-choice{box-shadow:none}
+@media(min-width:600px){html.language-gate #languageModal #languageChoices{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <div class="wrap">
