@@ -88,7 +88,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <div class="top"><h1>قرآن الکریم(قورئانی پیرۆز)</h1><p>ئەپی وێب (PWA) · لەسەر هەموو سیستەمەکان کار دەکات · دەتوانیت دایبەزێنیت</p></div>
 <div class="phone">
 <div class="status">9:41 &nbsp; 4G</div>
-<div class="appbar"><button class="icon" onclick="openSettings()">☰</button><b id="barTitle">قرآن الکریم</b><button class="icon" onclick="showSearch()">⌕</button></div>
+<div class="appbar"><button class="icon" onclick="openSettings()" aria-label="Settings">☰</button><b id="barTitle">قرآن الکریم</b><button class="icon" onclick="openLanguagePicker()" aria-label="Choose language" title="🌐">🌐</button><button class="icon" onclick="showSearch()" aria-label="Search">⌕</button></div>
 <div class="main">
 <section id="startScreen" class="view active">
 <div class="welcome"><div class="welcome-mark">۞</div><h2>بەخێربێیت بۆ قورئانی پیرۆز</h2><p>تکایە ئەو بەشە هەڵبژێرە کە دەتەوێت بەکاری بهێنیت.</p></div>
@@ -133,6 +133,7 @@ button,input{font:inherit}.wrap{max-width:1100px;margin:auto;padding:18px}.top{t
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
 </div>
 
+<div id="languageModal" class="modal"><div class="sheet"><button class="close" onclick="closeLanguagePicker()">×</button><h3 id="languageHeading">🌐 Choose your language</h3><p id="languageIntro" class="muted">Choose the language for the app. You can change it any time from the top bar.</p><div id="languageChoices" class="list"></div><button class="primary" style="width:100%;margin-top:12px" onclick="closeLanguagePicker()" id="languageDone">Done</button></div></div>
 <div id="dhikrSettingsModal" class="modal"><div class="sheet dhikr-controls"><button class="close" onclick="closeDhikrSettings()">×</button><h3>⚙</h3><p class="muted">گۆڕانکارییەکان لەسەر ئەم ئامێرە دەپارێزرێن و بۆ بەشی زیکرەکان جێبەجێ دەبن.</p>
 <label for="dhikrArabicSize">قەبارەی دەقی عەرەبی: <span id="dhikrArabicSizeLabel">24</span>px</label><input id="dhikrArabicSize" type="range" min="18" max="40" value="24" oninput="updateDhikrSettings()">
 <label for="dhikrTranslationSize">قەبارەی تەرجومە: <span id="dhikrTranslationSizeLabel">17</span>px</label><input id="dhikrTranslationSize" type="range" min="12" max="28" value="17" oninput="updateDhikrSettings()">
@@ -357,4 +358,5 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null;installBtn.style
 async function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch{}deferredPrompt=null;installBtn.style.display='none'}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
+<script src="language.js"></script>
 </body></html>
