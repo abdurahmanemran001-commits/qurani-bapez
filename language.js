@@ -71,7 +71,7 @@ id:{
 };
 const originals=new WeakMap();
 const $=id=>document.getElementById(id);
-function dict(){return source[window.appLang]||{}}
+function dict(){return D[window.appLang]||{}}
 function translateNode(n){if(!n||n.nodeType!==3)return;const p=n.parentElement;if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/i.test(p.tagName)||p.closest('#languageChoices'))return;if(!originals.has(n))originals.set(n,n.nodeValue);const original=originals.get(n);const map=dict();n.nodeValue=map[original]||original}
 function translateTree(root){const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode()))translateNode(n);document.querySelectorAll('[placeholder]').forEach(el=>{if(!el.dataset.originalPlaceholder)el.dataset.originalPlaceholder=el.placeholder;el.placeholder=dict()[el.dataset.originalPlaceholder]||el.dataset.originalPlaceholder})}
 function renderChoices(){const box=$('languageChoices');if(!box)return;box.innerHTML=LANGS.map(l=>'<button class="section-choice '+(l.code===window.appLang?'quran-choice':'')+'" style="padding:13px;margin:0" onclick="setAppLanguage(\''+l.code+'\')"><span class="choice-icon">🌐</span><span class="choice-copy"><b>'+l.name+'</b><small>'+l.code.toUpperCase()+'</small></span><span class="choice-arrow">'+(l.code===window.appLang?'✓':'›')+'</span></button>').join('')}
