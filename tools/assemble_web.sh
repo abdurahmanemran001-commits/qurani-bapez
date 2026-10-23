@@ -45,4 +45,7 @@ if len(data)<40 or items<800:
     raise SystemExit(f'Incomplete adhkar data: {len(data)} categories, {items} items')
 print(f'Verified Sorani adhkar dataset: {len(data)} categories, {items} items')
 PY
+# The other app languages: azkar.<lang>.json + azkar_languages.json (how much of each language is translated).
+# This never blocks the deployment: a language whose file is missing shows the Arabic text with a notice.
+python3 tools/build_azkar_langs.py "$DEST" || echo "language files could not be built"
 echo "assembled: $(du -sh "$D" | cut -f1)"
