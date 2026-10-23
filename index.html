@@ -377,7 +377,8 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null;installBtn.style
 async function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch{}deferredPrompt=null;installBtn.style.display='none'}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
-<script src="language.js?v=3"></script>
+<script src="language-ui.js?v=1"></script>
+<script src="language.js?v=4"></script>
 <script>
 /* Safety net: if language.js did not load, the language screen must still work. */
 (function(){

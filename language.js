@@ -71,9 +71,16 @@ id:{
 };
 const originals=new WeakMap();
 const $=id=>document.getElementById(id);
-function dict(){return D[window.appLang]||{}}
-function translateNode(n){if(!n||n.nodeType!==3)return;const p=n.parentElement;if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/i.test(p.tagName)||p.closest('#languageChoices'))return;if(!originals.has(n))originals.set(n,n.nodeValue);const original=originals.get(n);const map=dict();n.nodeValue=map[original]||original}
-function translateTree(root){const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode()))translateNode(n);document.querySelectorAll('[placeholder]').forEach(el=>{if(!el.dataset.originalPlaceholder)el.dataset.originalPlaceholder=el.placeholder;el.placeholder=dict()[el.dataset.originalPlaceholder]||el.dataset.originalPlaceholder})}
+const X=window.LANG_EXTRA||{};Object.keys(X).forEach(c=>{D[c]=Object.assign(D[c]||{},X[c])});
+const KURDISH={ckb:1,bad:1};
+const KLETTER=/[ەێۆڕڵگڤ]|جوزی|زیکری/;
+const cache={};
+function build(code){if(cache[code])return cache[code];const raw=KURDISH[code]?Object.assign({},D[code]):Object.assign({},D.en,D[code]);const map={};Object.keys(raw).forEach(k=>{const t=k.trim();if(t)map[t]=String(raw[k]).trim()});const keys=Object.keys(map).filter(k=>KLETTER.test(k)||k.length>3).sort((a,b)=>b.length-a.length);return cache[code]={raw,map,keys}}
+function dict(){return build(window.appLang).raw}
+function phrase(core,b){let out=core;const tok=[];for(const k of b.keys){if(out.indexOf(k)<0)continue;out=out.split(k).join('\uE000'+tok.length+'\uE001');tok.push(b.map[k])}return tok.length?out.replace(/\uE000(\d+)\uE001/g,(m,i)=>tok[+i]):core}
+function tr(original){const b=build(window.appLang);const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(original);const core=m[2];if(!core)return original;let r=b.map[core];if(r===undefined&&!KURDISH[window.appLang]&&KLETTER.test(core))r=phrase(core,b);if(r===undefined&&window.appLang==='bad'&&KLETTER.test(core))r=phrase(core,b);return r===undefined||r===core?original:m[1]+r+m[3]}
+function translateNode(n){if(!n||n.nodeType!==3)return;const p=n.parentElement;if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/i.test(p.tagName)||p.closest('#languageChoices'))return;if(!originals.has(n))originals.set(n,n.nodeValue);n.nodeValue=tr(originals.get(n))}
+function translateTree(root){const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode()))translateNode(n);document.querySelectorAll('[placeholder]').forEach(el=>{if(!el.dataset.originalPlaceholder)el.dataset.originalPlaceholder=el.placeholder;el.placeholder=tr(el.dataset.originalPlaceholder)})}
 function renderChoices(){const box=$('languageChoices');if(!box)return;const gate=document.documentElement.classList.contains('language-gate');const sel=window.pendingLang||(gate?null:window.appLang);box.innerHTML=LANGS.map(l=>'<button type="button" class="section-choice '+(l.code===sel?'selected':'')+'" style="padding:13px;margin:0" onclick="chooseLanguage(\''+l.code+'\')"><span class="choice-icon">🌐</span><span class="choice-copy"><b>'+l.name+'</b><small>'+l.code.toUpperCase()+'</small></span><span class="choice-arrow">'+(l.code===sel?'✓':'›')+'</span></button>').join('')}
 window.chooseLanguage=function(code){if(!LANGS.some(l=>l.code===code))return;window.pendingLang=code;renderChoices()};
 window.openLanguagePicker=function(){window.pendingLang=null;renderChoices();if($('languageModal'))$('languageModal').classList.add('open')};
