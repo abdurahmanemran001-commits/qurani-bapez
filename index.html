@@ -96,6 +96,11 @@ html.language-gate #languageModal #languageChoices{display:grid;grid-template-co
 html.language-gate #languageModal #languageChoices .section-choice{box-shadow:none}
 @media(min-width:600px){html.language-gate #languageModal #languageChoices{grid-template-columns:1fr 1fr}}
 </style>
+<style>
+/* Language picker: tapped language turns green until Done is pressed. */
+#languageChoices .section-choice.selected{background:#1b6b4b!important;border-color:#1b6b4b!important;color:#fff!important}
+#languageChoices .section-choice.selected *{color:#fff!important}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -147,7 +152,7 @@ html.language-gate #languageModal #languageChoices .section-choice{box-shadow:no
 <button id="navSettings" class="nav" onclick="openSettings()"><span>⚙</span>ڕێکخستن</button>
 </div>
 
-<div id="languageModal" class="modal"><div class="sheet"><button class="close" onclick="closeLanguagePicker()">×</button><h3 id="languageHeading">🌐 Choose your language</h3><p id="languageIntro" class="muted">Choose the language for the app. You can change it any time from the top bar.</p><div id="languageChoices" class="list"><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('ckb')">کوردیی سۆرانی</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('bad')">کوردیی بادینی</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('ar')">العربية</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('en')">English</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('tr')">Türkçe</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('fa')">فارسی</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('ur')">اردو</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('fr')">Français</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('ru')">Русский</button><button class="section-choice" style="padding:13px;margin:0" onclick="setAppLanguage('id')">Bahasa Indonesia</button></div><button class="primary" style="width:100%;margin-top:12px" onclick="closeLanguagePicker()" id="languageDone">Done</button></div></div>
+<div id="languageModal" class="modal"><div class="sheet"><button class="close" onclick="closeLanguagePicker()">×</button><h3 id="languageHeading">🌐 Choose your language</h3><p id="languageIntro" class="muted">Choose the language for the app. You can change it any time from the top bar.</p><div id="languageChoices" class="list"><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('ckb')">کوردیی سۆرانی</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('bad')">کوردیی بادینی</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('ar')">العربية</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('en')">English</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('tr')">Türkçe</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('fa')">فارسی</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('ur')">اردو</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('fr')">Français</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('ru')">Русский</button><button class="section-choice" style="padding:13px;margin:0" onclick="chooseLanguage('id')">Bahasa Indonesia</button></div><button class="primary" style="width:100%;margin-top:12px" onclick="closeLanguagePicker()" id="languageDone">Done</button></div></div>
 <div id="dhikrSettingsModal" class="modal"><div class="sheet dhikr-controls"><button class="close" onclick="closeDhikrSettings()">×</button><h3>⚙</h3><p class="muted">گۆڕانکارییەکان لەسەر ئەم ئامێرە دەپارێزرێن و بۆ بەشی زیکرەکان جێبەجێ دەبن.</p>
 <label for="dhikrArabicSize">قەبارەی دەقی عەرەبی: <span id="dhikrArabicSizeLabel">24</span>px</label><input id="dhikrArabicSize" type="range" min="18" max="40" value="24" oninput="updateDhikrSettings()">
 <label for="dhikrTranslationSize">قەبارەی تەرجومە: <span id="dhikrTranslationSizeLabel">17</span>px</label><input id="dhikrTranslationSize" type="range" min="12" max="28" value="17" oninput="updateDhikrSettings()">
@@ -372,5 +377,18 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null;installBtn.style
 async function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch{}deferredPrompt=null;installBtn.style.display='none'}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
-<script src="language.js"></script>
+<script src="language.js?v=3"></script>
+<script>
+/* Safety net: if language.js did not load, the language screen must still work. */
+(function(){
+if(typeof window.setAppLanguage==='function')return;
+var RTL=['ckb','bad','ar','fa','ur'];
+function mark(code){var bs=document.querySelectorAll('#languageChoices button');for(var i=0;i<bs.length;i++){var m=/'(\w+)'\)/.exec(bs[i].getAttribute('onclick')||'');bs[i].classList.toggle('selected',!!m&&m[1]===code)}}
+window.chooseLanguage=function(code){window.pendingLang=code;mark(code)};
+window.setAppLanguage=function(code){window.appLang=code;window.pendingLang=null;try{localStorage.setItem('app_language',code)}catch(e){}document.documentElement.lang=code;document.documentElement.dir=RTL.indexOf(code)>-1?'rtl':'ltr';document.documentElement.classList.remove('language-gate');var m=document.getElementById('languageModal');if(m)m.classList.remove('open')};
+window.closeLanguagePicker=function(){window.setAppLanguage(window.pendingLang||window.appLang||'ckb')};
+window.openLanguagePicker=function(){var m=document.getElementById('languageModal');if(m)m.classList.add('open')};
+window.toggleLang=window.openLanguagePicker;
+})();
+</script>
 </body></html>
