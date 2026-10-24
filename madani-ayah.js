@@ -1,20 +1,15 @@
-/* Madinah IMAGE + APK bounds + full reciters list. v5 */
+/* Madinah IMAGE + precise bounds + ayah/gapless timing like APK. v6 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
 
-  var PAGE_W = 1260;
-  var PAGE_H = 2038;
-  var overlay = null;
-  var playerBar = null;
-  var audio = null;
-  var current = null;
-  var reciters = [];
-  var reciterId = 'Alafasy_128kbps';
-  var pageBounds = null;
-  var pageAyahOrder = [];
-  var lastPage = -1;
-  var hlEls = [];
+  var PAGE_W = 1260, PAGE_H = 2038;
+  var overlay = null, playerBar = null, audio = null, current = null;
+  var reciters = [], reciterId = 'Alafasy_128kbps';
+  var pageBounds = null, pageAyahOrder = [], lastPage = -1, hlEls = [];
+  var timingCache = {};
+  var SQL = null, sqlReady = null;
+  var watchTimer = null;
 
   function pad(n, w) {
     n = String(n);
@@ -23,15 +18,63 @@
   }
 
   function recMeta() {
-    for (var i = 0; i < reciters.length; i++) {
-      if (reciters[i].id === reciterId) return reciters[i];
-    }
+    for (var i = 0; i < reciters.length; i++) if (reciters[i].id === reciterId) return reciters[i];
     return null;
   }
 
   function isGapless() {
     var m = recMeta();
-    return !!(m && m.t === 'g');
+    return !!(m && m.t === 'g' && m.u);
+  }
+
+  function timingDbUrl(m) {
+    if (!m || !m.u) return null;
+    var base = m.u.replace(/\/?$/, '/');
+    var name = base.replace(/\/$/, '').split('/').pop();
+    return base + name + '.db';
+  }
+
+  function ensureSql(cb) {
+    if (SQL) return cb();
+    if (sqlReady) return sqlReady.then(cb);
+    sqlReady = new Promise(function (resolve) {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js';
+      s.onload = function () {
+        initSqlJs({
+          locateFile: function (f) {
+            return 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/' + f;
+          }
+        }).then(function (sql) {
+          SQL = sql;
+          resolve();
+        }).catch(function () { resolve(); });
+      };
+      s.onerror = function () { resolve(); };
+      document.head.appendChild(s);
+    });
+    sqlReady.then(cb);
+  }
+
+  function loadTimings(m, sura, cb) {
+    var key = (m.id || '') + ':' + sura;
+    if (timingCache[key]) return cb(timingCache[key]);
+    var url = timingDbUrl(m);
+    if (!url || !SQL) return cb(null);
+    fetch(url)
+      .then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function (buf) {
+        var db = new SQL.Database(new Uint8Array(buf));
+        var res = db.exec('SELECT ayah, time FROM timings WHERE sura=' + (+sura) + ' ORDER BY ayah');
+        var map = {};
+        if (res[0] && res[0].values) {
+          res[0].values.forEach(function (row) { map[+row[0]] = +row[1]; });
+        }
+        try { db.close(); } catch (e) {}
+        timingCache[key] = map;
+        cb(map);
+      })
+      .catch(function () { cb(null); });
   }
 
   function fillReciters(sel) {
@@ -42,9 +85,9 @@
       return a.t === 'a' ? -1 : 1;
     });
     var grpA = document.createElement('optgroup');
-    grpA.label = 'ئایەت بە ئایەت';
+    grpA.label = 'ئایەت بە ئایەت (هایلایت ورد)';
     var grpG = document.createElement('optgroup');
-    grpG.label = 'سورەت بەسورەت (gapless)';
+    grpG.label = 'سورەت تەواو + timing (کوردی/gapless)';
     list.forEach(function (r) {
       var o = document.createElement('option');
       o.value = r.id;
@@ -63,38 +106,23 @@
   }
 
   function loadRecitersList(cb) {
-    var urls = ['mushaf/reciters.json', 'web/mushaf/reciters.json'];
-    function tryNext(i) {
-      if (i >= urls.length) {
+    fetch('mushaf/reciters.json')
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (data) {
+        if (Array.isArray(data) && data.length) { reciters = data; cb(); }
+        else throw 0;
+      })
+      .catch(function () {
         reciters = [
           { id: 'Alafasy_128kbps', n: 'مەشاری عەفاسی', t: 'a' },
           { id: 'Abdul_Basit_Murattal_192kbps', n: 'عەبدولباست', t: 'a' },
           { id: 'Husary_128kbps', n: 'حوساری', t: 'a' },
           { id: 'Minshawy_Murattal_128kbps', n: 'مەنشاوی', t: 'a' },
           { id: 'Abdurrahmaan_As-Sudais_192kbps', n: 'سودەیس', t: 'a' },
-          { id: 'Hudhaify_128kbps', n: 'حوزەیفی', t: 'a' },
-          { id: 'Maher_AlMuaiqly_64kbps', n: 'موعەیقلی', t: 'a' },
-          { id: 'Ghamadi_40kbps', n: 'غامدی', t: 'a' }
+          { id: 'Hudhaify_128kbps', n: 'حوزەیفی', t: 'a' }
         ];
         cb();
-        return;
-      }
-      fetch(urls[i])
-        .then(function (r) {
-          if (!r.ok) throw 0;
-          return r.json();
-        })
-        .then(function (data) {
-          if (Array.isArray(data) && data.length) {
-            reciters = data;
-            cb();
-          } else throw 0;
-        })
-        .catch(function () {
-          tryNext(i + 1);
-        });
-    }
-    tryNext(0);
+      });
   }
 
   function ensureUI() {
@@ -107,8 +135,6 @@
     img.style.height = 'auto';
     img.style.pointerEvents = 'none';
     img.setAttribute('draggable', 'false');
-    img.style.webkitUserSelect = 'none';
-    img.style.userSelect = 'none';
     img.style.webkitTouchCallout = 'none';
 
     var oldFrame = document.getElementById('madaniFrame');
@@ -117,7 +143,7 @@
     if (!img.parentElement || img.parentElement.id !== 'madaniWrap') {
       var wrap = document.createElement('div');
       wrap.id = 'madaniWrap';
-      wrap.style.cssText = 'position:relative;width:100%;line-height:0;-webkit-user-select:none;user-select:none;';
+      wrap.style.cssText = 'position:relative;width:100%;line-height:0;';
       img.parentNode.insertBefore(wrap, img);
       wrap.appendChild(img);
     }
@@ -129,14 +155,9 @@
       document.getElementById('madaniWrap').appendChild(overlay);
     }
     overlay.style.cssText =
-      'position:absolute;left:0;top:0;width:100%;height:100%;z-index:5;' +
-      'pointer-events:auto;cursor:pointer;touch-action:manipulation;';
+      'position:absolute;left:0;top:0;width:100%;height:100%;z-index:5;pointer-events:auto;cursor:pointer;touch-action:manipulation;';
 
-    function blockMenu(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
+    function blockMenu(e) { e.preventDefault(); return false; }
     overlay.oncontextmenu = blockMenu;
     img.oncontextmenu = blockMenu;
 
@@ -147,12 +168,8 @@
         e.stopPropagation();
         if (!pageBounds) return;
         var rect = overlay.getBoundingClientRect();
-        var cx =
-          (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : e.clientX) -
-          rect.left;
-        var cy =
-          (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : e.clientY) -
-          rect.top;
+        var cx = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : e.clientX) - rect.left;
+        var cy = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : e.clientY) - rect.top;
         var x = cx * (PAGE_W / rect.width);
         var y = cy * (PAGE_H / rect.height);
         var hit = null;
@@ -160,10 +177,7 @@
           var boxes = pageBounds[key];
           for (var i = 0; i < boxes.length; i++) {
             var b = boxes[i];
-            if (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]) {
-              hit = key;
-              break;
-            }
+            if (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]) { hit = key; break; }
           }
           if (hit) break;
         }
@@ -173,13 +187,9 @@
         }
       }
       overlay.addEventListener('click', onTap, true);
-      overlay.addEventListener(
-        'touchend',
-        function (e) {
-          if (e.changedTouches && e.changedTouches.length) onTap(e);
-        },
-        { passive: false }
-      );
+      overlay.addEventListener('touchend', function (e) {
+        if (e.changedTouches && e.changedTouches.length) onTap(e);
+      }, { passive: false });
     }
 
     playerBar = document.getElementById('madaniPlayer');
@@ -189,20 +199,15 @@
       playerBar.style.cssText =
         'display:flex;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;gap:8px;align-items:center;flex-wrap:wrap;';
       playerBar.innerHTML =
-        '<select id="madaniReciter" style="flex:1;min-width:160px;max-width:100%;padding:6px;border-radius:8px;border:0"></select>' +
+        '<select id="madaniReciter" style="flex:1;min-width:160px;padding:6px;border-radius:8px;border:0"></select>' +
         '<button id="madaniPlay" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#ffd54f;color:#173f35;font-weight:bold;cursor:pointer">▶</button>' +
         '<span id="madaniLabel" style="min-width:70px;text-align:center">—</span>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
-
       var sel = playerBar.querySelector('#madaniReciter');
-      loadRecitersList(function () {
-        fillReciters(sel);
-      });
+      loadRecitersList(function () { fillReciters(sel); });
       sel.onchange = function () {
         reciterId = sel.value;
-        try {
-          localStorage.setItem('madani_reciter', reciterId);
-        } catch (e) {}
+        try { localStorage.setItem('madani_reciter', reciterId); } catch (e) {}
         if (current) playAyah(current.sura, current.ayah);
       };
       playerBar.querySelector('#madaniPlay').onclick = function () {
@@ -210,36 +215,27 @@
         if (audio && !audio.paused) {
           audio.pause();
           this.textContent = '▶';
+          stopWatch();
         } else if (audio && audio.src) {
           audio.play();
           this.textContent = '⏸';
+          if (isGapless()) startWatch(timingCache[(recMeta() && recMeta().id) + ':' + current.sura], current.sura);
         } else playAyah(current.sura, current.ayah);
       };
-    } else {
-      var sel2 = playerBar.querySelector('#madaniReciter');
-      if (sel2 && !sel2.options.length) {
-        loadRecitersList(function () {
-          fillReciters(sel2);
-        });
-      }
     }
     return true;
   }
 
-  function audioUrl(sura, ayah) {
-    var m = recMeta();
-    if (m && m.t === 'g' && m.u) {
-      return m.u + pad(sura, 3) + '.mp3';
-    }
+  function audioUrlAyah(sura, ayah) {
     return 'https://everyayah.com/data/' + reciterId + '/' + pad(sura, 3) + pad(ayah, 3) + '.mp3';
   }
 
+  function audioUrlSurah(m, sura) {
+    return m.u.replace(/\/?$/, '/') + pad(sura, 3) + '.mp3';
+  }
+
   function clearHighlight() {
-    hlEls.forEach(function (el) {
-      try {
-        el.remove();
-      } catch (e) {}
-    });
+    hlEls.forEach(function (el) { try { el.remove(); } catch (e) {} });
     hlEls = [];
   }
 
@@ -253,25 +249,43 @@
       el.className = 'ma-hl';
       el.style.cssText =
         'position:absolute;pointer-events:none;background:rgba(255,213,79,0.38);border-radius:3px;' +
-        'left:' +
-        (b[0] / PAGE_W) * 100 +
-        '%;top:' +
-        (b[1] / PAGE_H) * 100 +
-        '%;width:' +
-        ((b[2] - b[0]) / PAGE_W) * 100 +
-        '%;height:' +
-        ((b[3] - b[1]) / PAGE_H) * 100 +
-        '%;';
+        'left:' + (b[0] / PAGE_W) * 100 + '%;top:' + (b[1] / PAGE_H) * 100 + '%;' +
+        'width:' + ((b[2] - b[0]) / PAGE_W) * 100 + '%;height:' + ((b[3] - b[1]) / PAGE_H) * 100 + '%;';
       overlay.appendChild(el);
       hlEls.push(el);
     });
   }
 
+  function stopWatch() {
+    if (watchTimer) { clearInterval(watchTimer); watchTimer = null; }
+  }
+
+  function startWatch(timingMap, sura) {
+    stopWatch();
+    if (!timingMap || !audio) return;
+    watchTimer = setInterval(function () {
+      if (!audio || audio.paused) return;
+      var ms = (audio.currentTime || 0) * 1000;
+      var ayahs = Object.keys(timingMap).map(Number).filter(function (a) { return a > 0 && a < 900; }).sort(function (a, b) { return a - b; });
+      var curA = ayahs[0] || 1;
+      for (var i = 0; i < ayahs.length; i++) {
+        if (timingMap[ayahs[i]] <= ms) curA = ayahs[i];
+        else break;
+      }
+      if (!current || current.sura !== sura || current.ayah !== curA) {
+        current = { sura: sura, ayah: curA };
+        drawHighlight(sura, curA);
+        var lab = playerBar && playerBar.querySelector('#madaniLabel');
+        if (lab) lab.textContent = sura + ' : ' + curA;
+      }
+    }, 200);
+  }
+
   function playAyah(sura, ayah) {
-    sura = +sura;
-    ayah = +ayah;
+    sura = +sura; ayah = +ayah;
     current = { sura: sura, ayah: ayah };
     drawHighlight(sura, ayah);
+    stopWatch();
 
     if (playerBar) {
       playerBar.style.display = 'flex';
@@ -282,40 +296,58 @@
     }
 
     if (audio) {
-      try {
-        audio.onended = null;
-        audio.pause();
-      } catch (e) {}
+      try { audio.onended = null; audio.pause(); } catch (e) {}
     }
 
-    var url = audioUrl(sura, ayah);
-    audio = new Audio(url);
-    audio.play().catch(function () {
-      var btn = playerBar && playerBar.querySelector('#madaniPlay');
-      if (btn) btn.textContent = '▶';
-    });
+    var m = recMeta();
 
+    if (m && m.t === 'g' && m.u) {
+      ensureSql(function () {
+        loadTimings(m, sura, function (map) {
+          audio = new Audio(audioUrlSurah(m, sura));
+          var startMs = map && map[ayah] != null ? map[ayah] : 0;
+          if (ayah === 1 && map && map[0] != null) startMs = map[0];
+
+          function go() {
+            try { audio.currentTime = (startMs || 0) / 1000; } catch (e) {}
+            audio.play().catch(function () {
+              var b = playerBar && playerBar.querySelector('#madaniPlay');
+              if (b) b.textContent = '▶';
+            });
+            if (map) startWatch(map, sura);
+          }
+
+          if (audio.readyState >= 1) go();
+          else audio.addEventListener('loadedmetadata', go, { once: true });
+
+          audio.onended = function () {
+            stopWatch();
+            var b = playerBar && playerBar.querySelector('#madaniPlay');
+            if (b) b.textContent = '▶';
+            clearHighlight();
+          };
+        });
+      });
+      return;
+    }
+
+    audio = new Audio(audioUrlAyah(sura, ayah));
+    audio.play().catch(function () {
+      var b = playerBar && playerBar.querySelector('#madaniPlay');
+      if (b) b.textContent = '▶';
+    });
     audio.onended = function () {
-      var btn = playerBar && playerBar.querySelector('#madaniPlay');
-      if (isGapless()) {
-        if (btn) btn.textContent = '▶';
-        clearHighlight();
-        return;
-      }
+      var b = playerBar && playerBar.querySelector('#madaniPlay');
       var next = null;
       for (var i = 0; i < pageAyahOrder.length; i++) {
-        if (
-          pageAyahOrder[i].sura === sura &&
-          pageAyahOrder[i].ayah === ayah &&
-          i + 1 < pageAyahOrder.length
-        ) {
+        if (pageAyahOrder[i].sura === sura && pageAyahOrder[i].ayah === ayah && i + 1 < pageAyahOrder.length) {
           next = pageAyahOrder[i + 1];
           break;
         }
       }
       if (next) playAyah(next.sura, next.ayah);
       else {
-        if (btn) btn.textContent = '▶';
+        if (b) b.textContent = '▶';
         clearHighlight();
       }
     };
@@ -323,28 +355,17 @@
 
   function loadBounds(page) {
     return fetch('madani-bounds/' + pad(page, 3) + '.json')
-      .then(function (r) {
-        if (!r.ok) throw 0;
-        return r.json();
-      })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (data) {
         pageBounds = data;
-        pageAyahOrder = Object.keys(data)
-          .map(function (k) {
-            var p = k.split(':');
-            return { sura: +p[0], ayah: +p[1] };
-          })
-          .sort(function (a, b) {
-            return a.sura - b.sura || a.ayah - b.ayah;
-          });
+        pageAyahOrder = Object.keys(data).map(function (k) {
+          var p = k.split(':');
+          return { sura: +p[0], ayah: +p[1] };
+        }).sort(function (a, b) { return a.sura - b.sura || a.ayah - b.ayah; });
         var st = document.getElementById('pageStatus');
-        if (st) st.textContent = 'پەنجە لەسەر ئایەت → هایلایت + دەنگ';
+        if (st) st.textContent = 'پەنجە لەسەر ئایەت → هایلایت + دەنگ (وەک ئەپ)';
       })
-      .catch(function () {
-        pageBounds = null;
-        var st = document.getElementById('pageStatus');
-        if (st) st.textContent = 'پەڕە بارکرا';
-      });
+      .catch(function () { pageBounds = null; });
   }
 
   function showPage(page) {
@@ -353,19 +374,17 @@
     lastPage = page;
     var img = document.getElementById('pageImg');
     if (!img) return;
-    function syncOverlaySize() {
-      if (!overlay || !img) return;
-      var h = img.offsetHeight || img.clientHeight;
-      if (h) overlay.style.height = h + 'px';
+    function sync() {
+      if (overlay && img) {
+        var h = img.offsetHeight || img.clientHeight;
+        if (h) overlay.style.height = h + 'px';
+      }
     }
-    function ready() {
-      syncOverlaySize();
-      loadBounds(page);
-    }
+    function ready() { sync(); loadBounds(page); }
     if (img.complete && img.naturalHeight) ready();
     else img.addEventListener('load', ready, { once: true });
-    setTimeout(syncOverlaySize, 100);
-    setTimeout(syncOverlaySize, 500);
+    setTimeout(sync, 100);
+    setTimeout(sync, 500);
   }
 
   function installHook() {
@@ -373,12 +392,8 @@
     if (typeof orig === 'function' && !orig.__madaniHooked) {
       window.openPage = function (p) {
         orig.apply(this, arguments);
-        setTimeout(function () {
-          showPage(p);
-        }, 80);
-        setTimeout(function () {
-          showPage(p);
-        }, 400);
+        setTimeout(function () { showPage(p); }, 80);
+        setTimeout(function () { showPage(p); }, 400);
       };
       window.openPage.__madaniHooked = true;
     }
@@ -387,16 +402,14 @@
       img.__madaniWatch = true;
       new MutationObserver(function () {
         var m = (img.src || '').match(/page(\d{3})\.png/i);
-        if (m) {
-          var p = +m[1];
-          if (p !== lastPage) showPage(p);
-        }
+        if (m && +m[1] !== lastPage) showPage(+m[1]);
       }).observe(img, { attributes: true, attributeFilter: ['src'] });
     }
   }
 
   function boot() {
     installHook();
+    ensureSql(function () {});
     try {
       var reader = document.getElementById('reader');
       if (reader && reader.classList.contains('active')) {
@@ -410,14 +423,10 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 50);
-      setTimeout(boot, 500);
-      setTimeout(boot, 1500);
+      setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
     });
   } else {
-    setTimeout(boot, 50);
-    setTimeout(boot, 500);
-    setTimeout(boot, 1500);
+    setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
   }
   var tries = 0;
   var t = setInterval(function () {
