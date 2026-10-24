@@ -63,7 +63,45 @@ jobs:
           PY
           test -s dist/madani-bounds/001.json
           test -s dist/madani-bounds/604.json
-          echo "madani-bounds ready: $(ls dist/madani-bounds | wc -l) files"
+
+      - name: Build gapless timing JSON (same .db as APK, hosted same-origin)
+        run: |
+          set -e
+          mkdir -p dist/madani-timing /tmp/tmdb
+          python3 - <<'PY'
+          import json, os, sqlite3, urllib.request
+          recs = json.load(open('web/mushaf/reciters.json'))
+          out = 'dist/madani-timing'
+          os.makedirs(out, exist_ok=True)
+          ok = fail = 0
+          for r in recs:
+              if r.get('t') != 'g' or not r.get('u'):
+                  continue
+              base = r['u'].rstrip('/') + '/'
+              name = base.rstrip('/').split('/')[-1]
+              db_url = base + name + '.db'
+              path = '/tmp/tmdb/' + name + '.db'
+              try:
+                  urllib.request.urlretrieve(db_url, path)
+              except Exception as e:
+                  print('FAIL download', r['id'], e)
+                  fail += 1
+                  continue
+              try:
+                  conn = sqlite3.connect(path)
+                  data = {}
+                  for sura, ayah, time in conn.execute('SELECT sura,ayah,time FROM timings'):
+                      data.setdefault(str(sura), {})[str(ayah)] = int(time)
+                  with open(os.path.join(out, r['id'] + '.json'), 'w') as f:
+                      json.dump(data, f, separators=(',', ':'))
+                  ok += 1
+                  print('OK', r['id'], 'suras', len(data))
+              except Exception as e:
+                  print('FAIL parse', r['id'], e)
+                  fail += 1
+          print('timing ok', ok, 'fail', fail)
+          PY
+          echo "timing files: $(ls dist/madani-timing | wc -l)"
 
       - name: Verify web data
         run: |
