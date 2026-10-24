@@ -162,10 +162,10 @@ window.LANG_EXTRA={
 }
 };
 
-/* Load Madinah IMAGE mushaf bounds + synced audio (same as APK ayahinfo). */
+/* Load Madinah IMAGE mushaf + all reciters. */
 (function(){
   var s=document.createElement('script');
-  s.src='madani-ayah.js?v=4';
+  s.src='madani-ayah.js?v=5';
   s.async=true;
   document.head.appendChild(s);
 })();
