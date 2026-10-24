@@ -1,4 +1,4 @@
-<!doctype html><html lang="ku" dir="rtl"><head><meta charset="utf-8">
+<!doctype html><html lang="ckb" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#176b4b">
 <title>موسحەفی قورئان</title>
@@ -54,14 +54,132 @@ header button{background:#e8f3ee;cursor:pointer}
  <input id="pg" type="number" min="1" max="604" inputmode="numeric">
  <button id="prev" title="پێشوو">‹</button>
  <select id="sura"></select>
- <button id="lib" title="موسحەف و قیرائەتەکان">📚 <span id="libn">مەدینە تەجوید</span> ▾</button>
+ <button id="lib" title="" id="libBtnTitle">📚 <span id="libn"></span> ▾</button>
 </header>
 <iframe id="f" title="mushaf"></iframe>
 <div id="pl"><select id="rc"></select><button id="pa" title="ئایەتی پێشوو">⏮</button><button id="pp">▶</button><button id="pn" title="ئایەتی دواتر">⏭</button><span id="pt"></span><button id="px" title="داخستن">✕</button></div>
 <div id="tip"></div>
-<div id="lb"><div id="lbp"><div id="lbh"><b>موسحەف و قیرائەتەکان</b><button id="lbx">✕</button></div><div id="lbl"></div></div></div>
+<div id="lb"><div id="lbp"><div id="lbh"><b id="libTitle">موسحەف و قیرائەتەکان</b><button id="lbx">✕</button></div><div id="lbl"></div></div></div>
 </div>
+
 <script>
+/* ---- Mushaf i18n: follows app_language from localStorage ---- */
+(function(){
+  var LANG = 'ckb';
+  try { LANG = localStorage.getItem('app_language') || 'ckb'; } catch(e) {}
+  var DIR = (LANG === 'en' || LANG === 'tr' || LANG === 'fr' || LANG === 'ru' || LANG === 'id') ? 'ltr' : 'rtl';
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = DIR;
+
+  var TR = {
+    ckb: {
+      title: 'موسحەفی قورئان',
+      libTitle: 'موسحەف و قیرائەتەکان',
+      inApp: 'لەناو ئەپەکە',
+      qiraat: 'قیرائەتەکان',
+      qiraatNeed: 'قیرائەتەکان (داگرتن پێویستە)',
+      use: 'بەکاریبهێنە',
+      del: 'سڕینەوە',
+      stop: 'ڕاگرتن',
+      download: 'داگرتن',
+      online: 'بینین بە ئینتەرنێت',
+      now: ' · ✓ ئێستا',
+      moreRiwayat: 'ڕیوایەتەکانی تر (تەنها دەنگ)',
+      madina: 'مەدینە تەجوید',
+      tajweedText: 'تەجوید (دەق)',
+      warsh: 'وەرش',
+      shuba: 'شوعبە',
+      qaloon: 'قالون',
+      qunbul: 'قونبول',
+      bazzi: 'بەزی',
+      douri: 'دووری',
+      susi: 'سووسی',
+      madinaDesc: 'ڕەنگاوڕەنگ، هایلایتی ئایەت و دەنگ. لەناو ئەپەکەدایە.',
+      tajweedDesc: 'دەقی ڕەنگاوڕەنگی تەجوید. لەناو ئەپەکەدایە.',
+      warshDesc: 'وێنەی ڕەسمی مصحف المدينة بە هایلایت.',
+      shubaDesc: 'وێنەی مصحف بە هایلایت و دەنگی حوزەیفی.',
+      qaloonDesc: 'وێنەی مصحف بە هایلایت و دەنگی دوکالی.',
+      qunbulDesc: 'دەق بە فۆنتی مجمع الملك فهد و دەنگ.',
+      bazziDesc: 'دەق بە فۆنتی مجمع الملك فهد و دەنگ.',
+      douriDesc: 'دەق بە فۆنتی مجمع الملك فهد و دەنگ.',
+      susiDesc: 'دەق بە فۆنتی مجمع الملك فهد و دەنگ.',
+      fail: 'داگرتن سەرکەوتوو نەبوو. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵبدەرەوە.',
+      confirmDel: 'ئەم موسحەفە لەسەر مۆبایلەکەت بسڕدرێتەوە؟'
+    },
+    en: {
+      title: 'Quran Mushaf',
+      libTitle: 'Mushafs & Qira\'at',
+      inApp: 'Built-in',
+      qiraat: 'Qira\'at',
+      qiraatNeed: 'Qira\'at (download required)',
+      use: 'Use',
+      del: 'Remove',
+      stop: 'Cancel',
+      download: 'Download',
+      online: 'View online',
+      now: ' · ✓ Current',
+      moreRiwayat: 'More riwayat (audio only)',
+      madina: 'Madinah Tajweed',
+      tajweedText: 'Tajweed (text)',
+      warsh: 'Warsh',
+      shuba: 'Shu\'bah',
+      qaloon: 'Qaloon',
+      qunbul: 'Qunbul',
+      bazzi: 'Bazzi',
+      douri: 'Douri',
+      susi: 'Susi',
+      madinaDesc: 'Colored Tajweed, ayah highlight and audio. Built into the app.',
+      tajweedDesc: 'Colored Tajweed text. Built into the app.',
+      warshDesc: 'Official Madinah Mushaf images with highlight.',
+      shubaDesc: 'Mushaf images with highlight and Hudhaifi audio.',
+      qaloonDesc: 'Mushaf images with highlight and Dokali audio.',
+      qunbulDesc: 'Text with King Fahd Complex font and audio.',
+      bazziDesc: 'Text with King Fahd Complex font and audio.',
+      douriDesc: 'Text with King Fahd Complex font and audio.',
+      susiDesc: 'Text with King Fahd Complex font and audio.',
+      fail: 'Download failed. Check your internet and try again.',
+      confirmDel: 'Remove this mushaf from your device?'
+    },
+    ar: {
+      title: 'مصحف القرآن',
+      libTitle: 'المصاحف والقراءات',
+      inApp: 'مدمج في التطبيق',
+      qiraat: 'القراءات',
+      qiraatNeed: 'القراءات (يتطلب التحميل)',
+      use: 'استخدم',
+      del: 'حذف',
+      stop: 'إيقاف',
+      download: 'تحميل',
+      online: 'عرض عبر الإنترنت',
+      now: ' · ✓ الحالي',
+      moreRiwayat: 'روايات أخرى (صوت فقط)',
+      madina: 'مصحف المدينة (تجويد)',
+      tajweedText: 'تجويد (نص)',
+      warsh: 'ورش',
+      shuba: 'شعبة',
+      qaloon: 'قالون',
+      qunbul: 'قنبل',
+      bazzi: 'البزي',
+      douri: 'الدوري',
+      susi: 'السوسي',
+      madinaDesc: 'ملون، تمييز الآيات والصوت. مدمج في التطبيق.',
+      tajweedDesc: 'نص التجويد الملون. مدمج في التطبيق.',
+      warshDesc: 'صور مصحف المدينة الرسمية مع التمييز.',
+      shubaDesc: 'صور المصحف مع التمييز وصوت الحذيفي.',
+      qaloonDesc: 'صور المصحف مع التمييز وصوت الدوكالي.',
+      qunbulDesc: 'نص بخط مجمع الملك فهد مع الصوت.',
+      bazziDesc: 'نص بخط مجمع الملك فهد مع الصوت.',
+      douriDesc: 'نص بخط مجمع الملك فهد مع الصوت.',
+      susiDesc: 'نص بخط مجمع الملك فهد مع الصوت.',
+      fail: 'فشل التحميل. تحقق من الإنترنت وحاول مرة أخرى.',
+      confirmDel: 'هل تريد حذف هذا المصحف من جهازك؟'
+    }
+  };
+  var T = TR[LANG] || (DIR === 'ltr' ? TR.en : TR.ckb);
+  window.MUSHAF_T = T;
+  window.MUSHAF_LANG = LANG;
+})();
+
 var N=["الفاتحة","البقرة","آل عمران","النساء","المائدة","الأنعام","الأعراف","الأنفال","التوبة","يونس","هود","يوسف","الرعد","إبراهيم","الحجر","النحل","الإسراء","الكهف","مريم","طه","الأنبياء","الحج","المؤمنون","النور","الفرقان","الشعراء","النمل","القصص","العنكبوت","الروم","لقمان","السجدة","الأحزاب","سبأ","فاطر","يس","الصافات","ص","الزمر","غافر","فصلت","الشورى","الزخرف","الدخان","الجاثية","الأحقاف","محمد","الفتح","الحجرات","ق","الذاريات","الطور","النجم","القمر","الرحمن","الواقعة","الحديد","المجادلة","الحشر","الممتحنة","الصف","الجمعة","المنافقون","التغابن","الطلاق","التحريم","الملك","القلم","الحاقة","المعارج","نوح","الجن","المزمل","المدثر","القيامة","الإنسان","المرسلات","النبأ","النازعات","عبس","التكوير","الانفطار","المطففين","الانشقاق","البروج","الطارق","الأعلى","الغاشية","الفجر","البلد","الشمس","الليل","الضحى","الشرح","التين","العلق","القدر","البينة","الزلزلة","العاديات","القارعة","التكاثر","العصر","الهمزة","الفيل","قريش","الماعون","الكوثر","الكافرون","النصر","المسد","الإخلاص","الفلق","الناس"];
 var pp,pa,pn,px,rc;
 pp=document.getElementById('pp');pa=document.getElementById('pa');pn=document.getElementById('pn');px=document.getElementById('px');rc=document.getElementById('rc');
@@ -146,14 +264,14 @@ fetch('reciters.json').then(function(r){return r.json()}).then(function(l){R=l;f
 
 var QB=window.QPK||null;var NAT=!!QB||!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
 var RBASE='https://abdurahmanemran001-commits.github.io/qurani-bapez/mushaf/data/';
-var BI={q:{n:'مەدینە تەجوید',s:'حەفص عن عاصم',x:'ڕەنگاوڕەنگ، هایلایتی ئایەت و دەنگ. لەناو ئەپەکەدایە.'},t:{n:'تەجوید (دەق)',s:'حەفص عن عاصم',x:'دەقی ڕەنگاوڕەنگی تەجوید. لەناو ئەپەکەدایە.'}};
-var PK={w:{dir:'warshimg',n:'وەرش',s:'عن نافع',k:'img',mb:71,x:'وێنەی ڕەسمی مصحف المدينة بە هایلایت.'},
- s:{dir:'shubaimg',n:'شوعبە',s:'عن عاصم',k:'img',mb:87,x:'وێنەی مصحف بە هایلایت و دەنگی حوزەیفی.'},
- k:{dir:'qaloonimg',n:'قالون',s:'عن نافع',k:'img',mb:84,x:'وێنەی مصحف بە هایلایت و دەنگی دوکالی.'},
- b:{dir:'qunbul',n:'قونبول',s:'عن ابن کثیر',k:'txt',f:'qunbul.otf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
- z:{dir:'bazzi',n:'بەزی',s:'عن ابن کثیر',k:'txt',f:'bazzi.otf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
- d:{dir:'douri',n:'دووری',s:'عن أبي عمرو',k:'txt',f:'douri.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'},
- u:{dir:'susi',n:'سووسی',s:'عن أبي عمرو',k:'txt',f:'susi.ttf',mb:3,x:'دەق بە فۆنتی مجمع الملك فهد و دەنگ.'}};
+var BI={q:{n:window.MUSHAF_T.madina,s:'حَفْص عن عاصم',x:window.MUSHAF_T.madinaDesc},t:{n:window.MUSHAF_T.tajweedText,s:'حَفْص عن عاصم',x:window.MUSHAF_T.tajweedDesc}};
+var PK={w:{dir:'warshimg',n:window.MUSHAF_T.warsh,s:'عن نافع',k:'img',mb:71,x:window.MUSHAF_T.warshDesc},
+ s:{dir:'shubaimg',n:window.MUSHAF_T.shuba,s:'عن عاصم',k:'img',mb:87,x:window.MUSHAF_T.shubaDesc},
+ k:{dir:'qaloonimg',n:window.MUSHAF_T.qaloon,s:'عن نافع',k:'img',mb:84,x:window.MUSHAF_T.qaloonDesc},
+ b:{dir:'qunbul',n:window.MUSHAF_T.qunbul,s:'عن ابن كثير',k:'txt',f:'qunbul.otf',mb:3,x:window.MUSHAF_T.qunbulDesc},
+ z:{dir:'bazzi',n:window.MUSHAF_T.bazzi,s:'عن ابن كثير',k:'txt',f:'bazzi.otf',mb:3,x:window.MUSHAF_T.bazziDesc},
+ d:{dir:'douri',n:window.MUSHAF_T.douri,s:'عن أبي عمرو',k:'txt',f:'douri.ttf',mb:3,x:window.MUSHAF_T.douriDesc},
+ u:{dir:'susi',n:window.MUSHAF_T.susi,s:'عن أبي عمرو',k:'txt',f:'susi.ttf',mb:3,x:window.MUSHAF_T.susiDesc}};
 var inst={},dl={},FSP=(NAT&&!QB)?Capacitor.registerPlugin('Filesystem'):null;
 function fsp(m){return 'packs/'+PK[m].dir;}
 function sleep(t){return new Promise(function(r){setTimeout(r,t)});}
@@ -165,16 +283,16 @@ function baseFor(m){if(!PK[m]||!NAT)return '';if(inst[m])return inst[m];if(ld('o
 function openLib(){renderLib();document.getElementById('lb').classList.add('on');}
 function closeLib(){document.getElementById('lb').classList.remove('on');}
 function card(m){
- var P=PK[m]||BI[m],bi=!PK[m],act=m===mode,d=dl[m],h='<div class="mc'+(act?' act':'')+'"><div class="t"><b>'+P.n+'</b><i>'+P.s+(act?' · ✓ ئێستا':'')+'</i></div><p>'+P.x+'</p><div class="r">';
- if(bi||!NAT||inst[m]){h+='<button class="pri" data-a="use" data-m="'+m+'">بەکاریبهێنە</button>';if(NAT&&inst[m])h+='<button class="bad" data-a="del" data-m="'+m+'">سڕینەوە</button>';}
- else if(d){var pc=Math.round(d.done/d.total*100);h+='<div class="bar"><div style="width:'+pc+'%"></div></div><span>'+pc+'%</span><button class="bad" data-a="stop" data-m="'+m+'">ڕاگرتن</button>';}
- else{h+='<button class="pri" data-a="get" data-m="'+m+'">داگرتن ('+P.mb+' MB)</button><button data-a="onl" data-m="'+m+'">بینین بە ئینتەرنێت</button>';}
+ var P=PK[m]||BI[m],bi=!PK[m],act=m===mode,d=dl[m],h='<div class="mc'+(act?' act':'')+'"><div class="t"><b>'+P.n+'</b><i>'+P.s+(act?window.MUSHAF_T.now:'')+'</i></div><p>'+P.x+'</p><div class="r">';
+ if(bi||!NAT||inst[m]){h+='<button class="pri" data-a="use" data-m="'+m+'">'+window.MUSHAF_T.use+'</button>';if(NAT&&inst[m])h+='<button class="bad" data-a="del" data-m="'+m+'">'+window.MUSHAF_T.del+'</button>';}
+ else if(d){var pc=Math.round(d.done/d.total*100);h+='<div class="bar"><div style="width:'+pc+'%"></div></div><span>'+pc+'%</span><button class="bad" data-a="stop" data-m="'+m+'">'+window.MUSHAF_T.stop+'</button>';}
+ else{h+='<button class="pri" data-a="get" data-m="'+m+'">'+window.MUSHAF_T.download+' ('+P.mb+' MB)</button><button data-a="onl" data-m="'+m+'">'+window.MUSHAF_T.online+'</button>';}
  return h+'</div></div>';
 }
 function renderLib(){
- var h='<h3>لەناو ئەپەکە</h3>'+card('q')+card('t')+'<h3>قیرائەتەکان'+(NAT?' (داگرتن پێویستە)':'')+'</h3>';
+ var h='<h3>'+window.MUSHAF_T.inApp+'</h3>'+card('q')+card('t')+'<h3>'+(NAT?window.MUSHAF_T.qiraatNeed:window.MUSHAF_T.qiraat)+'</h3>';
  'wskbzdu'.split('').forEach(function(m){h+=card(m);});
- h+='<div id="lbf"><a href="riwayat.html">ڕیوایەتەکانی تر (تەنها دەنگ)</a></div>';
+ h+='<div id="lbf"><a href="riwayat.html">'+window.MUSHAF_T.moreRiwayat+'</a></div>';
  var l=document.getElementById('lbl');l.innerHTML=h;
 }
 async function getPack(m){
@@ -196,7 +314,7 @@ async function getPack(m){
  try{
   if(!stop&&!fail){var st=await FSP.stat({path:fsp(m)+'/'+files[total-1],directory:'DATA'});if(!(st.size>200))fail='size';}
  }catch(e){fail=e;}
- if(stop||fail){try{await FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true});}catch(e){}delete dl[m];renderLib();if(fail)alert('داگرتن سەرکەوتوو نەبوو. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵبدەرەوە.');return;}
+ if(stop||fail){try{await FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true});}catch(e){}delete dl[m];renderLib();if(fail)alert(window.MUSHAF_T.fail);return;}
  await FSP.writeFile({path:fsp(m)+'/DONE',data:'1',directory:'DATA',encoding:'utf8'});
  inst[m]=await localBase(m);delete dl[m];renderLib();
 }
@@ -206,14 +324,17 @@ document.getElementById('lbl').onclick=function(e){
  else if(a==='get'){getPack(m);}
  else if(a==='stop'){if(dl[m])dl[m].stop();}
  else if(a==='onl'){sv('onl_'+m,'1');closeLib();setMode(m);}
- else if(a==='del'){if(confirm('ئەم موسحەفە لەسەر مۆبایلەکەت بسڕدرێتەوە؟'))(QB?Promise.resolve(QB.remove(PK[m].dir)):FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true})).catch(function(){}).then(function(){inst[m]=null;sv('onl_'+m,'0');if(mode===m){mode='q';fillReciters();show();}renderLib();});}
+ else if(a==='del'){if(confirm(window.MUSHAF_T.confirmDel))(QB?Promise.resolve(QB.remove(PK[m].dir)):FSP.rmdir({path:fsp(m),directory:'DATA',recursive:true})).catch(function(){}).then(function(){inst[m]=null;renderLib();});}
 };
-window.__pk=function(dir,done,total,st){var m=null;for(var k in PK)if(PK[k].dir===dir)m=k;if(!m)return;
- if(st==='progress'){dl[m]={done:done,total:total,stop:function(){QB.cancel(dir);}};}
- else if(st==='done'){delete dl[m];inst[m]='https://app.local/packs/'+dir+'/';}
- else{delete dl[m];if(st==='error')alert('داگرتن سەرکەوتوو نەبوو. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵبدەرەوە.');}
- renderLib();};
-if(QB){for(var k in PK){var a=QB.active(PK[k].dir);if(a){var pr=a.split('/');dl[k]={done:+pr[0],total:+pr[1],stop:(function(d){return function(){QB.cancel(d);};})(PK[k].dir)};}}}
-document.getElementById('lib').onclick=openLib;document.getElementById('lbx').onclick=closeLib;
-document.getElementById('lb').onclick=function(e){if(e.target.id==='lb')closeLib();};
-</script><script>if(location.hostname==='localhost'||location.hostname==='app.local'||location.protocol==='capacitor:'){var h=document.getElementById('home');if(h)h.style.display='none';}</script></body></html>
+document.getElementById('lib').onclick=openLib;
+document.getElementById('lbx').onclick=closeLib;
+document.getElementById('lb').onclick=function(e){if(e.target===this)closeLib();};
+window.__pk=function(dir,done,total,st){
+ var m=null;for(var k in PK)if(PK[k].dir===dir)m=k;if(!m)return;
+ if(st==='progress'){dl[m]={done:done,total:total,stop:function(){QB&&QB.cancel(dir);}};renderLib();}
+ else{delete dl[m];if(st==='done'){inst[m]='https://app.local/packs/'+dir+'/';}renderLib();}
+};
+document.title = window.MUSHAF_T.title;
+var _lt=document.getElementById('libTitle'); if(_lt)_lt.textContent=window.MUSHAF_T.libTitle;
+var _lb=document.getElementById('libBtnTitle'); if(_lb)_lb.title=window.MUSHAF_T.libTitle;
+</script></body></html>
