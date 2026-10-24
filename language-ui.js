@@ -165,7 +165,7 @@ window.LANG_EXTRA={
 /* Load Madinah ayah hit-areas + audio (keeps image mushaf). */
 (function(){
   var s=document.createElement('script');
-  s.src='madani-ayah.js?v=1';
+  s.src='madani-ayah.js?v=2';
   s.async=true;
   document.head.appendChild(s);
 })();
