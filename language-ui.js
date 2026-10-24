@@ -162,10 +162,10 @@ window.LANG_EXTRA={
 }
 };
 
-/* Load Madinah ayah hit-areas + audio (keeps image mushaf). */
+/* Load Madinah ayah hit-areas + audio (same method as APK ColorMushaf). */
 (function(){
   var s=document.createElement('script');
-  s.src='madani-ayah.js?v=2';
+  s.src='madani-ayah.js?v=3';
   s.async=true;
   document.head.appendChild(s);
 })();
