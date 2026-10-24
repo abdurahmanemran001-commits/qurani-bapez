@@ -1,4 +1,4 @@
-/* Madinah IMAGE + precise bounds + ayah/gapless timing like APK. v7 */
+/* Madinah IMAGE + APK bounds + gapless with real/estimated timing. v8 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
@@ -9,6 +9,9 @@
   var pageBounds = null, pageAyahOrder = [], lastPage = -1, hlEls = [];
   var timingCache = {};
   var watchTimer = null;
+
+  // ayah counts per sura (1..114)
+  var AYAH_COUNT = [0,7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
 
   function pad(n, w) {
     n = String(n);
@@ -26,6 +29,13 @@
     return !!(m && m.t === 'g' && m.u);
   }
 
+  function setStatus(msg) {
+    var st = document.getElementById('pageStatus');
+    if (st) st.textContent = msg;
+    var lab = playerBar && playerBar.querySelector('#madaniLabel');
+    if (lab && msg && msg.length < 40) lab.title = msg;
+  }
+
   function loadTimings(m, sura, cb) {
     var key = (m.id || '') + ':' + sura;
     if (timingCache[key]) return cb(timingCache[key]);
@@ -36,10 +46,22 @@
         var suraMap = all[String(sura)] || all[sura] || {};
         var map = {};
         Object.keys(suraMap).forEach(function (a) { map[+a] = +suraMap[a]; });
-        timingCache[key] = map;
-        cb(map);
+        if (Object.keys(map).length) {
+          timingCache[key] = map;
+          cb(map);
+        } else cb(null);
       })
       .catch(function () { cb(null); });
+  }
+
+  function estimateTimings(sura, durationMs) {
+    var n = AYAH_COUNT[sura] || 1;
+    var map = {};
+    for (var i = 1; i <= n; i++) {
+      map[i] = Math.floor(((i - 1) / n) * durationMs);
+    }
+    map[999] = Math.floor(durationMs);
+    return map;
   }
 
   function fillReciters(sel) {
@@ -50,9 +72,9 @@
       return a.t === 'a' ? -1 : 1;
     });
     var grpA = document.createElement('optgroup');
-    grpA.label = 'ئایەت بە ئایەت (هایلایت ورد)';
+    grpA.label = 'ئایەت بە ئایەت';
     var grpG = document.createElement('optgroup');
-    grpG.label = 'سورەت تەواو + timing (کوردی/gapless)';
+    grpG.label = 'کوردی / سورەت تەواو';
     list.forEach(function (r) {
       var o = document.createElement('option');
       o.value = r.id;
@@ -81,10 +103,7 @@
         reciters = [
           { id: 'Alafasy_128kbps', n: 'مەشاری عەفاسی', t: 'a' },
           { id: 'Abdul_Basit_Murattal_192kbps', n: 'عەبدولباست', t: 'a' },
-          { id: 'Husary_128kbps', n: 'حوساری', t: 'a' },
-          { id: 'Minshawy_Murattal_128kbps', n: 'مەنشاوی', t: 'a' },
-          { id: 'Abdurrahmaan_As-Sudais_192kbps', n: 'سودەیس', t: 'a' },
-          { id: 'Hudhaify_128kbps', n: 'حوزەیفی', t: 'a' }
+          { id: 'Husary_128kbps', n: 'حوساری', t: 'a' }
         ];
         cb();
       });
@@ -182,12 +201,15 @@
           this.textContent = '▶';
           stopWatch();
         } else if (audio && audio.src) {
-          audio.play();
-          this.textContent = '⏸';
-          if (isGapless() && current) {
-            var m = recMeta();
-            startWatch(timingCache[(m && m.id) + ':' + current.sura], current.sura);
-          }
+          var self = this;
+          audio.play().then(function () {
+            self.textContent = '⏸';
+            if (isGapless() && current) {
+              var m = recMeta();
+              var map = timingCache[(m && m.id) + ':' + current.sura];
+              if (map) startWatch(map, current.sura);
+            }
+          }).catch(function () { self.textContent = '▶'; });
         } else playAyah(current.sura, current.ayah);
       };
     }
@@ -246,7 +268,68 @@
         var lab = playerBar && playerBar.querySelector('#madaniLabel');
         if (lab) lab.textContent = sura + ' : ' + curA;
       }
-    }, 200);
+    }, 150);
+  }
+
+  function playGapless(m, sura, ayah, map) {
+    var url = audioUrlSurah(m, sura);
+    setStatus('بارکردنی دەنگ…');
+    audio = new Audio();
+    audio.preload = 'auto';
+    audio.src = url;
+
+    audio.onerror = function () {
+      setStatus('دەنگ بار نەبوو — قارئێکی تر هەڵبژێرە');
+      var b = playerBar && playerBar.querySelector('#madaniPlay');
+      if (b) b.textContent = '▶';
+    };
+
+    function startWithMap(finalMap) {
+      var startMs = 0;
+      if (finalMap) {
+        if (finalMap[ayah] != null) startMs = finalMap[ayah];
+        else if (ayah === 1 && finalMap[0] != null) startMs = finalMap[0];
+        timingCache[(m.id || '') + ':' + sura] = finalMap;
+      }
+      function doPlay() {
+        try {
+          if (startMs > 0 && isFinite(audio.duration) && startMs / 1000 < audio.duration) {
+            audio.currentTime = startMs / 1000;
+          }
+        } catch (e) {}
+        audio.play().then(function () {
+          setStatus('پەنجە لەسەر ئایەت → هایلایت + دەنگ');
+          var b = playerBar && playerBar.querySelector('#madaniPlay');
+          if (b) b.textContent = '⏸';
+          if (finalMap) startWatch(finalMap, sura);
+        }).catch(function () {
+          setStatus('دەستپێکردن سەرکەوتوو نەبوو — دووبارە پەنجە بنێ');
+          var b = playerBar && playerBar.querySelector('#madaniPlay');
+          if (b) b.textContent = '▶';
+        });
+      }
+      if (audio.readyState >= 1) doPlay();
+      else audio.addEventListener('loadedmetadata', doPlay, { once: true });
+    }
+
+    if (map && Object.keys(map).length) {
+      startWithMap(map);
+    } else {
+      // no official timing → estimate after metadata loads
+      audio.addEventListener('loadedmetadata', function () {
+        var dur = (audio.duration || 60) * 1000;
+        var est = estimateTimings(sura, dur);
+        startWithMap(est);
+      }, { once: true });
+      audio.load();
+    }
+
+    audio.onended = function () {
+      stopWatch();
+      var b = playerBar && playerBar.querySelector('#madaniPlay');
+      if (b) b.textContent = '▶';
+      clearHighlight();
+    };
   }
 
   function playAyah(sura, ayah) {
@@ -264,41 +347,23 @@
     }
 
     if (audio) {
-      try { audio.onended = null; audio.pause(); } catch (e) {}
+      try { audio.onended = null; audio.onerror = null; audio.pause(); } catch (e) {}
     }
 
     var m = recMeta();
 
     if (m && m.t === 'g' && m.u) {
       loadTimings(m, sura, function (map) {
-        audio = new Audio(audioUrlSurah(m, sura));
-        var startMs = map && map[ayah] != null ? map[ayah] : 0;
-        if (ayah === 1 && map && map[0] != null) startMs = map[0];
-
-        function go() {
-          try { audio.currentTime = (startMs || 0) / 1000; } catch (e) {}
-          audio.play().catch(function () {
-            var b = playerBar && playerBar.querySelector('#madaniPlay');
-            if (b) b.textContent = '▶';
-          });
-          if (map) startWatch(map, sura);
-        }
-
-        if (audio.readyState >= 1) go();
-        else audio.addEventListener('loadedmetadata', go, { once: true });
-
-        audio.onended = function () {
-          stopWatch();
-          var b = playerBar && playerBar.querySelector('#madaniPlay');
-          if (b) b.textContent = '▶';
-          clearHighlight();
-        };
+        playGapless(m, sura, ayah, map);
       });
       return;
     }
 
+    // everyayah ayah-by-ayah
     audio = new Audio(audioUrlAyah(sura, ayah));
-    audio.play().catch(function () {
+    audio.play().then(function () {
+      setStatus('پەنجە لەسەر ئایەت → هایلایت + دەنگ');
+    }).catch(function () {
       var b = playerBar && playerBar.querySelector('#madaniPlay');
       if (b) b.textContent = '▶';
     });
@@ -328,8 +393,7 @@
           var p = k.split(':');
           return { sura: +p[0], ayah: +p[1] };
         }).sort(function (a, b) { return a.sura - b.sura || a.ayah - b.ayah; });
-        var st = document.getElementById('pageStatus');
-        if (st) st.textContent = 'پەنجە لەسەر ئایەت → هایلایت + دەنگ (وەک ئەپ)';
+        setStatus('پەنجە لەسەر ئایەت → هایلایت + دەنگ');
       })
       .catch(function () { pageBounds = null; });
   }
