@@ -1,4 +1,4 @@
-/* Madinah IMAGE + APK bounds + gapless with real/estimated timing. v8 */
+/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v9 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
@@ -10,7 +10,6 @@
   var timingCache = {};
   var watchTimer = null;
 
-  // ayah counts per sura (1..114)
   var AYAH_COUNT = [0,7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
 
   function pad(n, w) {
@@ -32,8 +31,6 @@
   function setStatus(msg) {
     var st = document.getElementById('pageStatus');
     if (st) st.textContent = msg;
-    var lab = playerBar && playerBar.querySelector('#madaniLabel');
-    if (lab && msg && msg.length < 40) lab.title = msg;
   }
 
   function loadTimings(m, sura, cb) {
@@ -57,9 +54,7 @@
   function estimateTimings(sura, durationMs) {
     var n = AYAH_COUNT[sura] || 1;
     var map = {};
-    for (var i = 1; i <= n; i++) {
-      map[i] = Math.floor(((i - 1) / n) * durationMs);
-    }
+    for (var i = 1; i <= n; i++) map[i] = Math.floor(((i - 1) / n) * durationMs);
     map[999] = Math.floor(durationMs);
     return map;
   }
@@ -100,11 +95,7 @@
         else throw 0;
       })
       .catch(function () {
-        reciters = [
-          { id: 'Alafasy_128kbps', n: 'مەشاری عەفاسی', t: 'a' },
-          { id: 'Abdul_Basit_Murattal_192kbps', n: 'عەبدولباست', t: 'a' },
-          { id: 'Husary_128kbps', n: 'حوساری', t: 'a' }
-        ];
+        reciters = [{ id: 'Alafasy_128kbps', n: 'مەشاری عەفاسی', t: 'a' }];
         cb();
       });
   }
@@ -217,6 +208,11 @@
   }
 
   function audioUrlAyah(sura, ayah) {
+    var m = recMeta();
+    // custom base (e.g. Kurdish ayah-by-ayah on GitHub)
+    if (m && m.u && m.t !== 'g') {
+      return m.u.replace(/\/?$/, '/') + pad(sura, 3) + pad(ayah, 3) + '.mp3';
+    }
     return 'https://everyayah.com/data/' + reciterId + '/' + pad(sura, 3) + pad(ayah, 3) + '.mp3';
   }
 
@@ -303,7 +299,7 @@
           if (b) b.textContent = '⏸';
           if (finalMap) startWatch(finalMap, sura);
         }).catch(function () {
-          setStatus('دەستپێکردن سەرکەوتوو نەبوو — دووبارە پەنجە بنێ');
+          setStatus('دووبارە پەنجە بنێ');
           var b = playerBar && playerBar.querySelector('#madaniPlay');
           if (b) b.textContent = '▶';
         });
@@ -315,11 +311,9 @@
     if (map && Object.keys(map).length) {
       startWithMap(map);
     } else {
-      // no official timing → estimate after metadata loads
       audio.addEventListener('loadedmetadata', function () {
         var dur = (audio.duration || 60) * 1000;
-        var est = estimateTimings(sura, dur);
-        startWithMap(est);
+        startWithMap(estimateTimings(sura, dur));
       }, { once: true });
       audio.load();
     }
@@ -359,8 +353,13 @@
       return;
     }
 
-    // everyayah ayah-by-ayah
+    // ayah-by-ayah (everyayah or custom u)
     audio = new Audio(audioUrlAyah(sura, ayah));
+    audio.onerror = function () {
+      setStatus('دەنگ بار نەبوو');
+      var b = playerBar && playerBar.querySelector('#madaniPlay');
+      if (b) b.textContent = '▶';
+    };
     audio.play().then(function () {
       setStatus('پەنجە لەسەر ئایەت → هایلایت + دەنگ');
     }).catch(function () {
