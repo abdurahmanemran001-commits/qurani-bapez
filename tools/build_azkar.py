@@ -21,6 +21,11 @@ MORNING_BASE = "https://raw.githubusercontent.com/Seen-Arabic/Morning-And-Evenin
 HEADERS = {"User-Agent": "qurani-bapez-adhkar-builder"}
 
 def get_url_json(url):
+    # Offline / test builds: MASNUN_DIR and MORNING_DIR point at local clones of the two repos.
+    for base, env in ((BASE, "MASNUN_DIR"), (MORNING_BASE, "MORNING_DIR")):
+        if url.startswith(base + "/") and os.environ.get(env):
+            with open(os.path.join(os.environ[env], url[len(base) + 1:]), encoding="utf-8") as f:
+                return json.load(f)
     req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=45) as r:
         return json.loads(r.read().decode("utf-8"))
@@ -86,9 +91,12 @@ def mp_chapter_items(db, chapter_id, audio_by_text):
             "SELECT rt.reference FROM azkar_reference r JOIN azkar_reference_translation rt "
             "ON rt.reference_id=r._id AND rt.language='ckb' WHERE r.item_id=? ORDER BY r._id", (iid,)) if r[0] and r[0].strip()]
         base = {"ar": ar.strip(), "ckb": ckb.strip(), "bad": bad.strip(), "ref": "\n".join(refs),
-                "repeat": 1, "repeatText": "", "transliteration": "", "title": ""}
-        def card(title, ar_, ckb_, bad_, n, ay=None):
+                "repeat": 1, "repeatText": "", "transliteration": "", "title": "", "mp": iid}
+        def card(title, ar_, ckb_, bad_, n, ay=None, part=None):
             d = dict(base, title=title, ar=ar_.strip(), ckb=ckb_.strip(), bad=bad_.strip(), repeat=n)
+            if part:
+                d["part"] = part
+                d["sleep"] = iid == 119
             if ay: d["ayah"] = [EVERYAYAH + x + ".mp3" for x in ay]
             return d
         if iid in (75, 98, 120):
@@ -127,10 +135,10 @@ def mp_chapter_items(db, chapter_id, audio_by_text):
                 b_intro, bs, b_last, b_tail = fix(bd_p, bd_sep)
                 def j_(sep, x): return (sep + x) if x.strip() else ""
                 items.append(card("سوڕەتی ئیخلاس", (intro + "\n" if sleep and intro else "") + BISM + ar_p[1],
-                                  c_intro + j_(cs, ck_p[1]), b_intro + j_(bs, bd_p[1]), 3, ayahs(112, 1, 4)))
-                items.append(card("سوڕەتی فەلەق", BISM + ar_p[2], j_(cs, ck_p[2]), j_(bs, bd_p[2]), 3, ayahs(113, 1, 5)))
+                                  c_intro + j_(cs, ck_p[1]), b_intro + j_(bs, bd_p[1]), 3, ayahs(112, 1, 4), part=1))
+                items.append(card("سوڕەتی فەلەق", BISM + ar_p[2], j_(cs, ck_p[2]), j_(bs, bd_p[2]), 3, ayahs(113, 1, 5), part=2))
                 items.append(card("سوڕەتی ناس", BISM + last + ("\n" + tail.strip() if sleep and tail.strip() else ""),
-                                  j_(cs, c_last) + (c_tail if sleep else ""), j_(bs, b_last) + (b_tail if sleep else ""), 3, ayahs(114, 1, 6)))
+                                  j_(cs, c_last) + (c_tail if sleep else ""), j_(bs, b_last) + (b_tail if sleep else ""), 3, ayahs(114, 1, 6), part=3))
                 continue
         d = card("", ar, ckb, bad, parse_count(iid, ar))
         if iid == 121: d["ayah"] = [EVERYAYAH + x + ".mp3" for x in ayahs(2, 285, 286, False)]
@@ -152,7 +160,9 @@ def apply_core_chapters(result, morning_ar):
         row = db.execute("SELECT chapter_name FROM azkar_chapter_translation WHERE chapter_id=? AND language='ckb'", (cid,)).fetchone()
         bad = db.execute("SELECT chapter_name FROM azkar_chapter_translation WHERE chapter_id=? AND language='ckb_BADINI'", (cid,)).fetchone()
         name = row[0].strip() if row else ""
-        return {"ar": name, "ckb": name, "bad": (bad[0].strip() if bad else ""), "items": mp_chapter_items(db, cid, audio_by_text)}
+        ar_row = db.execute("SELECT chapter_name FROM azkar_chapter_translation WHERE chapter_id=? AND language='ar'", (cid,)).fetchone()
+        return {"ar": (ar_row[0].strip() if ar_row and ar_row[0] else name), "ckb": name, "bad": (bad[0].strip() if bad else ""),
+                "core": cid, "items": mp_chapter_items(db, cid, audio_by_text)}
     morning = next((c for c in result if c.get("ckb") == "بەیانیان و ئێواران"), None)
     sleep = next((c for c in result if c.get("ckb") == "خەوتن"), None)
     if morning is None or sleep is None:
@@ -291,6 +301,7 @@ def build():
     subcategories = get_json("sub-categories/ku.json")
     arabic_subcategories = get_json("sub-categories/ar.json")
     ar_sub_by_id = {str(s.get("id")): s for s in arabic_subcategories}
+    ar_cat_by_url = {c.get("url"): c.get("name", "") for c in get_json("categories/ar.json")}
 
     # Preserve the source's verified repetition count instead of defaulting every
     # entry to one. Match Arabic text without diacritics/spacing differences.
@@ -343,6 +354,7 @@ def build():
                 arabic = (d.get("arabic") or "").strip()
                 meta = counts_by_arabic.get(norm_arabic(arabic), {})
                 items.append({
+                    "id": dua_id,
                     "ar": arabic,
                     "ckb": (d.get("translation") or "").strip(),
                     "bad": "",
@@ -364,16 +376,18 @@ def build():
                     ar_sub = ar_sub_by_id.get(str(sub.get("id")), {})
                     title = (ar_sub.get("title") or cat.get("name") or "").strip()
                 chapters.append({
-                    "ar": title,
+                    "ar": (ar_sub_by_id.get(str(sub.get("id")), {}).get("title") or title).strip(),
                     "ckb": title,
                     "bad": "",
+                    "sid": sub.get("id"),
                     "items": items,
                 })
         if chapters:
             result.append({
-                "ar": cat.get("name", ""),
+                "ar": ar_cat_by_url.get(cat.get("url"), cat.get("name", "")),
                 "ckb": cat.get("name", ""),
                 "bad": "",
+                "cid": cat.get("url"),
                 "chapters": chapters,
             })
 
@@ -420,6 +434,16 @@ def main():
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     print(f"azkar.json: {categories} categories, {items} items, {os.path.getsize(out_path)} bytes")
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_azkar_i18n
+    db = open_mp_db()
+    stats, match = build_azkar_i18n.build(data, get_json, db, os.path.join(os.path.dirname(os.path.abspath(out_path)), "azkar-i18n"))
+    db.close()
+    print(f"core items matched to masnun-dua: {len(match)}")
+    for lang, (miss, size) in stats.items():
+        print(f"azkar-i18n/{lang}.json: {size} bytes, missing {miss}")
+        if miss["title"]:
+            raise RuntimeError(f"azkar-i18n/{lang}.json has {miss['title']} untranslated category/chapter names")
 
 if __name__ == "__main__":
     main()

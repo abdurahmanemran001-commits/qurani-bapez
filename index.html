@@ -218,10 +218,37 @@ try{if(localStorage.getItem('zikr_lang')==='bad')zlang='bad'}catch{}
 const $=id=>document.getElementById(id);
 function pick(o,k){if(!o)return '';if(o[k]&&String(o[k]).trim())return o[k];return k==='bad'?'وەرگێڕانا بادینی بۆ ئەڤ بەشێ نەهاتییە ئامادەکرن.':(o.ckb||o.ar||'')}
 function fallbackAzkar(){return localDhikr.map(g=>({ar:g.title,ckb:g.title,bad:'',chapters:[{ar:g.title,ckb:g.title,bad:'',items:g.items.map(x=>({ar:x[0],ckb:'',bad:'',repeat:Number(String(x[1]).replace(/[^0-9]/g,''))||1,ref:''}))}]}))}
+const zKU=L=>L==='ckb'||L==='bad';
+const ZI={};
+/* Other interface languages: azkar-i18n/<lang>.json has the same shape as azkar.json (names, item titles, translations). */
+async function ensureLang(L){
+  if(zKU(L)||!azkar||ZI[L]!==undefined)return;
+  ZI[L]=false;
+  try{
+    const r=await fetch('azkar-i18n/'+L+'.json');if(!r.ok)return;
+    const j=await r.json();if(!j||!Array.isArray(j.c))return;
+    azkar.forEach((c,ci)=>{const jc=j.c[ci];if(!jc)return;c['t_'+L]=jc.n;
+      c.chapters.forEach((h,hi)=>{const jh=jc.h[hi];if(!jh)return;h['t_'+L]=jh.n;
+        h.items.forEach((it,ii)=>{const ji=jh.i[ii];if(!ji)return;it['t_'+L]=ji.t;it['x_'+L]=ji.x;it['r_'+L]=ji.r||''})})});
+    ZI[L]=true;
+  }catch{}
+}
+function ztr(it){
+  if(zlang==='ar')return '';
+  if(zlang==='bad')return it.bad||'وەرگێڕانا بادینی بۆ ڤی زیکری نەهاتییە ئامادەکرن.';
+  if(zlang==='ckb')return it.ckb||'';
+  return it['t_'+zlang]||'';
+}
+function zref(it){return zKU(zlang)?(it.ref||''):(it['r_'+zlang]||'')}
+function znum(n){return Number(n).toLocaleString(({ckb:'ar',bad:'ar',ar:'ar',fa:'fa',ur:'ur'})[zlang]||'en')}
+function ztitle(it){return zKU(zlang)?(it.title||''):(it['x_'+zlang]||'')}
 async function ensureAzkar(){
-  if(azkar)return azkar;
-  try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length){azkar=j;return azkar}}}catch{}
-  return fallbackAzkar();
+  if(!azkar){
+    try{const r=await fetch('azkar.json');if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length)azkar=j}}catch{}
+    if(!azkar)return fallbackAzkar();
+  }
+  await ensureLang(zlang);
+  return azkar;
 }
 function setLangLabel(){$('langBtn').textContent='زمان: '+LANG_NAMES[zlang]+'  ↻'}
 function toggleLang(){
@@ -257,11 +284,11 @@ async function openChapter(i,j){
   const za=ZAUDIO[(h.ckb||'').trim()];
   const zaHtml=za?'<button class="zall" data-l="🎧 گوێگرتن بە دەنگی '+za[2]+'" style="background:#176b4b" onclick="zlong(this,\''+za[0]+'\')">🎧 گوێگرتن بە دەنگی '+za[2]+'</button><div style="margin:0 0 4px"></div><div class="muted" style="margin:0 0 10px;font-size:12px">'+za[1]+'</div>':'';
   $('detailList').innerHTML=zaHtml+(vid?'<button class="zall" style="background:#b48a3c" onclick="zvideo(this,\''+vid+'\')">▶ گوێگرتن بە دەنگی زیکرەکان</button><div style="margin:0 0 10px"></div>':'')+'<button class="zall" data-l="▶ هەمووی بخوێنەوە (عەرەبی + کوردی)" onclick="zall(this,'+i+','+j+')">▶ هەمووی بخوێنەوە (عەرەبی + کوردی)</button>'+h.items.map((it,k)=>{
-    const tr=it[zlang]||(zlang==='bad'?'وەرگێڕانا بادینی بۆ ڤی زیکری نەهاتییە ئامادەکرن.':'');
+    const tr=ztr(it);
     const target=Math.max(1,Number(it.repeat)||1);
-    const targetLabel=target.toLocaleString('ar');
+    const targetLabel=znum(target);
     const countLabel=target===1?'جارێک':'جار';
-    return '<div class="card" id="zc'+k+'"><b>زیکری '+(k+1)+(it.title?' · '+esc(it.title):'')+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(it.ref?'<div class="muted zikr-ref">'+esc(it.ref)+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">٠ / '+targetLabel+'</button> <button class="zplay" data-i="'+k+'" onclick="zplay(this,'+i+','+j+')">▶ گوێگرتن</button></div></div>';
+    return '<div class="card" id="zc'+k+'"><b>زیکری '+(k+1)+(ztitle(it)?' · '+esc(ztitle(it)):'')+'</b><div class="zikr-text">'+esc(it.ar)+'</div>'+(tr?'<p class="zikr-tr">'+esc(tr)+'</p>':'')+'<div class="badge" style="margin-top:7px">ژمارەی دووبارەکردنەوە: '+targetLabel+' '+countLabel+'</div>'+(zref(it)?'<div class="muted zikr-ref">'+esc(zref(it))+'</div>':'')+'<div class="counter"><button data-target="'+target+'" data-current="0" onclick="tick(this)">'+znum(0)+' / '+targetLabel+'</button> <button class="zplay" data-i="'+k+'" onclick="zplay(this,'+i+','+j+')">▶ گوێگرتن</button></div></div>';
   }).join('');
 }
 let zAudio=null,zBtn=null,zSeq=0;
@@ -295,7 +322,7 @@ async function zall(b,i,j){
   const data=await ensureAzkar();const h=data[i].chapters[j];if(!h)return;
   const seq=zSeq;zBtn=b;b.textContent='■ وەستاندن';
   const ku=zKuVoice();
-  if(!ku&&!zKuNote){zKuNote=true;alert('دەنگی کوردی لەسەر ئەم ئامێرە دانەمەزراوە. عەرەبییەکە دەخوێندرێتەوە و کوردییەکە لەسەر شاشە دەمێنێتەوە.')}
+  if(zKU(zlang)&&!ku&&!zKuNote){zKuNote=true;alert('دەنگی کوردی لەسەر ئەم ئامێرە دانەمەزراوە. عەرەبییەکە دەخوێندرێتەوە و کوردییەکە لەسەر شاشە دەمێنێتەوە.')}
   for(let k=0;k<h.items.length;k++){
     if(seq!==zSeq)return;
     const it=h.items[k];
@@ -304,8 +331,9 @@ async function zall(b,i,j){
     const urls=it.ayah&&it.ayah.length?it.ayah:(it.audio?[it.audio]:null);
     if(urls)await zurls(urls,seq);else await zsay(it.ar.replace(/[﴿﴾*]/g,' '),'ar',null,seq);
     if(seq!==zSeq)return;
-    const tr=it[zlang]||it.ckb;
-    if(ku&&tr&&KU_RE.test(tr))await zsay(tr,ku.lang,ku,seq);
+    const tr=zKU(zlang)?(it[zlang]||it.ckb):ztr(it);
+    if(zKU(zlang)){if(ku&&tr&&KU_RE.test(tr))await zsay(tr,ku.lang,ku,seq)}
+    else if(tr)await zsay(tr,({en:'en-US',tr:'tr-TR',fa:'fa-IR',ur:'ur-PK',fr:'fr-FR',ru:'ru-RU',id:'id-ID'})[zlang]||zlang,null,seq);
   }
   if(seq===zSeq)zstop();
 }
@@ -365,7 +393,7 @@ function initDhikrSettings(){
 }
 
 function backToChapters(){if(zcat>=0)openCategory(zcat);else showZikr()}
-function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=current.toLocaleString('ar')+' / '+target.toLocaleString('ar');if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+target.toLocaleString('ar')+' / '+target.toLocaleString('ar')}}
+function tick(b){const target=Math.max(1,Number(b.dataset.target)||1);const current=Math.min(target,(Number(b.dataset.current)||0)+1);b.dataset.current=String(current);b.textContent=znum(current)+' / '+znum(target);if(current>=target){b.style.background='#b48a3c';b.textContent='✓ '+znum(target)+' / '+znum(target)}}
 
 async function loadCommit(){try{const j=await (await fetch('https://api.github.com/repos/'+repo+'/commits?per_page=1')).json();if(j[0]){const sha=j[0].sha;const msg=j[0].commit.message.split('\n')[0];version.textContent=sha.slice(0,7);commit.textContent=msg;settingsCommit.textContent=sha+'\n'+msg}}catch{version.textContent='GitHub'}}
 (async()=>{renderSurahs();applyStyle();initDhikrSettings();loadCommit();try{const r=await fetch('https://api.quran.com/api/v4/chapters?language=ar');if(r.ok){const j=await r.json();if(j.chapters&&j.chapters.length===114)surahs=j.chapters.map(c=>[c.name_arabic,c.id,c.verses_count,c.pages[0]]);renderSurahs()}}catch{} })();
@@ -377,8 +405,8 @@ window.addEventListener('appinstalled',()=>{deferredPrompt=null;installBtn.style
 async function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch{}deferredPrompt=null;installBtn.style.display='none'}
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
-<script src="language-ui.js?v=1"></script>
-<script src="language.js?v=4"></script>
+<script src="language-ui.js?v=2"></script>
+<script src="language.js?v=5"></script>
 <script>
 /* Safety net: if language.js did not load, the language screen must still work. */
 (function(){

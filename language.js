@@ -73,7 +73,7 @@ const originals=new WeakMap();
 const $=id=>document.getElementById(id);
 const X=window.LANG_EXTRA||{};Object.keys(X).forEach(c=>{D[c]=Object.assign(D[c]||{},X[c])});
 const KURDISH={ckb:1,bad:1};
-const KLETTER=/[ەێۆڕڵگڤ]|جوزی|زیکری/;
+const KLETTER=/[ەێۆڕڵڤ]|جوزی|زیکر/;
 const cache={};
 function build(code){if(cache[code])return cache[code];const raw=KURDISH[code]?Object.assign({},D[code]):Object.assign({},D.en,D[code]);const map={};Object.keys(raw).forEach(k=>{const t=k.trim();if(t)map[t]=String(raw[k]).trim()});const keys=Object.keys(map).filter(k=>KLETTER.test(k)||k.length>3).sort((a,b)=>b.length-a.length);return cache[code]={raw,map,keys}}
 function dict(){return build(window.appLang).raw}
@@ -87,7 +87,7 @@ window.openLanguagePicker=function(){window.pendingLang=null;renderChoices();if(
 window.closeLanguagePicker=function(){if(window.pendingLang){window.setAppLanguage(window.pendingLang);return}if(document.documentElement.classList.contains('language-gate')){window.setAppLanguage(window.appLang||'ckb');return}if($('languageModal'))$('languageModal').classList.remove('open')};
 window.setAppLanguage=function(code){if(!LANGS.some(l=>l.code===code))return;window.appLang=code;window.pendingLang=null;try{localStorage.setItem('app_language',code)}catch{};const lang=LANGS.find(l=>l.code===code);document.documentElement.classList.remove('language-gate');if($('languageModal'))$('languageModal').classList.remove('open');try{document.documentElement.lang=code;document.documentElement.dir=lang.dir;translateTree(document.body);if(typeof zlang!=='undefined')zlang=code;if(typeof setLangLabel==='function')setLangLabel();renderChoices();document.documentElement.classList.remove('language-gate');if($('languageModal'))$('languageModal').classList.remove('open');if(typeof azkar!=='undefined'&&azkar){if($('detail')&&$('detail').classList.contains('active')&&typeof zcat!=='undefined'&&zcat>=0&&zchap>=0)openChapter(zcat,zchap);else if($('zikr')&&$('zikr').classList.contains('active')){if(zcat>=0)openCategory(zcat);else showCategories()}}}catch(e){console.error('language switch',e)}};
 window.toggleLang=function(){openLanguagePicker()};
-window.pick=function(o,k){if(!o)return '';if(o[k]&&String(o[k]).trim())return o[k];const m=dict();return m['وەرگێڕان بۆ ئەم زمانە هێشتا ئامادە نییە.']||'Translation not available in this language yet.'};
+window.pick=function(o,k){if(!o)return '';const v=(k==='ckb'||k==='bad')?o[k]:o['t_'+k];if(v&&String(v).trim())return v;const m=dict();return m['وەرگێڕان بۆ ئەم زمانە هێشتا ئامادە نییە.']||'Translation not available in this language yet.'};
 window.setLangLabel=function(){const l=LANGS.find(x=>x.code===window.appLang)||LANGS[0];if($('langBtn'))$('langBtn').textContent=(dict()['زمان']||'Language')+': '+l.name+' ↻'};
 window.addEventListener('DOMContentLoaded',function(){window.appLang='ckb';try{window.appLang=localStorage.getItem('app_language')||'ckb'}catch{}const l=LANGS.find(x=>x.code===window.appLang)||LANGS[0];document.documentElement.lang=l.code;document.documentElement.dir=l.dir;translateTree(document.body);renderChoices();openLanguagePicker();const mo=new MutationObserver(records=>records.forEach(r=>{r.addedNodes&&r.addedNodes.forEach(n=>{if(n.nodeType===3)translateNode(n);else if(n.nodeType===1)translateTree(n)})}));mo.observe(document.body,{childList:true,subtree:true});});
 })();

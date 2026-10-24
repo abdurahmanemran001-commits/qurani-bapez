@@ -37,6 +37,7 @@ fi
 # Fail deployment instead of silently publishing only the five-item fallback.
 python3 tools/build_azkar.py "$DEST/azkar.json"
 test -s "$DEST/azkar.json"
+for l in ar en tr fa ur fr ru id; do test -s "$DEST/azkar-i18n/$l.json" || { echo "MISSING azkar-i18n/$l.json"; exit 1; }; done
 python3 - "$DEST/azkar.json" <<'PY'
 import json,sys
 with open(sys.argv[1],encoding='utf8') as f: data=json.load(f)
