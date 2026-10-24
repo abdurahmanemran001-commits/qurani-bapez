@@ -1,15 +1,19 @@
-/* Like the APK ColorMushaf: real ayah DOM + audioActive highlight + qari audio. v3 */
+/* Madinah IMAGE mushaf + precise ayah bounds (same data as APK ayahinfo_1260) + synced audio. v4 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
 
-  var frame = null;
+  var PAGE_W = 1260;
+  var PAGE_H = 2038;
+  var overlay = null;
   var playerBar = null;
   var audio = null;
-  var current = null; // {sura, ayah}
+  var current = null;
   var reciter = 'Alafasy_128kbps';
+  var pageBounds = null;
+  var pageAyahOrder = [];
   var lastPage = -1;
-  var pageAyahs = []; // ordered list on current page
+  var hlEls = [];
 
   function pad(n, w) {
     n = String(n);
@@ -19,23 +23,81 @@
 
   function ensureUI() {
     var mushaf = document.getElementById('mushaf');
-    if (!mushaf) return false;
-
-    // Hide the static PNG (image mode) — use interactive page like the APK WebView
     var img = document.getElementById('pageImg');
-    if (img) {
-      img.style.display = 'none';
-      img.style.pointerEvents = 'none';
+    if (!mushaf || !img) return false;
+
+    img.style.display = 'block';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.pointerEvents = 'none';
+    img.setAttribute('draggable', 'false');
+    img.style.webkitUserSelect = 'none';
+    img.style.userSelect = 'none';
+    img.style.webkitTouchCallout = 'none';
+
+    var oldFrame = document.getElementById('madaniFrame');
+    if (oldFrame) oldFrame.remove();
+
+    if (!img.parentElement || img.parentElement.id !== 'madaniWrap') {
+      var wrap = document.createElement('div');
+      wrap.id = 'madaniWrap';
+      wrap.style.cssText = 'position:relative;width:100%;line-height:0;-webkit-user-select:none;user-select:none;';
+      img.parentNode.insertBefore(wrap, img);
+      wrap.appendChild(img);
     }
 
-    frame = document.getElementById('madaniFrame');
-    if (!frame) {
-      frame = document.createElement('iframe');
-      frame.id = 'madaniFrame';
-      frame.setAttribute('title', 'موسحەف');
-      frame.style.cssText =
-        'width:100%;min-height:520px;height:70vh;border:0;border-radius:10px;background:#fffdf5;display:block;';
-      mushaf.appendChild(frame);
+    overlay = document.getElementById('madaniOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'madaniOverlay';
+      document.getElementById('madaniWrap').appendChild(overlay);
+    }
+    overlay.style.cssText =
+      'position:absolute;left:0;top:0;width:100%;height:100%;z-index:5;' +
+      'pointer-events:auto;cursor:pointer;touch-action:manipulation;';
+
+    function blockMenu(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    overlay.oncontextmenu = blockMenu;
+    img.oncontextmenu = blockMenu;
+
+    if (!overlay.__bound) {
+      overlay.__bound = true;
+      function onTap(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!pageBounds) return;
+        var rect = overlay.getBoundingClientRect();
+        var cx = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : e.clientX) - rect.left;
+        var cy = (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientY : e.clientY) - rect.top;
+        var sx = PAGE_W / rect.width;
+        var sy = PAGE_H / rect.height;
+        var x = cx * sx;
+        var y = cy * sy;
+        var hit = null;
+        for (var key in pageBounds) {
+          var boxes = pageBounds[key];
+          for (var i = 0; i < boxes.length; i++) {
+            var b = boxes[i];
+            if (x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]) {
+              hit = key;
+              break;
+            }
+          }
+          if (hit) break;
+        }
+        if (hit) {
+          var p = hit.split(':');
+          playAyah(+p[0], +p[1]);
+        }
+      }
+      overlay.addEventListener('click', onTap, true);
+      overlay.addEventListener('touchend', function (e) {
+        if (e.changedTouches && e.changedTouches.length) onTap(e);
+      }, { passive: false });
     }
 
     playerBar = document.getElementById('madaniPlayer');
@@ -49,7 +111,6 @@
         '<button id="madaniPlay" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#ffd54f;color:#173f35;font-weight:bold;cursor:pointer">▶</button>' +
         '<span id="madaniLabel" style="min-width:70px;text-align:center">—</span>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
-
       var sel = playerBar.querySelector('#madaniReciter');
       [
         ['Alafasy_128kbps', 'مەشاری عەفاسی'],
@@ -74,7 +135,7 @@
       sel.onchange = function () {
         reciter = sel.value;
         try { localStorage.setItem('madani_reciter', reciter); } catch (e) {}
-        if (current) playAyah(current.sura, current.ayah, false);
+        if (current) playAyah(current.sura, current.ayah);
       };
       playerBar.querySelector('#madaniPlay').onclick = function () {
         if (!current) return;
@@ -84,9 +145,7 @@
         } else if (audio && audio.src) {
           audio.play();
           this.textContent = '⏸';
-        } else if (current) {
-          playAyah(current.sura, current.ayah, false);
-        }
+        } else playAyah(current.sura, current.ayah);
       };
     }
     return true;
@@ -96,31 +155,32 @@
     return 'https://everyayah.com/data/' + reciter + '/' + pad(sura, 3) + pad(ayah, 3) + '.mp3';
   }
 
-  function setHighlight(sura, ayah) {
-    // Same as APK: class audioActive on the exact ayah element
-    try {
-      if (frame && frame.contentWindow && typeof frame.contentWindow.hl === 'function') {
-        frame.contentWindow.hl(sura, ayah);
-      }
-    } catch (e) {}
-  }
-
   function clearHighlight() {
-    try {
-      if (frame && frame.contentWindow && typeof frame.contentWindow.hl === 'function') {
-        frame.contentWindow.hl(0, 0);
-      }
-    } catch (e) {}
+    hlEls.forEach(function (el) { try { el.remove(); } catch (e) {} });
+    hlEls = [];
   }
 
-  function playAyah(sura, ayah, fromTap) {
-    sura = +sura;
-    ayah = +ayah;
+  function drawHighlight(sura, ayah) {
+    clearHighlight();
+    if (!overlay || !pageBounds) return;
+    var boxes = pageBounds[sura + ':' + ayah];
+    if (!boxes) return;
+    boxes.forEach(function (b) {
+      var el = document.createElement('div');
+      el.className = 'ma-hl';
+      el.style.cssText =
+        'position:absolute;pointer-events:none;background:rgba(255,213,79,0.38);border-radius:3px;' +
+        'left:' + (b[0] / PAGE_W) * 100 + '%;top:' + (b[1] / PAGE_H) * 100 + '%;' +
+        'width:' + ((b[2] - b[0]) / PAGE_W) * 100 + '%;height:' + ((b[3] - b[1]) / PAGE_H) * 100 + '%;';
+      overlay.appendChild(el);
+      hlEls.push(el);
+    });
+  }
+
+  function playAyah(sura, ayah) {
+    sura = +sura; ayah = +ayah;
     current = { sura: sura, ayah: ayah };
-
-    // 1) Highlight FIRST (like APK audioActive) — then play the same ayah
-    setHighlight(sura, ayah);
-
+    drawHighlight(sura, ayah);
     if (playerBar) {
       playerBar.style.display = 'flex';
       var lab = playerBar.querySelector('#madaniLabel');
@@ -128,101 +188,88 @@
       var btn = playerBar.querySelector('#madaniPlay');
       if (btn) btn.textContent = '⏸';
     }
-
     if (audio) {
-      try {
-        audio.onended = null;
-        audio.pause();
-      } catch (e) {}
+      try { audio.onended = null; audio.pause(); } catch (e) {}
     }
     audio = new Audio(audioUrl(sura, ayah));
     audio.play().catch(function () {
       var btn = playerBar && playerBar.querySelector('#madaniPlay');
       if (btn) btn.textContent = '▶';
     });
-
     audio.onended = function () {
       var btn = playerBar && playerBar.querySelector('#madaniPlay');
-      // Advance to next ayah on this page (same as APK continuous play)
       var next = null;
-      for (var i = 0; i < pageAyahs.length; i++) {
-        if (pageAyahs[i].sura === sura && pageAyahs[i].ayah === ayah && i + 1 < pageAyahs.length) {
-          next = pageAyahs[i + 1];
+      for (var i = 0; i < pageAyahOrder.length; i++) {
+        if (pageAyahOrder[i].sura === sura && pageAyahOrder[i].ayah === ayah && i + 1 < pageAyahOrder.length) {
+          next = pageAyahOrder[i + 1];
           break;
         }
       }
-      if (next) {
-        playAyah(next.sura, next.ayah, false);
-      } else {
+      if (next) playAyah(next.sura, next.ayah);
+      else {
         if (btn) btn.textContent = '▶';
         clearHighlight();
       }
     };
   }
 
-  function loadPageAyahList(page) {
-    pageAyahs = [];
-    fetch('https://api.quran.com/api/v4/verses/by_page/' + page + '?per_page=50')
-      .then(function (r) { return r.json(); })
+  function loadBounds(page) {
+    return fetch('madani-bounds/' + pad(page, 3) + '.json')
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (data) {
-        (data.verses || []).forEach(function (v) {
-          var parts = String(v.verse_key || '').split(':');
-          pageAyahs.push({ sura: +parts[0], ayah: +parts[1] });
-        });
+        pageBounds = data;
+        pageAyahOrder = Object.keys(data).map(function (k) {
+          var p = k.split(':');
+          return { sura: +p[0], ayah: +p[1] };
+        }).sort(function (a, b) { return a.sura - b.sura || a.ayah - b.ayah; });
+        var st = document.getElementById('pageStatus');
+        if (st) st.textContent = 'پەنجە لەسەر ئایەت → هایلایت + دەنگ';
       })
-      .catch(function () {});
+      .catch(function () {
+        pageBounds = null;
+        var st = document.getElementById('pageStatus');
+        if (st) st.textContent = 'پەڕە بارکرا';
+      });
   }
 
   function showPage(page) {
     page = Math.max(1, Math.min(604, +page || 1));
     if (!ensureUI()) return;
     lastPage = page;
-
-    // QCF page layout = same idea as APK ColorMushaf WebView (real .ayah nodes)
-    var src = 'mushaf/view.html?m=q&p=' + page + '&b=' + encodeURIComponent(
-      (location.origin + location.pathname).replace(/\/[^/]*$/, '/') + 'mushaf/'
-    );
-    // relative path is fine on same origin
-    src = 'mushaf/view.html?m=q&p=' + page;
-
-    if (!frame.src || frame.src.indexOf('p=' + page) === -1 || frame.src.indexOf('m=q') === -1) {
-      frame.src = src;
+    var img = document.getElementById('pageImg');
+    if (!img) return;
+    function syncOverlaySize() {
+      if (!overlay || !img) return;
+      var h = img.offsetHeight || img.clientHeight;
+      if (h) overlay.style.height = h + 'px';
     }
-    loadPageAyahList(page);
-
-    var st = document.getElementById('pageStatus');
-    if (st) st.textContent = 'پەنجە لەسەر ئایەت → هایلایت + دەنگ (وەک ئەپ)';
+    function ready() { syncOverlaySize(); loadBounds(page); }
+    if (img.complete && img.naturalHeight) ready();
+    else img.addEventListener('load', ready, { once: true });
+    setTimeout(syncOverlaySize, 100);
+    setTimeout(syncOverlaySize, 500);
   }
-
-  // Messages from view.html: {ayah:[sura,ayah]} or {ready:true}
-  window.addEventListener('message', function (e) {
-    var d = e.data || {};
-    if (d.ayah && d.ayah.length >= 2) {
-      playAyah(d.ayah[0], d.ayah[1], true);
-    }
-    if (d.ready && current) {
-      setHighlight(current.sura, current.ayah);
-    }
-  });
 
   function installHook() {
     var orig = window.openPage;
     if (typeof orig === 'function' && !orig.__madaniHooked) {
       window.openPage = function (p) {
         orig.apply(this, arguments);
-        setTimeout(function () { showPage(p); }, 60);
-        setTimeout(function () { showPage(p); }, 300);
+        setTimeout(function () { showPage(p); }, 80);
+        setTimeout(function () { showPage(p); }, 400);
       };
       window.openPage.__madaniHooked = true;
     }
-
-    // pageInput / changePage also
-    var input = document.getElementById('pageInput');
-    if (input && !input.__madaniBound) {
-      input.__madaniBound = true;
-      input.addEventListener('change', function () {
-        showPage(input.value);
-      });
+    var img = document.getElementById('pageImg');
+    if (img && !img.__madaniWatch) {
+      img.__madaniWatch = true;
+      new MutationObserver(function () {
+        var m = (img.src || '').match(/page(\d{3})\.png/i);
+        if (m) {
+          var p = +m[1];
+          if (p !== lastPage) showPage(p);
+        }
+      }).observe(img, { attributes: true, attributeFilter: ['src'] });
     }
   }
 
@@ -241,14 +288,10 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 50);
-      setTimeout(boot, 400);
-      setTimeout(boot, 1200);
+      setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
     });
   } else {
-    setTimeout(boot, 50);
-    setTimeout(boot, 400);
-    setTimeout(boot, 1200);
+    setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
   }
   var tries = 0;
   var t = setInterval(function () {
