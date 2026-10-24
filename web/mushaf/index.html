@@ -1,7 +1,68 @@
-<!doctype html><html lang="ckb" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#176b4b"><title>موسحەفی قورئان</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/abdurahmanemran001-commits/qurani-bapez@df215eb216f3f66e1ada3e5f75ae8282385a4467/web/mushaf/index.html" disabled id="x"></head><body><p style="font-family:Tahoma;text-align:center;padding:40px">چاوەڕوانی بارکردنی موسحەف...</p><script>
-// Load last known-good mushaf app shell from commit df215eb then apply phase-1 patches
-fetch('https://cdn.jsdelivr.net/gh/abdurahmanemran001-commits/qurani-bapez@df215eb216f3f66e1ada3e5f75ae8282385a4467/web/mushaf/index.html').then(function(r){return r.text()}).then(function(html){
-  document.open();document.write(html);document.close();
-  var s=document.createElement('script');s.src='player-gapless.js';document.body.appendChild(s);
-}).catch(function(){document.body.innerHTML='<p style="text-align:center;font-family:Tahoma;padding:40px">نەتوانرا موسحەف باربکرێت. تکایە Refresh بکە.</p>';});
-</script></body></html>
+<!doctype html><html lang="ckb" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#176b4b">
+<title>موسحەفی قورئان</title>
+<style>
+:root{--g:#176b4b;--bg:#fffdf5}
+*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Tahoma,Arial,sans-serif;background:var(--bg);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+header{display:flex;gap:6px;align-items:center;padding:6px;padding-top:max(6px,env(safe-area-inset-top));padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right));background:var(--g);color:#fff;flex-wrap:wrap}
+header select,header input,header button{font:inherit;font-size:14px;border:0;border-radius:8px;padding:6px 8px;background:#fff;color:#173f35;min-height:34px}
+header input{width:62px;text-align:center}
+header button{background:#e8f3ee;cursor:pointer}
+#modes{display:flex;gap:4px;flex:1;min-width:200px}
+#modes button{flex:1;font-size:13px;padding:6px 4px}
+#modes button.on{background:#ffd54f;font-weight:700}
+#sura{flex:1;min-width:120px}
+#f{flex:1;border:0;width:100%;background:var(--bg)}
+#pl{display:none;gap:6px;align-items:center;padding:6px;background:#173f35;color:#fff;flex-wrap:wrap;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+#pl.on{display:flex}
+#pl button,#pl select{font:inherit;border:0;border-radius:8px;padding:6px 10px;min-height:34px;background:#e8f3ee;color:#173f35}
+#pl #pp{background:#ffd54f;font-weight:700;min-width:44px}
+#pl #pt{flex:1;min-width:90px;font-size:13px;text-align:center}
+#pl select{flex:1;min-width:130px}
+#tip{position:absolute;bottom:10px;left:10px;right:10px;margin:auto;max-width:420px;background:#173f35;color:#fff;border-radius:10px;padding:8px 12px;text-align:center;font-size:14px;display:none}
+#lib{flex:1;min-width:150px;background:#ffd54f;font-weight:700;text-align:center}
+#lb{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45)}
+#lb.on{display:block}
+#lbp{position:absolute;inset:0;margin:auto;max-width:560px;height:100%;background:var(--bg);display:flex;flex-direction:column}
+#lbh{display:flex;align-items:center;gap:8px;padding:10px;padding-top:max(10px,env(safe-area-inset-top));background:var(--g);color:#fff}
+#lbh b{flex:1;font-size:17px}
+#lbh button{border:0;border-radius:8px;padding:6px 12px;font:inherit;background:#e8f3ee}
+#lbl{flex:1;overflow:auto;padding:10px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+#lbl h3{margin:14px 4px 6px;font-size:14px;color:#6f5720}
+.mc{background:#fff;border:1px solid #d9cfa8;border-radius:12px;padding:10px 12px;margin:8px 0}
+.mc.act{border-color:var(--g);box-shadow:0 0 0 2px #b7e4d0}
+.mc .t{display:flex;align-items:center;gap:8px}
+.mc .t b{flex:1;font-size:16px;color:#173f35}
+.mc .t i{font-style:normal;font-size:12px;color:#6f5720}
+.mc p{margin:2px 0 8px;font-size:13px;color:#555}
+.mc .r{display:flex;gap:8px;flex-wrap:wrap}
+.mc button{font:inherit;font-size:14px;border:0;border-radius:8px;padding:7px 12px;background:#e8f3ee;color:#173f35;cursor:pointer}
+.mc button.pri{background:var(--g);color:#fff}
+.mc button.bad{background:#fbe4e1;color:#9b2a1f}
+.mc .bar{height:8px;border-radius:5px;background:#e8e2cc;overflow:hidden;flex:1;min-width:120px;align-self:center}
+.mc .bar>div{height:100%;background:var(--g);width:0}
+#lbf{font-size:13px;text-align:center;margin:14px 0}
+#lbf a{color:#6f5720}
+</style></head><body>
+<div id="app">
+<header>
+ <button id="home" onclick="location.href='../'" title="گەڕانەوە">⌂</button>
+ <button onclick="alert('سەرچاوەکان:\nمصحف المدينة (حفص) - QCF / KFGQPC\nوەرش: Quran.com Android\nشعبة: quranpedia.net (مجمع الملك فهد)\nدەنگ: EveryAyah.com, mp3quran.net')" title="سەرچاوەکان">ℹ</button>
+ <button id="next" title="دواتر">›</button>
+ <input id="pg" type="number" min="1" max="604" inputmode="numeric">
+ <button id="prev" title="پێشوو">‹</button>
+ <select id="sura"></select>
+ <button id="lib" title="" id="libBtnTitle">📚 <span id="libn"></span> ▾</button>
+</header>
+<iframe id="f" title="mushaf"></iframe>
+<div id="pl"><select id="rc"></select><button id="pa" title="ئایەتی پێشوو">⏮</button><button id="pp">▶</button><button id="pn" title="ئایەتی دواتر">⏭</button><span id="pt"></span><button id="px" title="داخستن">✕</button></div>
+<div id="tip"></div>
+<div id="lb"><div id="lbp"><div id="lbh"><b id="libTitle">موسحەف و قیرائەتەکان</b><button id="lbx">✕</button></div><div id="lbl"></div></div></div>
+</div>
+
+
+<script src="mushaf-app.js"></script>
+<script src="player-gapless.js"></script>
+</body></html>
