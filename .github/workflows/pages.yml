@@ -31,6 +31,40 @@ jobs:
           cp index.html language.js language-ui.js madani-ayah.js icon.svg manifest.webmanifest sw.js dist/
           bash tools/assemble_web.sh dist
 
+      - name: Build Madinah ayah bounds (same as APK ayahinfo_1260)
+        run: |
+          set -e
+          mkdir -p dist/madani-bounds /tmp/ai
+          curl -fsSL -o /tmp/ai/ayahinfo_1260.zip \
+            "https://android.quran.com/data/databases/ayahinfo/ayahinfo_1260.zip"
+          unzip -o /tmp/ai/ayahinfo_1260.zip -d /tmp/ai
+          python3 - <<'PY'
+          import sqlite3, json, os
+          conn = sqlite3.connect('/tmp/ai/ayahinfo_1260.db')
+          out = 'dist/madani-bounds'
+          os.makedirs(out, exist_ok=True)
+          cur = conn.execute(
+              'SELECT page_number,line_number,sura_number,ayah_number,min_x,max_x,min_y,max_y '
+              'FROM glyphs ORDER BY page_number,sura_number,ayah_number,line_number,min_x')
+          pages = {}
+          for page, line, sura, ayah, minx, maxx, miny, maxy in cur:
+              key = '%d:%d' % (sura, ayah)
+              bounds = pages.setdefault(page, {}).setdefault(key, [])
+              if bounds and bounds[-1][0] == line:
+                  b = bounds[-1]
+                  bounds[-1] = [line, min(b[1], minx), min(b[2], miny), max(b[3], maxx), max(b[4], maxy)]
+              else:
+                  bounds.append([line, minx, miny, maxx, maxy])
+          for page, ayahs in pages.items():
+              data = {k: [[b[1], b[2], b[3], b[4]] for b in v] for k, v in ayahs.items()}
+              with open(os.path.join(out, '%03d.json' % page), 'w') as f:
+                  json.dump(data, f, separators=(',', ':'))
+          print('bounds pages', len(pages))
+          PY
+          test -s dist/madani-bounds/001.json
+          test -s dist/madani-bounds/604.json
+          echo "madani-bounds ready: $(ls dist/madani-bounds | wc -l) files"
+
       - name: Verify web data
         run: |
           D=dist/mushaf/data; miss=0
