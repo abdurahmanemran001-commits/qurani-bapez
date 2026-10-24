@@ -1,9 +1,19 @@
-/* Phase 1: gapless reciters support (does not change UI) */
+/* Phase 1: gapless reciters + ayah-tap plays audio */
 (function(){
   function waitR(cb){
     if (typeof R !== 'undefined' && R && R.length) return cb();
     setTimeout(function(){ waitR(cb); }, 50);
   }
+
+  /* When user taps an ayah in the page iframe, always start playback */
+  window.addEventListener('message', function(e){
+    var d = e.data || {};
+    if (!d.ayah || typeof setCur !== 'function') return;
+    try {
+      setCur(+d.ayah[0], +d.ayah[1], true);
+    } catch (err) {}
+  });
+
   waitR(function(){
     window.recMeta = function(){
       for (var i = 0; i < R.length; i++) if (R[i].id === rc.value) return R[i];
