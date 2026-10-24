@@ -1,12 +1,12 @@
-/* Madinah image mushaf: invisible ayah hit-areas + highlight + qari audio (like the APK). */
+/* Madinah image mushaf: ayah tap -> highlight + qari (like APK). v2 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
 
   var LINES = 15;
-  var TOP = 0.12;
-  var BOTTOM = 0.08;
-  var SIDE = 0.06;
+  var TOP = 0.11;
+  var BOTTOM = 0.07;
+  var SIDE = 0.05;
 
   var overlay = null;
   var playerBar = null;
@@ -14,6 +14,8 @@
   var current = null;
   var reciter = 'Alafasy_128kbps';
   var pageVerses = [];
+  var lineMap = {}; // lineNumber -> {sura,ayah}
+  var lastPage = -1;
 
   function pad(n, w) {
     n = String(n);
@@ -29,33 +31,72 @@
     if (!img.parentElement || img.parentElement.id !== 'madaniWrap') {
       var wrap = document.createElement('div');
       wrap.id = 'madaniWrap';
-      wrap.style.cssText = 'position:relative;width:100%;line-height:0;';
+      wrap.style.cssText = 'position:relative;width:100%;line-height:0;-webkit-user-select:none;user-select:none;';
       img.parentNode.insertBefore(wrap, img);
       wrap.appendChild(img);
-      img.style.width = '100%';
-      img.style.height = 'auto';
-      img.style.display = 'block';
     }
+
+    img.style.cssText = 'width:100%;height:auto;display:block;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;pointer-events:none;';
+    img.setAttribute('draggable', 'false');
 
     overlay = document.getElementById('madaniOverlay');
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'madaniOverlay';
-      overlay.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;';
       document.getElementById('madaniWrap').appendChild(overlay);
+    }
+    overlay.style.cssText =
+      'position:absolute;left:0;top:0;right:0;bottom:0;width:100%;height:100%;' +
+      'z-index:5;pointer-events:auto;cursor:pointer;touch-action:manipulation;' +
+      '-webkit-user-select:none;user-select:none;';
+
+    // Block browser image menu
+    function blockMenu(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    overlay.oncontextmenu = blockMenu;
+    img.oncontextmenu = blockMenu;
+    document.getElementById('madaniWrap').oncontextmenu = blockMenu;
+
+    if (!overlay.__madaniBound) {
+      overlay.__madaniBound = true;
+      function onTap(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var rect = overlay.getBoundingClientRect();
+        var clientY = (e.changedTouches && e.changedTouches[0])
+          ? e.changedTouches[0].clientY
+          : e.clientY;
+        var clientX = (e.changedTouches && e.changedTouches[0])
+          ? e.changedTouches[0].clientX
+          : e.clientX;
+        var y = (clientY - rect.top) / rect.height;
+        var x = (clientX - rect.left) / rect.width;
+        if (x < SIDE || x > 1 - SIDE || y < TOP || y > 1 - BOTTOM) return;
+        var rel = (y - TOP) / (1 - TOP - BOTTOM);
+        var line = Math.max(1, Math.min(LINES, Math.floor(rel * LINES) + 1));
+        var hit = lineMap[line];
+        if (hit) playAyah(hit.sura, hit.ayah);
+      }
+      overlay.addEventListener('click', onTap, true);
+      overlay.addEventListener('touchend', function (e) {
+        if (e.changedTouches && e.changedTouches.length) onTap(e);
+      }, { passive: false });
     }
 
     playerBar = document.getElementById('madaniPlayer');
     if (!playerBar) {
       playerBar = document.createElement('div');
       playerBar.id = 'madaniPlayer';
-      playerBar.style.cssText = 'display:none;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;';
+      playerBar.style.cssText =
+        'display:none;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;position:relative;z-index:6;';
       playerBar.innerHTML =
         '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
         '<select id="madaniReciter" style="flex:1;min-width:140px;padding:6px;border-radius:8px;border:0"></select>' +
         '<button id="madaniPlay" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#ffd54f;color:#173f35;font-weight:bold;cursor:pointer">▶</button>' +
-        '<span id="madaniLabel" style="flex:1;min-width:100px;text-align:center"></span>' +
-        '</div>';
+        '<span id="madaniLabel" style="flex:1;min-width:100px;text-align:center"></span></div>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
 
       var sel = playerBar.querySelector('#madaniReciter');
@@ -107,11 +148,11 @@
     if (playerBar) {
       playerBar.style.display = 'block';
       var lab = playerBar.querySelector('#madaniLabel');
-      if (lab) lab.textContent = sura + ':' + ayah;
+      if (lab) lab.textContent = sura + ' : ' + ayah;
       var btn = playerBar.querySelector('#madaniPlay');
       if (btn) btn.textContent = '⏸';
     }
-    highlight(sura, ayah);
+    highlightLine(sura, ayah);
     if (audio) {
       try { audio.pause(); } catch (e) {}
     }
@@ -123,88 +164,57 @@
     audio.onended = function () {
       var btn = playerBar && playerBar.querySelector('#madaniPlay');
       if (btn) btn.textContent = '▶';
-      var next = null;
       for (var i = 0; i < pageVerses.length; i++) {
         if (pageVerses[i].sura === sura && pageVerses[i].ayah === ayah && i + 1 < pageVerses.length) {
-          next = pageVerses[i + 1];
-          break;
+          playAyah(pageVerses[i + 1].sura, pageVerses[i + 1].ayah);
+          return;
         }
       }
-      if (next) playAyah(next.sura, next.ayah);
     };
   }
 
-  function highlight(sura, ayah) {
+  function highlightLine(sura, ayah) {
     if (!overlay) return;
-    var nodes = overlay.querySelectorAll('.ma');
-    for (var i = 0; i < nodes.length; i++) {
-      var el = nodes[i];
-      if (+el.dataset.s === sura && +el.dataset.a === ayah) {
-        el.style.background = 'rgba(255,213,79,0.35)';
-      } else {
-        el.style.background = 'transparent';
-      }
+    var old = overlay.querySelector('.ma-hl');
+    if (old) old.remove();
+    var lines = [];
+    for (var ln in lineMap) {
+      if (lineMap[ln].sura === sura && lineMap[ln].ayah === ayah) lines.push(+ln);
     }
+    if (!lines.length) return;
+    lines.sort(function (a, b) { return a - b; });
+    var from = lines[0], to = lines[lines.length - 1];
+    var topPct = (TOP + ((from - 1) / LINES) * (1 - TOP - BOTTOM)) * 100;
+    var hPct = ((to - from + 1) / LINES) * (1 - TOP - BOTTOM) * 100;
+    var el = document.createElement('div');
+    el.className = 'ma-hl';
+    el.style.cssText =
+      'position:absolute;left:' + SIDE * 100 + '%;width:' + (1 - 2 * SIDE) * 100 + '%;' +
+      'top:' + topPct + '%;height:' + hPct + '%;background:rgba(255,213,79,0.32);' +
+      'border-radius:4px;pointer-events:none;';
+    overlay.appendChild(el);
   }
 
-  function buildOverlays(verses) {
-    if (!overlay) return;
-    overlay.innerHTML = '';
+  function buildLineMap(verses) {
     pageVerses = verses;
-    var map = {};
+    lineMap = {};
     verses.forEach(function (v) {
-      var key = v.sura + ':' + v.ayah;
-      if (!map[key]) map[key] = { sura: v.sura, ayah: v.ayah, lines: {} };
       (v.lines || []).forEach(function (ln) {
-        map[key].lines[ln] = true;
+        lineMap[ln] = { sura: v.sura, ayah: v.ayah };
       });
-    });
-
-    Object.keys(map).forEach(function (key) {
-      var v = map[key];
-      var lines = Object.keys(v.lines).map(Number).sort(function (a, b) { return a - b; });
-      if (!lines.length) return;
-      var start = lines[0], prev = lines[0];
-      function addBand(from, to) {
-        var topPct = (TOP + ((from - 1) / LINES) * (1 - TOP - BOTTOM)) * 100;
-        var hPct = ((to - from + 1) / LINES) * (1 - TOP - BOTTOM) * 100;
-        var el = document.createElement('div');
-        el.className = 'ma';
-        el.dataset.s = v.sura;
-        el.dataset.a = v.ayah;
-        el.style.cssText =
-          'position:absolute;left:' + (SIDE * 100) + '%;width:' + ((1 - 2 * SIDE) * 100) + '%;' +
-          'top:' + topPct + '%;height:' + hPct + '%;pointer-events:auto;cursor:pointer;border-radius:4px;';
-        el.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          ev.stopPropagation();
-          playAyah(v.sura, v.ayah);
-        });
-        overlay.appendChild(el);
-      }
-      for (var i = 1; i <= lines.length; i++) {
-        if (i === lines.length || lines[i] !== prev + 1) {
-          addBand(start, prev);
-          if (i < lines.length) {
-            start = lines[i];
-            prev = lines[i];
-          }
-        } else {
-          prev = lines[i];
-        }
-      }
     });
   }
 
   function loadPage(page) {
+    page = Math.max(1, Math.min(604, +page || 1));
     if (!ensureUI()) return;
     var img = document.getElementById('pageImg');
     if (!img) return;
 
-    function onReady() {
-      overlay.style.height = img.offsetHeight + 'px';
-      var url = 'https://api.quran.com/api/v4/verses/by_page/' + page + '?words=true&per_page=50';
-      fetch(url)
+    function fetchData() {
+      var h = img.offsetHeight || img.clientHeight;
+      if (h) overlay.style.height = h + 'px';
+      fetch('https://api.quran.com/api/v4/verses/by_page/' + page + '?words=true&per_page=50')
         .then(function (r) { return r.json(); })
         .then(function (data) {
           var verses = [];
@@ -217,9 +227,10 @@
             });
             verses.push({ sura: sura, ayah: ayah, lines: Object.keys(lines).map(Number) });
           });
-          buildOverlays(verses);
+          buildLineMap(verses);
+          lastPage = page;
           var st = document.getElementById('pageStatus');
-          if (st) st.textContent = 'پەنجە لەسەر ئایەت دابنێ بۆ گوێگرتن';
+          if (st) st.textContent = 'پەنجە لەسەر ئایەت دابنێ بۆ گوێگرتن (' + verses.length + ' ئایەت)';
         })
         .catch(function () {
           var st = document.getElementById('pageStatus');
@@ -227,34 +238,62 @@
         });
     }
 
-    if (img.complete && img.naturalHeight) onReady();
-    else img.addEventListener('load', onReady, { once: true });
+    if (img.complete && img.naturalHeight) fetchData();
+    else img.addEventListener('load', fetchData, { once: true });
   }
 
   function installHook() {
     var orig = window.openPage;
-    if (typeof orig !== 'function') return;
-    if (orig.__madaniHooked) return;
-    window.openPage = function (p) {
-      orig.apply(this, arguments);
-      var page = Math.max(1, Math.min(604, Number(p) || 1));
-      setTimeout(function () { loadPage(page); }, 50);
-    };
-    window.openPage.__madaniHooked = true;
+    if (typeof orig === 'function' && !orig.__madaniHooked) {
+      window.openPage = function (p) {
+        orig.apply(this, arguments);
+        setTimeout(function () { loadPage(p); }, 80);
+        setTimeout(function () { loadPage(p); }, 400);
+      };
+      window.openPage.__madaniHooked = true;
+    }
+    // Also watch pageInput / img src changes
+    var img = document.getElementById('pageImg');
+    if (img && !img.__madaniWatch) {
+      img.__madaniWatch = true;
+      var mo = new MutationObserver(function () {
+        var m = (img.src || '').match(/page(\d{3})\.png/i);
+        if (m) {
+          var p = +m[1];
+          if (p !== lastPage) loadPage(p);
+        }
+      });
+      mo.observe(img, { attributes: true, attributeFilter: ['src'] });
+    }
+  }
+
+  function boot() {
+    installHook();
     try {
-      var cur = +localStorage.getItem('preview_page') || 1;
       var reader = document.getElementById('reader');
-      if (reader && reader.classList.contains('active')) loadPage(cur);
+      var img = document.getElementById('pageImg');
+      if (reader && reader.classList.contains('active') && img && img.src) {
+        var m = img.src.match(/page(\d{3})\.png/i);
+        loadPage(m ? +m[1] : (+localStorage.getItem('preview_page') || 1));
+      }
     } catch (e) {}
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(installHook, 100);
-      setTimeout(installHook, 800);
+      setTimeout(boot, 50);
+      setTimeout(boot, 500);
+      setTimeout(boot, 1500);
     });
   } else {
-    setTimeout(installHook, 100);
-    setTimeout(installHook, 800);
+    setTimeout(boot, 50);
+    setTimeout(boot, 500);
+    setTimeout(boot, 1500);
   }
+  // Keep trying to hook openPage if scripts load late
+  var tries = 0;
+  var t = setInterval(function () {
+    installHook();
+    if (++tries > 20) clearInterval(t);
+  }, 300);
 })();
