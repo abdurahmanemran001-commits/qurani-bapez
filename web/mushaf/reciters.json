@@ -1,1 +1,287 @@
-PLACEHOLDER
+[
+  {
+    "id": "Abdul_Basit_Murattal_192kbps",
+    "n": "عەبدولباست",
+    "e": "Abd Al-Basit",
+    "t": "a"
+  },
+  {
+    "id": "Abdul_Basit_Mujawwad_128kbps",
+    "n": "عەبدولباست موجەوەد",
+    "e": "Abd Al-Basit Mujawwad",
+    "t": "a"
+  },
+  {
+    "id": "Abdullah_Basfar_192kbps",
+    "n": "عەبدوڵا بەسفەر",
+    "e": "Abdullah Basfar",
+    "t": "a"
+  },
+  {
+    "id": "Abdurrahmaan_As-Sudais_192kbps",
+    "n": "عەبدولڕەحمان سودەیس",
+    "e": "Abdurrahmaan As-Sudais",
+    "t": "a"
+  },
+  {
+    "id": "Abu_Bakr_Ash-Shaatree_128kbps",
+    "n": "ئەبوبەکر شاتری",
+    "e": "Abu Bakr Ash-Shatri",
+    "t": "a"
+  },
+  {
+    "id": "Alafasy_128kbps",
+    "n": "مەشاری ئەلعەفاسی",
+    "e": "Mishary Al-Afasy",
+    "t": "a"
+  },
+  {
+    "id": "Ghamadi_40kbps",
+    "n": "سەعد ئەلغامدی",
+    "e": "Saad Al-Ghamdi",
+    "t": "a"
+  },
+  {
+    "id": "Hani_Rifai_192kbps",
+    "n": "ھانی ڕەفاعی",
+    "e": "Hani Ar-Rifai",
+    "t": "a"
+  },
+  {
+    "id": "Husary_128kbps",
+    "n": "حوساری",
+    "e": "Husary",
+    "t": "a"
+  },
+  {
+    "id": "Husary_128kbps_Mujawwad",
+    "n": "حوساری موجەوەد",
+    "e": "Husary Mujawwad",
+    "t": "a"
+  },
+  {
+    "id": "Hudhaify_128kbps",
+    "n": "عەلی حوزەیفی",
+    "e": "Ali Al-Hudhaify",
+    "t": "a"
+  },
+  {
+    "id": "Maher_AlMuaiqly_64kbps",
+    "n": "ماھیر موعەیقلی",
+    "e": "Maher Al Muaiqly",
+    "t": "a"
+  },
+  {
+    "id": "Minshawy_Murattal_128kbps",
+    "n": "مەنشاوی مورەتەل",
+    "e": "Minshawy Murattal",
+    "t": "a"
+  },
+  {
+    "id": "Minshawy_Mujawwad_192kbps",
+    "n": "مەنشاوی موجەوەد",
+    "e": "Minshawy Mujawwad",
+    "t": "a"
+  },
+  {
+    "id": "Mohammad_al_Tablaway_128kbps",
+    "n": "محەمەد تەبڵاوی",
+    "e": "Mohammad al Tablaway",
+    "t": "a"
+  },
+  {
+    "id": "Muhammad_Ayyoub_128kbps",
+    "n": "محەمەد ئەیوب",
+    "e": "Muhammad Ayyoub",
+    "t": "a"
+  },
+  {
+    "id": "Muhammad_Jibreel_128kbps",
+    "n": "محەمەد جبریل",
+    "e": "Muhammad Jibreel",
+    "t": "a"
+  },
+  {
+    "id": "Muhammad_Sulaiman_Patel_128kbps",
+    "n": "محەمەد سولەیمان پاتێل",
+    "e": "Muhammad Sulaiman Patel",
+    "t": "a"
+  },
+  {
+    "id": "Mustafa_Ismail_128kbps",
+    "n": "مستەفا ئیسماعیل",
+    "e": "Mustafa Ismail",
+    "t": "a"
+  },
+  {
+    "id": "Nasser_Alqatami_128kbps",
+    "n": "ناصر قەتامی",
+    "e": "Nasser Alqatami",
+    "t": "a"
+  },
+  {
+    "id": "Saood_ash-Shuraym_128kbps",
+    "n": "سعود شورەیم",
+    "e": "Saood ash-Shuraym",
+    "t": "a"
+  },
+  {
+    "id": "Yasser_Ad-Dussary_128kbps",
+    "n": "یاسەر دووسەری",
+    "e": "Yasser Ad-Dussary",
+    "t": "a"
+  },
+  {
+    "id": "ahmed_ibn_ali_al_ajamy_128kbps",
+    "n": "ئەحمەد عەجەمی",
+    "e": "Ahmed al-Ajamy",
+    "t": "a"
+  },
+  {
+    "id": "ahmed_neana_128kbps",
+    "n": "ئەحمەد نەعینە",
+    "e": "Ahmed Neana",
+    "t": "a"
+  },
+  {
+    "id": "akram_al_alaqim_128kbps",
+    "n": "ئەکرەم عەلاقم",
+    "e": "Akram Al Alaqim",
+    "t": "a"
+  },
+  {
+    "id": "ali_hajjaj_alsouasi_128kbps",
+    "n": "علی حەجاج سوسی",
+    "e": "Ali Hajjaj Alsouasi",
+    "t": "a"
+  },
+  {
+    "id": "aymanswoaid_128kbps",
+    "n": "ئەیمان سوەید",
+    "e": "Ayman Sowaid",
+    "t": "a"
+  },
+  {
+    "id": "khalefa_al_tunaijy_64kbps",
+    "n": "خەلیفە تونەیجی",
+    "e": "Khalefa Al-Tunaijy",
+    "t": "a"
+  },
+  {
+    "id": "mahmoud_ali_al_banna_32kbps",
+    "n": "مەحموود عەلی بەننا",
+    "e": "Mahmoud Ali Al Banna",
+    "t": "a"
+  },
+  {
+    "id": "muhammad_alamkari_128kbps",
+    "n": "محەمەد ئەلمەکاری",
+    "e": "Muhammad Alamkari",
+    "t": "a"
+  },
+  {
+    "id": "g_ubeda_kurdi_mutasil",
+    "n": "عوبەیدە کوردی",
+    "e": "Ubeda Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/ubeda_kurdi_mutasil/"
+  },
+  {
+    "id": "g_sherzad",
+    "n": "شێرزاد کوردی",
+    "e": "Sherzad Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/sherzad/"
+  },
+  {
+    "id": "g_shekh_reza",
+    "n": "شێخ ڕەزا محەممەدیان",
+    "e": "Shekh Reza Mohammadian (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/shekh_reza/"
+  },
+  {
+    "id": "g_shahriar",
+    "n": "شەهریار پەرهیزگار",
+    "e": "Shahriar Parhizgar (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/shahriar/"
+  },
+  {
+    "id": "g_rzgar_kurdi_mutasil",
+    "n": "ڕزگار کوردی",
+    "e": "Rizgar Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/rzgar_kurdi_mutasil/"
+  },
+  {
+    "id": "g_Raad",
+    "n": "ڕەعد کوردی",
+    "e": "Raad Al-Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/Raad/"
+  },
+  {
+    "id": "g_peshawa_kurdi_mutasil",
+    "n": "پێشەوا کوردی",
+    "e": "Peshawa Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/peshawa_kurdi_mutasil/"
+  },
+  {
+    "id": "g_ghamdi_handren_kurdi",
+    "n": "غامدی هەندرێن کوردی",
+    "e": "Ghamdi Handren Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/ghamdi_handren_kurdi/"
+  },
+  {
+    "id": "g_dlshad",
+    "n": "دڵشاد کوردی",
+    "e": "Dlshad Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/dlshad/"
+  },
+  {
+    "id": "g_abdulhadi_kurdi_mutasil",
+    "n": "عەبدولهادی کوردی",
+    "e": "Abdulhadi Kurdi (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/abdulhadi_kurdi_mutasil/"
+  },
+  {
+    "id": "g_peshawa",
+    "n": "پێشەوا",
+    "e": "Peshawa",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/audio001/releases/download/peshawa/"
+  },
+  {
+    "id": "g_hamza_barznji",
+    "n": "حەمزە بەرزنجی",
+    "e": "Hamza Barznji (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/hamza_barznji/"
+  },
+  {
+    "id": "g_farman_shwani",
+    "n": "فەرمان شوانی",
+    "e": "Farman Shwani (gapless)",
+    "t": "g",
+    "u": "https://github.com/Hiwaselah/qari_kurdi_mutasil/releases/download/farman_shwani/"
+  },
+  {
+    "id": "g_minshawi_murattal",
+    "n": "مەنشاوی (مورەتەل)",
+    "e": "Minshawi Murattal (gapless)",
+    "t": "g",
+    "u": "http://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee/"
+  },
+  {
+    "id": "g_husary",
+    "n": "حوساری",
+    "e": "Husary (gapless)",
+    "t": "g",
+    "u": "http://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree/"
+  }
+]
