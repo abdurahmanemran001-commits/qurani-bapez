@@ -26,7 +26,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
         list.innerHTML=JUZ_PAGE.map(function(p,i){
           var first='';
           for(var k=0;k<names.length;k++){ if(names[k][3]<=p)first=names[k][0]; else break; }
-          return '<div class="surah" onclick="openPage('+p+')"><span class="num">'+(i+1)+'</span><div class="name"><b>\u062c\u0648\u0632\u06cc '+(i+1)+'</b><small>'+(first?esc(first)+' \u00b7 ':'')+'\u067e\u06d5\u0680\u06d5 '+p+'</small></div><span class="arrow">\u2039</span></div>';
+          return '<div class="surah" onclick="openPage('+p+')"><span class="num">'+(i+1)+'</span><div class="name"><b>جوزی '+(i+1)+'</b><small>'+(first?esc(first)+' · ':'')+'پەڕە '+p+'</small></div><span class="arrow">‹</span></div>';
         }).join('');
       }catch(e){}
     };
