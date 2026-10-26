@@ -25,7 +25,7 @@ jobs:
         run: |
           set -o pipefail
           bash tools/assemble_web.sh /tmp/w --app 2>&1 | tee /tmp/log.txt
-          mkdir -p mobile/www && cp -r /tmp/w/mushaf/. mobile/www/
+          bash tools/bundle_app_web.sh /tmp/w mobile/www
       - name: Capacitor project
         working-directory: mobile
         run: |
