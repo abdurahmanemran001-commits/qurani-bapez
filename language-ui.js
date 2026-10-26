@@ -8,30 +8,44 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
   var style = document.createElement('style');
   style.id = 'immersive-mushaf-css';
+  /* Always when reading mushaf: hide green top bar, bottom nav, page title row, page number bar.
+     NEVER hide the audio player (#madaniPlayer). */
   style.textContent = [
     '#reader > .card { display: none !important; }',
 
-    /* Full-screen mushaf: hide ALL chrome */',
-    'html.immersive-mushaf .appbar,',
-    'html.immersive-mushaf .status,',
-    'html.immersive-mushaf .bottom,',
-    'html.immersive-mushaf .readerhead,',
-    'html.immersive-mushaf .readerbar,',
-    'html.immersive-mushaf #madaniPlayer {',
+    'html.in-reader .appbar,',
+    'html.in-reader .status,',
+    'html.in-reader .bottom,',
+    'html.in-reader .readerhead,',
+    'html.in-reader .readerbar {',
     '  display: none !important;',
     '  visibility: hidden !important;',
     '  height: 0 !important;',
     '  min-height: 0 !important;',
+    '  max-height: 0 !important;',
     '  overflow: hidden !important;',
     '  pointer-events: none !important;',
+    '  margin: 0 !important;',
+    '  padding: 0 !important;',
+    '  border: 0 !important;',
     '}',
 
-    'html.immersive-mushaf .phone {',
+    /* Keep player always visible and usable */',
+    'html.in-reader #madaniPlayer {',
+    '  display: flex !important;',
+    '  visibility: visible !important;',
+    '  pointer-events: auto !important;',
+    '  height: auto !important;',
+    '  max-height: none !important;',
+    '  opacity: 1 !important;',
+    '}',
+
+    'html.in-reader .phone {',
     '  height: 100vh !important;',
     '  max-height: 100vh !important;',
     '  border-radius: 0 !important;',
     '}',
-    'html.immersive-mushaf .main {',
+    'html.in-reader .main {',
     '  top: 0 !important;',
     '  bottom: 0 !important;',
     '  padding: 0 !important;',
@@ -39,87 +53,63 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     '  height: 100% !important;',
     '  overflow: hidden !important;',
     '}',
-    'html.immersive-mushaf #reader.active {',
-    '  display: block !important;',
+    'html.in-reader #reader.active {',
+    '  display: flex !important;',
+    '  flex-direction: column !important;',
     '  height: 100% !important;',
     '  padding: 0 !important;',
     '  margin: 0 !important;',
     '}',
-    'html.immersive-mushaf .mushaf {',
-    '  min-height: 100vh !important;',
-    '  height: 100vh !important;',
-    '  max-height: 100vh !important;',
+    'html.in-reader .mushaf {',
+    '  flex: 1 1 auto !important;',
+    '  min-height: 0 !important;',
     '  border-radius: 0 !important;',
     '  padding: 0 !important;',
     '  margin: 0 !important;',
     '  background: #fff !important;',
     '  box-shadow: none !important;',
     '}',
-    'html.immersive-mushaf .mushaf img,',
-    'html.immersive-mushaf #pageImg {',
-    '  max-height: 100vh !important;',
+    'html.in-reader .mushaf img,',
+    'html.in-reader #pageImg {',
     '  width: 100% !important;',
+    '  max-height: calc(100vh - 70px) !important;',
     '  object-fit: contain !important;',
     '  box-shadow: none !important;',
     '}',
-
-    '#immersiveHint {',
-    '  display: none; position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 9999;',
-    '  background: rgba(23,63,53,0.8); color: #fff; font-size: 12px; padding: 6px 14px;',
-    '  border-radius: 999px; pointer-events: none; opacity: 0; transition: opacity .25s;',
-    '}',
-    'html.immersive-mushaf #immersiveHint.show { display: block; opacity: 1; }',
   ].join('\n');
   document.head.appendChild(style);
-
-  var immersive = false;
-  var hintTimer = null;
-  var lastTap = 0;
-  var tapCount = 0;
 
   function isReaderActive() {
     var r = document.getElementById('reader');
     return !!(r && r.classList.contains('active'));
   }
 
-  function showHint(msg) {
-    var h = document.getElementById('immersiveHint');
-    if (!h) {
-      h = document.createElement('div');
-      h.id = 'immersiveHint';
-      document.body.appendChild(h);
-    }
-    h.textContent = msg || 'دووجار پەنجە → مێنو';
-    h.classList.add('show');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(function () {
-      h.classList.remove('show');
-    }, 1800);
-  }
+  function applyReaderChrome() {
+    var on = isReaderActive();
+    document.documentElement.classList.toggle('in-reader', on);
 
-  function hideChromeDirect(on) {
-    var sels = ['.appbar', '.status', '.bottom', '.readerhead', '.readerbar', '#madaniPlayer'];
-    sels.forEach(function (sel) {
+    /* Direct style backup so cache/old CSS cannot keep the green bar */
+    var hideSels = ['.appbar', '.status', '.bottom', '.readerhead', '.readerbar'];
+    hideSels.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (el) {
         if (on) {
-          el.setAttribute('data-imm-hide', '1');
           el.style.setProperty('display', 'none', 'important');
-        } else if (el.getAttribute('data-imm-hide') === '1') {
+        } else {
           el.style.removeProperty('display');
-          el.removeAttribute('data-imm-hide');
         }
       });
     });
-  }
 
-  function setImmersive(on) {
-    immersive = !!on;
-    document.documentElement.classList.toggle('immersive-mushaf', immersive);
-    hideChromeDirect(immersive);
-    try {
-      localStorage.setItem('immersive_mushaf', immersive ? '1' : '0');
-    } catch (e) {}
-    if (immersive) showHint('دووجار پەنجە → مێنو');
+    /* Force player visible while reading */
+    var pl = document.getElementById('madaniPlayer');
+    if (pl) {
+      if (on) {
+        pl.style.setProperty('display', 'flex', 'important');
+        pl.style.setProperty('visibility', 'visible', 'important');
+        pl.style.removeProperty('height');
+        pl.style.removeProperty('opacity');
+      }
+    }
   }
 
   function hookShowView() {
@@ -127,17 +117,9 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     if (typeof orig !== 'function' || orig.__quranHooked) return;
     window.showView = function (id) {
       var ret = orig.apply(this, arguments);
-      try {
-        if (id === 'reader') {
-          document.documentElement.classList.add('in-reader');
-          setTimeout(function () {
-            setImmersive(true);
-          }, 30);
-        } else {
-          document.documentElement.classList.remove('in-reader');
-          setImmersive(false);
-        }
-      } catch (e) {}
+      setTimeout(applyReaderChrome, 0);
+      setTimeout(applyReaderChrome, 50);
+      setTimeout(applyReaderChrome, 200);
       return ret;
     };
     window.showView.__quranHooked = true;
@@ -148,76 +130,37 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     if (typeof orig !== 'function' || orig.__immersiveHooked) return;
     window.openPage = function () {
       var ret = orig.apply(this, arguments);
-      setTimeout(function () {
-        if (isReaderActive()) setImmersive(true);
-      }, 50);
-      setTimeout(function () {
-        if (isReaderActive()) setImmersive(true);
-      }, 300);
+      setTimeout(applyReaderChrome, 0);
+      setTimeout(applyReaderChrome, 50);
+      setTimeout(applyReaderChrome, 300);
       return ret;
     };
     window.openPage.__immersiveHooked = true;
   }
 
-  function isPageTarget(t) {
-    if (!t || !t.closest) return false;
-    if (
-      t.closest(
-        '.appbar, .bottom, .readerhead, .readerbar, #madaniPlayer, button, select, input, a, .modal, .sheet'
-      )
-    )
-      return false;
-    return !!(
-      t.id === 'pageImg' ||
-      t.id === 'madaniOverlay' ||
-      t.id === 'madaniWrap' ||
-      (t.classList && t.classList.contains('mushaf')) ||
-      t.closest('#madaniWrap') ||
-      t.closest('.mushaf')
-    );
-  }
-
-  function onPointer(e) {
-    if (!isReaderActive()) return;
-    if (!isPageTarget(e.target)) return;
-    var now = Date.now();
-    if (now - lastTap < 350) tapCount += 1;
-    else tapCount = 1;
-    lastTap = now;
-    if (tapCount >= 2) {
-      tapCount = 0;
-      setImmersive(!immersive);
-    }
-  }
-
   function boot() {
     hookShowView();
     hookOpenPage();
-    document.addEventListener('pointerup', onPointer, true);
-    if (isReaderActive()) {
-      document.documentElement.classList.add('in-reader');
-      setImmersive(true);
-    }
+    applyReaderChrome();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 50);
-      setTimeout(boot, 400);
-      setTimeout(boot, 1200);
+      setTimeout(boot, 30);
+      setTimeout(boot, 300);
+      setTimeout(boot, 1000);
     });
   } else {
-    setTimeout(boot, 50);
-    setTimeout(boot, 400);
-    setTimeout(boot, 1200);
+    setTimeout(boot, 30);
+    setTimeout(boot, 300);
+    setTimeout(boot, 1000);
   }
+
   var tries = 0;
   var t = setInterval(function () {
     hookShowView();
     hookOpenPage();
-    if (isReaderActive() && !document.documentElement.classList.contains('immersive-mushaf')) {
-      setImmersive(true);
-    }
-    if (++tries > 50) clearInterval(t);
+    if (isReaderActive()) applyReaderChrome();
+    if (++tries > 60) clearInterval(t);
   }, 200);
 })();
