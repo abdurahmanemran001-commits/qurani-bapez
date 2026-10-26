@@ -5,12 +5,15 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
-  /* Reader only: hide the green top bar, the "فهرست / ڕەنگاوڕەنگ / 604" header and the bottom menu.
-     The audio player (#madaniPlayer) and the page number bar are NOT touched. */
+  /* Reader only: hide the green top bar, the "فهرست / ڕەنگاوڕەنگ / 604" header, the bottom menu,
+     the page number bar and the "پەڕەی موسحەف" card.
+     The audio player (#madaniPlayer) is NOT touched. */
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
     '.phone:has(#reader.active) .readerhead,',
+    '.phone:has(#reader.active) .readerbar,',
+    '.phone:has(#reader.active) #reader > .card,',
     '.phone:has(#reader.active) .bottom { display: none !important; }',
     '.phone:has(#reader.active) .main {',
     '  height: 100% !important;',
@@ -19,4 +22,24 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     '}',
   ].join('\n');
   document.head.appendChild(st);
+
+  /* The page number bar is gone, so swipe left/right on the page to turn it
+     (same direction as the colourful mushaf: finger moves right = next page). */
+  var m = document.getElementById('mushaf');
+  if (m) {
+    var sx = 0, sy = 0, t0 = 0;
+    m.addEventListener('touchstart', function (e) {
+      var t = e.touches[0];
+      sx = t.clientX; sy = t.clientY; t0 = Date.now();
+    }, { passive: true, capture: true });
+    m.addEventListener('touchend', function (e) {
+      var t = e.changedTouches[0];
+      var dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy) && Date.now() - t0 < 800) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (typeof changePage === 'function') changePage(dx > 0 ? 1 : -1);
+      }
+    }, { passive: false, capture: true });
+  }
 })();
