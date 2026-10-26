@@ -1,13 +1,19 @@
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
-  s.src = 'madani-ayah.js?v=19';
+  s.src = 'madani-ayah.js?v=20';
   s.async = true;
   document.head.appendChild(s);
 
+  /* ayah menu (play / share / tafsir) + show-hide player on tap; if this file fails to load,
+     tapping an ayah simply plays it like before */
+  var s2 = document.createElement('script');
+  s2.src = 'mushaf/ayah-actions.js?v=1';
+  s2.async = true;
+  document.head.appendChild(s2);
+
   /* Reader only: hide the green top bar, the "فهرست / ڕەنگاوڕەنگ / 604" header, the bottom menu,
-     the page number bar and the "پەڕەی موسحەف" card.
-     The audio player (#madaniPlayer) is NOT touched. */
+     the page number bar and the "پەڕەی موسحەف" card. */
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
