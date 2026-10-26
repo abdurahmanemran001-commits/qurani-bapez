@@ -1,0 +1,13 @@
+Badini translations matched from My Prayers database: 253 items; missing: 659
+azkar.json: 44 categories, 912 items, 1220176 bytes
+core items matched to masnun-dua: 50
+azkar-i18n/ar.json: 110787 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 4}
+azkar-i18n/en.json: 341914 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 4}
+azkar-i18n/tr.json: 336623 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 0}
+azkar-i18n/fa.json: 427563 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 4}
+azkar-i18n/ur.json: 401934 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 0}
+azkar-i18n/fr.json: 335599 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 0}
+azkar-i18n/ru.json: 553850 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 4}
+azkar-i18n/id.json: 359235 bytes, missing {'title': 0, 'trans': 0, 'core_fallback': 0}
+Verified Sorani adhkar dataset: 44 categories, 912 items
+assembled: 77M
