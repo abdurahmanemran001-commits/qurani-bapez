@@ -28,6 +28,24 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     '  border-radius: 999px; pointer-events: none; opacity: 0; transition: opacity .25s;',
     '}',
     'html.immersive-mushaf #immersiveHint.show { display: block; opacity: 1; }',
+
+    /* Quran sections: no search and no language switcher at all */
+    'html.quran-view .appbar button[onclick="showSearch()"],',
+    'html.quran-view .appbar button[onclick="openLanguagePicker()"],',
+    'html.quran-view #surahSearch { display: none !important; }',
+
+    /* Reader: fixed page, nothing scrolls or bounces, size is computed to fit the screen */
+    'html.in-reader, html.in-reader body { overflow: hidden !important; overscroll-behavior: none; }',
+    'html.in-reader .main { overflow: hidden !important; padding: 6px !important; }',
+    'html.in-reader #reader.active { display: flex !important; flex-direction: column; height: 100%; gap: 6px; }',
+    'html.in-reader #reader .readerhead, html.in-reader #reader .readerbar, html.in-reader #madaniPlayer { flex: 0 0 auto; margin: 0 !important; }',
+    'html.in-reader #reader .mushaf {',
+    '  flex: 1 1 auto; min-height: 0 !important; height: auto !important; max-height: none !important;',
+    '  padding: 0 !important; display: flex; align-items: center; justify-content: center; overflow: hidden;',
+    '}',
+    'html.in-reader #pageImg, html.in-reader .mushaf img { max-height: none !important; }',
+    'html.immersive-mushaf.in-reader .main { height: 100% !important; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) !important; }',
+    'html.immersive-mushaf.in-reader #reader.active { gap: 0; }',
   ].join('\n');
   document.head.appendChild(style);
 
@@ -48,7 +66,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
       h.id = 'immersiveHint';
       document.body.appendChild(h);
     }
-    h.textContent = msg || 'پەنجە بدە → مێنو';
+    h.textContent = msg || 'دوو جار پەنجە بدە → مێنو';
     h.classList.add('show');
     clearTimeout(hintTimer);
     hintTimer = setTimeout(function () {
@@ -56,14 +74,58 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     }, 1600);
   }
 
+  /* Page size: as large as fits, same aspect ratio as the page image (the ayah overlay relies on it). */
+  function fitReader() {
+    try {
+      var root = document.documentElement;
+      if (!root.classList.contains('in-reader')) return;
+      var m = document.getElementById('mushaf');
+      var w = document.getElementById('madaniWrap');
+      var img = document.getElementById('pageImg');
+      if (!m || !w || !img) return;
+      var aw = m.clientWidth, ah = m.clientHeight;
+      if (!aw || !ah) return;
+      var W = Math.floor(Math.min(aw, (ah * 1260) / 2038));
+      w.style.width = W + 'px';
+      w.style.margin = '0 auto';
+      var ov = document.getElementById('madaniOverlay');
+      var h = img.offsetHeight;
+      if (ov && h) ov.style.height = h + 'px';
+    } catch (e) {}
+  }
+
+  function fitSoon() {
+    fitReader();
+    setTimeout(fitReader, 100);
+    setTimeout(fitReader, 450);
+    setTimeout(fitReader, 1000);
+  }
+
   function setImmersive(on) {
     immersive = !!on;
     document.documentElement.classList.toggle('immersive-mushaf', immersive);
-    window.__madaniBlockPlay = immersive;
+    window.__madaniBlockPlay = false; /* tapping an ayah must always play it */
     try {
       localStorage.setItem('immersive_mushaf', immersive ? '1' : '0');
     } catch (e) {}
-    if (immersive) showHint('پەنجە بدە → مێنو');
+    if (immersive) showHint('دوو جار پەنجە بدە → مێنو');
+    fitSoon();
+  }
+
+  function hookShowView() {
+    var orig = window.showView;
+    if (typeof orig !== 'function' || orig.__quranHooked) return;
+    window.showView = function (id) {
+      var ret = orig.apply(this, arguments);
+      try {
+        var root = document.documentElement;
+        root.classList.toggle('quran-view', id === 'home' || id === 'reader');
+        root.classList.toggle('in-reader', id === 'reader');
+        if (id === 'reader') fitSoon();
+      } catch (e) {}
+      return ret;
+    };
+    window.showView.__quranHooked = true;
   }
 
   function hookOpenPage() {
@@ -97,21 +159,12 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     );
   }
 
+  /* One tap on an ayah plays it. Two quick taps show / hide the menu. */
   function onPointer(e) {
     if (!isReaderActive()) return;
     if (!isPageTarget(e.target)) return;
 
     var now = Date.now();
-
-    if (immersive) {
-      // Single tap while full-screen → show chrome
-      setImmersive(false);
-      lastTap = now;
-      tapCount = 0;
-      return;
-    }
-
-    // Chrome visible: double-tap within 350ms hides chrome (so single tap can play ayah)
     if (now - lastTap < 350) {
       tapCount += 1;
     } else {
@@ -121,53 +174,49 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
     if (tapCount >= 2) {
       tapCount = 0;
-      setImmersive(true);
+      setImmersive(!immersive);
     }
-  }
-
-  function patchBlockPlay() {
-    var ov = document.getElementById('madaniOverlay');
-    if (!ov || ov.__blockBound) return !!ov;
-    ov.__blockBound = true;
-    function block(e) {
-      if (window.__madaniBlockPlay) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-      }
-    }
-    ov.addEventListener('click', block, true);
-    ov.addEventListener('touchend', block, true);
-    return true;
   }
 
   function boot() {
+    hookShowView();
     hookOpenPage();
     document.addEventListener('pointerup', onPointer, true);
-    patchBlockPlay();
+    var m = document.getElementById('mushaf');
+    if (m && window.ResizeObserver && !m.__fitObserved) {
+      m.__fitObserved = true;
+      new ResizeObserver(fitReader).observe(m);
+    }
+    window.addEventListener('resize', fitSoon);
+    window.addEventListener('orientationchange', fitSoon);
     if (isReaderActive()) {
       var pref = true;
       try {
         if (localStorage.getItem('immersive_mushaf') === '0') pref = false;
       } catch (e) {}
+      document.documentElement.classList.add('quran-view', 'in-reader');
       setImmersive(pref);
     }
   }
 
+  var booted = false;
+  function bootOnce() {
+    if (booted) return;
+    booted = true;
+    boot();
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 80);
-      setTimeout(boot, 600);
-      setTimeout(boot, 1500);
+      setTimeout(bootOnce, 80);
     });
   } else {
-    setTimeout(boot, 80);
-    setTimeout(boot, 600);
-    setTimeout(boot, 1500);
+    setTimeout(bootOnce, 80);
   }
   var tries = 0;
   var t = setInterval(function () {
+    hookShowView();
     hookOpenPage();
-    patchBlockPlay();
     if (++tries > 40) clearInterval(t);
   }, 200);
 })();
