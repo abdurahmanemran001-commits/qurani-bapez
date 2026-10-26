@@ -9,22 +9,43 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   style.id = 'immersive-mushaf-css';
   style.textContent = [
     '#reader > .card { display: none !important; }',
-    'html.in-reader .appbar, html.in-reader .status, html.in-reader .bottom,',
-    'html.in-reader .readerhead, html.in-reader .readerbar {',
-    '  display: none !important; visibility: hidden !important; height: 0 !important;',
-    '  overflow: hidden !important; pointer-events: none !important;',
-    '}',
-    'html.in-reader #madaniPlayer {',
-    '  display: flex !important; visibility: visible !important;',
-    '  pointer-events: auto !important; opacity: 1 !important;',
-    '}',
-    'html.in-reader .phone { height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; }',
+    'html.in-reader .phone { height: 100vh !important; height: 100dvh !important; max-height: none !important; border-radius: 0 !important; }',
     'html.in-reader .main { top: 0 !important; bottom: 0 !important; padding: 0 !important; height: 100% !important; overflow: hidden !important; }',
     'html.in-reader #reader.active { display: flex !important; flex-direction: column !important; height: 100% !important; padding: 0 !important; }',
     'html.in-reader .mushaf { flex: 1 1 auto !important; min-height: 0 !important; border-radius: 0 !important; padding: 0 !important; background: #fff !important; }',
-    'html.in-reader .mushaf img, html.in-reader #pageImg { width: 100% !important; max-height: calc(100vh - 80px) !important; object-fit: contain !important; }',
+    'html.in-reader .mushaf img, html.in-reader #pageImg { width: 100% !important; height: 100% !important; max-height: 100% !important; object-fit: contain !important; }',
+    'html.in-reader .appbar, html.in-reader .status, html.in-reader .bottom,',
+    'html.in-reader .readerhead, html.in-reader .readerbar, html.in-reader #madaniPlayer {',
+    '  display: none !important; visibility: hidden !important; pointer-events: none !important;',
+    '}',
+    'html.in-reader.show-reader-controls .appbar {',
+    '  display: flex !important; visibility: visible !important; pointer-events: auto !important;',
+    '  position: absolute !important; top: 0; left: 0; right: 0; z-index: 30;',
+    '}',
+    'html.in-reader.show-reader-controls .readerhead {',
+    '  display: flex !important; visibility: visible !important; pointer-events: auto !important;',
+    '  position: absolute !important; top: 66px; left: 8px; right: 8px; z-index: 29;',
+    '  margin: 0; padding: 7px; border-radius: 12px; background: rgba(249,251,250,.96);',
+    '  box-shadow: 0 2px 12px rgba(0,0,0,.12);',
+    '}',
+    'html.in-reader.show-reader-controls #madaniPlayer {',
+    '  display: flex !important; visibility: visible !important; pointer-events: auto !important;',
+    '  position: absolute !important; left: 12px; right: 12px; bottom: 132px; z-index: 30; margin: 0 !important;',
+    '}',
+    'html.in-reader.show-reader-controls .readerbar {',
+    '  display: grid !important; visibility: visible !important; pointer-events: auto !important;',
+    '  position: absolute !important; left: 14px; right: 14px; bottom: 79px; z-index: 30; margin: 0;',
+    '  padding: 7px; border-radius: 12px; background: rgba(249,251,250,.96);',
+    '  box-shadow: 0 2px 12px rgba(0,0,0,.12);',
+    '}',
+    'html.in-reader.show-reader-controls .bottom {',
+    '  display: grid !important; visibility: visible !important; pointer-events: auto !important;',
+    '  position: absolute !important; bottom: 0; left: 0; right: 0; z-index: 30;',
+    '}'
   ].join('\n');
   document.head.appendChild(style);
+
+  var wasReader = false;
 
   function isReaderActive() {
     var r = document.getElementById('reader');
@@ -33,27 +54,24 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
   function applyReaderChrome() {
     var on = isReaderActive();
-    document.documentElement.classList.toggle('in-reader', on);
-    ['.appbar', '.status', '.bottom', '.readerhead', '.readerbar'].forEach(function (sel) {
-      document.querySelectorAll(sel).forEach(function (el) {
-        if (on) el.style.setProperty('display', 'none', 'important');
-        else el.style.removeProperty('display');
-      });
-    });
-    var pl = document.getElementById('madaniPlayer');
-    if (pl && on) {
-      pl.style.setProperty('display', 'flex', 'important');
-      pl.style.setProperty('visibility', 'visible', 'important');
-    }
+    var root = document.documentElement;
+    if (on && !wasReader) root.classList.remove('show-reader-controls');
+    root.classList.toggle('in-reader', on);
+    if (!on) root.classList.remove('show-reader-controls');
+    wasReader = on;
+  }
+
+  function toggleReaderControls() {
+    if (!isReaderActive()) return;
+    document.documentElement.classList.toggle('show-reader-controls');
   }
 
   function hookShowView() {
     var orig = window.showView;
     if (typeof orig !== 'function' || orig.__quranHooked) return;
-    window.showView = function (id) {
+    window.showView = function () {
       var ret = orig.apply(this, arguments);
       setTimeout(applyReaderChrome, 0);
-      setTimeout(applyReaderChrome, 100);
       return ret;
     };
     window.showView.__quranHooked = true;
@@ -65,35 +83,42 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     window.openPage = function () {
       var ret = orig.apply(this, arguments);
       setTimeout(applyReaderChrome, 0);
-      setTimeout(applyReaderChrome, 120);
-      setTimeout(applyReaderChrome, 500);
       return ret;
     };
     window.openPage.__chromeHooked = true;
   }
 
+  var lastTapToggle = 0;
+  function onReaderTap(event) {
+    if (!isReaderActive()) return;
+    var mushaf = document.getElementById('mushaf');
+    if (!mushaf || !mushaf.contains(event.target)) return;
+    var now = Date.now();
+    if (now - lastTapToggle < 100) return;
+    lastTapToggle = now;
+    toggleReaderControls();
+  }
+
+  // Capture taps before the ayah-audio layer, without cancelling its own handlers.
+  document.addEventListener('pointerup', onReaderTap, true);
+  document.addEventListener('click', onReaderTap, true);
+
   function boot() {
     hookShowView();
     hookOpenPage();
     applyReaderChrome();
+    var reader = document.getElementById('reader');
+    if (reader && !reader.__immersiveWatch) {
+      reader.__immersiveWatch = true;
+      new MutationObserver(applyReaderChrome).observe(reader, { attributes: true, attributeFilter: ['class'] });
+    }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 40);
-      setTimeout(boot, 400);
-      setTimeout(boot, 1200);
-    });
-  } else {
-    setTimeout(boot, 40);
-    setTimeout(boot, 400);
-    setTimeout(boot, 1200);
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
   var tries = 0;
-  var t = setInterval(function () {
-    hookShowView();
-    hookOpenPage();
-    if (isReaderActive()) applyReaderChrome();
-    if (++tries > 50) clearInterval(t);
+  var timer = setInterval(function () {
+    boot();
+    if (++tries > 25) clearInterval(timer);
   }, 200);
 })();
