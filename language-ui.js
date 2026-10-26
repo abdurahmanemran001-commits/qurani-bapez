@@ -1,46 +1,9 @@
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
-  function loadMadani() {
-    if (document.getElementById('madani-ayah-script')) return;
-    var s = document.createElement('script');
-    s.id = 'madani-ayah-script';
-    s.src = 'madani-ayah.js?v=16';
-    s.async = false;
-    s.onload = function () {
-      // Force attach after script is ready
-      setTimeout(forceMadaniPage, 100);
-      setTimeout(forceMadaniPage, 600);
-      setTimeout(forceMadaniPage, 1500);
-    };
-    document.head.appendChild(s);
-  }
-
-  function forceMadaniPage() {
-    try {
-      var reader = document.getElementById('reader');
-      if (!reader || !reader.classList.contains('active')) return;
-      var p = 1;
-      try {
-        p = +localStorage.getItem('preview_page') || 1;
-      } catch (e) {}
-      var input = document.getElementById('pageInput');
-      if (input && input.value) p = +input.value || p;
-      // Re-trigger openPage so madani hooks run
-      if (typeof window.openPage === 'function') {
-        var img = document.getElementById('pageImg');
-        // Only call show path if madani installed
-        if (window.__madaniAyahInstalled && img) {
-          // dispatch a synthetic path by toggling src if needed
-          var src = img.src || '';
-          if (src) {
-            img.src = src.split('?')[0] + '?t=' + Date.now();
-          }
-        }
-      }
-    } catch (e) {}
-  }
-
-  loadMadani();
+  var s = document.createElement('script');
+  s.src = 'madani-ayah.js?v=17';
+  s.async = true;
+  document.head.appendChild(s);
 
   var style = document.createElement('style');
   style.id = 'immersive-mushaf-css';
@@ -91,10 +54,6 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
       var ret = orig.apply(this, arguments);
       setTimeout(applyReaderChrome, 0);
       setTimeout(applyReaderChrome, 100);
-      if (id === 'reader') {
-        setTimeout(forceMadaniPage, 200);
-        setTimeout(forceMadaniPage, 800);
-      }
       return ret;
     };
     window.showView.__quranHooked = true;
@@ -108,15 +67,12 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
       setTimeout(applyReaderChrome, 0);
       setTimeout(applyReaderChrome, 120);
       setTimeout(applyReaderChrome, 500);
-      setTimeout(forceMadaniPage, 300);
-      setTimeout(forceMadaniPage, 900);
       return ret;
     };
     window.openPage.__chromeHooked = true;
   }
 
   function boot() {
-    loadMadani();
     hookShowView();
     hookOpenPage();
     applyReaderChrome();
