@@ -1,4 +1,4 @@
-/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v9 */
+/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v14 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
@@ -104,7 +104,6 @@
       overlay.id = 'madaniOverlay';
       overlay.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;z-index:5;';
       wrap.appendChild(overlay);
-
       overlay.addEventListener('click', onTap);
       overlay.addEventListener('touchend', function (e) {
         e.preventDefault();
@@ -158,8 +157,7 @@
         var idx = -1;
         for (var i = 0; i < pageAyahOrder.length; i++) {
           if (pageAyahOrder[i].sura === current.sura && pageAyahOrder[i].ayah === current.ayah) {
-            idx = i;
-            break;
+            idx = i; break;
           }
         }
         if (idx >= 0 && idx + 1 < pageAyahOrder.length) {
@@ -170,8 +168,9 @@
     }
 
     if (!reciters.length) {
-      fetch('web/mushaf/reciters.json')
-        .then(function (r) { return r.json(); })
+      fetch('mushaf/reciters.json')
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .catch(function () { return fetch('web/mushaf/reciters.json').then(function (r) { return r.json(); }); })
         .then(function (j) {
           reciters = j || [];
           try {
@@ -319,9 +318,7 @@
       var url2 = audioUrlAyah(m, sura, ayah);
       audio.src = url2;
       audio.load();
-      var tryPlay = function () {
-        audio.play().catch(function () {});
-      };
+      var tryPlay = function () { audio.play().catch(function () {}); };
       if (audio.readyState >= 2) tryPlay();
       else audio.addEventListener('canplay', tryPlay, { once: true });
     }
@@ -330,7 +327,7 @@
   function loadBounds(page) {
     pageBounds = null;
     pageAyahOrder = [];
-    fetch('madani-bounds/' + page + '.json')
+    fetch('madani-bounds/' + pad(page, 3) + '.json')
       .then(function (r) { if (!r.ok) throw 0; return r.json(); })
       .then(function (data) {
         pageBounds = data;
@@ -357,10 +354,7 @@
         if (h) overlay.style.height = h + 'px';
       }
     }
-    function ready() {
-      sync();
-      loadBounds(page);
-    }
+    function ready() { sync(); loadBounds(page); }
     if (img.complete && img.naturalHeight) ready();
     else img.addEventListener('load', ready, { once: true });
     setTimeout(sync, 100);
@@ -402,14 +396,10 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 50);
-      setTimeout(boot, 500);
-      setTimeout(boot, 1500);
+      setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
     });
   } else {
-    setTimeout(boot, 50);
-    setTimeout(boot, 500);
-    setTimeout(boot, 1500);
+    setTimeout(boot, 50); setTimeout(boot, 500); setTimeout(boot, 1500);
   }
   var tries = 0;
   var t = setInterval(function () {
