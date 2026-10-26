@@ -5,10 +5,10 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
-  /* ayah menu (play / share / tafsir) + show-hide player on tap; if this file fails to load,
+  /* ayah toolbar (bookmark / share / tafsir / play) + show-hide player on tap; if this file fails to load,
      tapping an ayah simply plays it like before */
   var s2 = document.createElement('script');
-  s2.src = 'mushaf/ayah-actions.js?v=1';
+  s2.src = 'mushaf/ayah-actions.js?v=2';
   s2.async = true;
   document.head.appendChild(s2);
 
