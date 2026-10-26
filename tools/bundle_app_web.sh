@@ -9,7 +9,10 @@ cp index.html language.js language-ui.js madani-ayah.js icon.svg manifest.webman
 if [ -d madani-timing ]; then cp -r madani-timing "$OUT/"; fi
 # mushaf/, azkar*.json ... produced by assemble_web.sh
 cp -r "$SRC/." "$OUT/"
+# ayah tap areas for the reader (without these, tapping an ayah does nothing)
+bash tools/build_madani_bounds.sh "$OUT/madani-bounds"
 test -s "$OUT/index.html"
 test -s "$OUT/language.js"
 test -s "$OUT/mushaf/index.html"
+test -s "$OUT/madani-bounds/001.json"
 echo "bundled app web: $(du -sh "$OUT" | cut -f1)"
