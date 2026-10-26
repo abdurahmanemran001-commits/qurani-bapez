@@ -1,4 +1,4 @@
-/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v15 */
+/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v16 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
@@ -9,6 +9,7 @@
   var pageBounds = null, pageAyahOrder = [], lastPage = -1, hlEls = [];
   var timingCache = {};
   var watchTimer = null;
+  var pendingNext = null, sharedAudio = null;
 
   var AYAH_COUNT = [0,7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
 
@@ -16,6 +17,12 @@
     n = String(n);
     while (n.length < w) n = '0' + n;
     return n;
+  }
+
+  /* One audio element is reused for ayah-by-ayah playback, so phones keep allowing it to play on its own */
+  function getAudio() {
+    if (!sharedAudio) sharedAudio = new Audio();
+    return sharedAudio;
   }
 
   function recMeta() {
@@ -127,7 +134,14 @@
           }
           if (hit) break;
         }
-        if (hit) { var p = hit.split(':'); playAyah(+p[0], +p[1]); }
+        if (hit) {
+          var p = hit.split(':');
+          /* ayah menu (ayah-actions.js) if present, otherwise play straight away */
+          if (typeof window.__onAyahTap === 'function') window.__onAyahTap(+p[0], +p[1]);
+          else playAyah(+p[0], +p[1]);
+        } else if (typeof window.__onBlankTap === 'function') {
+          window.__onBlankTap();
+        }
       }
       overlay.addEventListener('click', onTap, true);
       overlay.addEventListener('touchend', function (e) {
@@ -138,7 +152,8 @@
     if (!playerBar) {
       playerBar = document.createElement('div');
       playerBar.id = 'madaniPlayer';
-      playerBar.style.cssText = 'display:flex;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;gap:8px;align-items:center;flex-wrap:wrap;';
+      /* hidden until the page is tapped (see __madani.togglePlayer) */
+      playerBar.style.cssText = 'display:none;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;gap:8px;align-items:center;flex-wrap:wrap;';
       playerBar.innerHTML = '<select id="madaniReciter" style="flex:1;min-width:160px;padding:6px;border-radius:8px;border:0"></select><button id="madaniPlay" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#ffd54f;color:#173f35;font-weight:bold;cursor:pointer">▶</button><span id="madaniLabel" style="min-width:70px;text-align:center">—</span>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
       var sel = playerBar.querySelector('#madaniReciter');
@@ -203,6 +218,10 @@
         drawHighlight(sura, curA);
         var lab = playerBar && playerBar.querySelector('#madaniLabel');
         if (lab) lab.textContent = sura + ' : ' + curA;
+        /* the recitation moved on to the next page: turn the page */
+        if (pageBounds && !pageBounds[sura + ':' + curA] && lastPage > 0 && lastPage < 604 && typeof window.openPage === 'function') {
+          window.openPage(lastPage + 1);
+        }
       }
     }, 150);
   }
@@ -252,16 +271,18 @@
   function playAyah(sura, ayah) {
     sura = +sura; ayah = +ayah;
     current = { sura: sura, ayah: ayah };
+    pendingNext = null;
     drawHighlight(sura, ayah); stopWatch();
     if (playerBar) {
-      playerBar.style.display = 'flex';
       var lab = playerBar.querySelector('#madaniLabel'); if (lab) lab.textContent = sura + ' : ' + ayah;
       var btn = playerBar.querySelector('#madaniPlay'); if (btn) btn.textContent = '⏸';
     }
     if (audio) { try { audio.onended = null; audio.onerror = null; audio.pause(); } catch (e) {} }
     var m = recMeta();
     if (m && m.t === 'g' && m.u) { loadTimings(m, sura, function (map) { playGapless(m, sura, ayah, map); }); return; }
-    audio = new Audio(audioUrlAyah(sura, ayah));
+    audio = getAudio();
+    audio.onended = null; audio.onerror = null;
+    audio.src = audioUrlAyah(sura, ayah);
     audio.onerror = function () {
       setStatus('دەنگ بار نەبوو');
       var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶';
@@ -276,7 +297,11 @@
         if (pageAyahOrder[i].sura === sura && pageAyahOrder[i].ayah === ayah && i + 1 < pageAyahOrder.length) { next = pageAyahOrder[i + 1]; break; }
       }
       if (next) playAyah(next.sura, next.ayah);
-      else { if (b) b.textContent = '▶'; clearHighlight(); }
+      else if (window.__madaniContinue !== false && lastPage > 0 && lastPage < 604 && typeof window.openPage === 'function') {
+        /* last ayah of the page: go to the next page and keep reading */
+        pendingNext = { sura: sura, ayah: ayah };
+        window.openPage(lastPage + 1);
+      } else { if (b) b.textContent = '▶'; clearHighlight(); }
     };
   }
 
@@ -287,7 +312,19 @@
         var p = k.split(':'); return { sura: +p[0], ayah: +p[1] };
       }).sort(function (a, b) { return a.sura - b.sura || a.ayah - b.ayah; });
       setStatus('پەنجە لەسەر ئایەت → هایلایت + دەنگ');
-    }).catch(function () { pageBounds = null; });
+      if (pendingNext) {
+        var last = pendingNext, nx = null;
+        pendingNext = null;
+        for (var i = 0; i < pageAyahOrder.length; i++) {
+          var o = pageAyahOrder[i];
+          if (o.sura > last.sura || (o.sura === last.sura && o.ayah > last.ayah)) { nx = o; break; }
+        }
+        if (!nx && pageAyahOrder.length) nx = pageAyahOrder[0];
+        if (nx) playAyah(nx.sura, nx.ayah);
+      } else if (current) {
+        drawHighlight(current.sura, current.ayah);
+      }
+    }).catch(function () { pageBounds = null; pendingNext = null; });
   }
 
   function showPage(page) {
@@ -335,6 +372,24 @@
       }
     } catch (e) {}
   }
+
+  /* Small API used by ayah-actions.js (menu: play / share / tafsir, show-hide player) */
+  window.__madani = {
+    play: playAyah,
+    mark: function (s, a) { current = { sura: +s, ayah: +a }; drawHighlight(+s, +a); var lab = playerBar && playerBar.querySelector('#madaniLabel'); if (lab) lab.textContent = s + ' : ' + a; },
+    clearMark: function () { if (!audio || audio.paused) clearHighlight(); },
+    pause: function () {
+      if (audio && !audio.paused) { audio.pause(); stopWatch(); var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶'; }
+    },
+    current: function () { return current; },
+    togglePlayer: function (show) {
+      if (!playerBar) return false;
+      var on = typeof show === 'boolean' ? show : playerBar.style.display === 'none';
+      playerBar.style.display = on ? 'flex' : 'none';
+      return on;
+    },
+    playerVisible: function () { return !!playerBar && playerBar.style.display !== 'none'; }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
