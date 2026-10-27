@@ -10,9 +10,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s2.async = true;
   document.head.appendChild(s2);
 
-  /* Zikr: chapter-level bookmarks next to settings + reset + Badini */
   var s3 = document.createElement('script');
-  s3.src = 'zikr-enhance.js?v=2';
+  s3.src = 'zikr-enhance.js?v=4';
   s3.async = true;
   document.head.appendChild(s3);
 
