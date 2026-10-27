@@ -28,7 +28,7 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js icon.svg manifest.webmanifest sw.js dist/
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js icon.svg manifest.webmanifest sw.js dist/
           # ship any prebuilt timing JSON already in repo
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
