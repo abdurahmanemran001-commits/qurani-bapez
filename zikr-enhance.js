@@ -1,40 +1,7 @@
-/* zikr-enhance.js v3 — chapter bookmarks + reset; robust DOM inject */
+/* zikr-enhance.js v4 — bookmarks beside settings, search, notifications */
 (function () {
-  if (window.__zikrEnhanceV3) return;
-  window.__zikrEnhanceV3 = true;
-
-  var WORD_MAP = [
-    [/\bخوایە\b/g, 'يا خودێ'], [/\bخوا\b/g, 'خودێ'],
-    [/\bپەروەردگارمان\b/g, 'خودايێ مە'], [/\bپەروەردگار\b/g, 'خودايێ'],
-    [/\bمن\b/g, 'ئەز'], [/\bئێمە\b/g, 'ئەم'],
-    [/\bبۆ ئەوەی\b/g, 'داكو'], [/\bلەگەڵ\b/g, 'دگەل'], [/\bلە\b/g, 'ژ'],
-    [/\bداوای\b/g, 'داخوازا'], [/\bدەکەم\b/g, 'دکەم'], [/\bدەکات\b/g, 'دکەت'],
-    [/\bپەنا دەگرم بە تۆ\b/g, 'ئەز خۆ ب تە دپارێزم'],
-    [/\bبەهەشت\b/g, 'بەحەشتێ'], [/\bئاگر\b/g, 'ئاگری'],
-    [/\bستایش\b/g, 'سوپاس'], [/\bپاک و بێگەردی\b/g, 'پاکی و پاقژی'],
-    [/\bیارمەتیم بدە\b/g, 'هاریکاریا من بکە'], [/\bڕێنماییم بکە\b/g, 'من ڕاستەڕێ بکە'],
-    [/\bساغم بکە\b/g, 'من سلامەت بکە'], [/\bبەڕاستی\b/g, 'ب ڕاستی'],
-    [/\bزۆر\b/g, 'زێدە'], [/\bپاشان\b/g, 'پاشی'], [/\bدوای\b/g, 'پشتی'],
-    [/\bسوپاست بکەم\b/g, 'شوکرا تە بکەم'], [/\bیادت بکەم\b/g, 'زکرێ تە بکەم']
-  ];
-  function toBadini(ckb) {
-    if (!ckb) return '';
-    var s = String(ckb);
-    WORD_MAP.forEach(function (p) { s = s.replace(p[0], p[1]); });
-    return s.replace(/ڵ/g, 'ل');
-  }
-  function fillBadini(data) {
-    if (!Array.isArray(data)) return;
-    data.forEach(function (cat) {
-      if (!(cat.bad && String(cat.bad).trim()) && cat.ckb) cat.bad = toBadini(cat.ckb);
-      (cat.chapters || []).forEach(function (ch) {
-        if (!(ch.bad && String(ch.bad).trim()) && ch.ckb) ch.bad = toBadini(ch.ckb);
-        (ch.items || []).forEach(function (it) {
-          if (!(it.bad && String(it.bad).trim()) && it.ckb) it.bad = toBadini(it.ckb);
-        });
-      });
-    });
-  }
+  if (window.__zikrEnhanceV4) return;
+  window.__zikrEnhanceV4 = true;
 
   function loadMarks() {
     try { return JSON.parse(localStorage.getItem('zikr_chap_marks') || '[]'); } catch (e) { return []; }
@@ -64,52 +31,62 @@
     var st = document.createElement('style');
     st.id = 'zikrMarksCss';
     st.textContent = [
-      '#zikrMarksBtn,#zikrMarksBtn2{position:relative;color:#b48a3c!important;font-size:20px!important}',
-      '#zikrMarksBtn::after,#zikrMarksBtn2::after{content:attr(data-n);position:absolute;top:-4px;left:-4px;',
-      '  background:#b48a3c;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;',
-      '  display:flex;align-items:center;justify-content:center;padding:0 3px}',
-      '#zikrMarksBtn[data-n="0"]::after,#zikrMarksBtn2[data-n="0"]::after{display:none}',
+      '.dhikr-toolbar-right{display:flex!important;align-items:center;gap:8px;flex-direction:row}',
+      '.dhikr-toolbar{display:flex!important;align-items:center;justify-content:space-between!important}',
+      '[data-zikr-marks]{position:relative;color:#b48a3c!important;font-size:20px!important;flex:0 0 auto}',
+      '[data-zikr-marks]::after{content:attr(data-n);position:absolute;top:-4px;left:-4px;background:#b48a3c;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}',
+      '[data-zikr-marks][data-n="0"]::after{display:none}',
       '.zchap-mark{border:0;background:transparent;font-size:22px;cursor:pointer;color:#71857a;padding:0 6px;line-height:1}',
       '.zchap-mark.on{color:#b48a3c}',
-      '.zchap-mark-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;',
-      '  margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf5e7;border:1px solid #e4d5ad}',
-      '.zreset{width:52px;height:52px;border:0;border-radius:50%;background:#6b7c74;color:#fff;font-size:22px;cursor:pointer;flex:0 0 auto}'
+      '.zchap-mark-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf5e7;border:1px solid #e4d5ad}',
+      '.zreset{width:52px;height:52px;border:0;border-radius:50%;background:#6b7c74;color:#fff;font-size:22px;cursor:pointer;flex:0 0 auto}',
+      '#zikrSearchWrap{margin:10px 0 0}',
+      '#zikrSearch{width:100%;border:1px solid #dce5e1;border-radius:12px;padding:11px 14px;background:#fff;outline:none;font-size:14px}',
+      '.zikr-notif-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid #dce5e1;border-radius:12px;background:#fff;margin-top:8px}',
+      '.zikr-notif-row b{display:block;font-size:14px}',
+      '.zikr-notif-row small{display:block;color:#6d7975;font-size:12px;margin-top:3px}',
+      '.zikr-switch{position:relative;width:48px;height:28px;flex:0 0 48px}',
+      '.zikr-switch input{opacity:0;width:0;height:0}',
+      '.zikr-switch span{position:absolute;inset:0;background:#c5cec9;border-radius:28px;cursor:pointer;transition:.2s}',
+      '.zikr-switch span:before{content:"";position:absolute;width:22px;height:22px;right:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}',
+      '.zikr-switch input:checked+span{background:#176b4b}',
+      '.zikr-switch input:checked+span:before{transform:translateX(-20px)}'
     ].join('');
     document.head.appendChild(st);
   }
 
-  function makeMarksBtn(id) {
-    var btn = document.createElement('button');
-    btn.id = id;
-    btn.type = 'button';
-    btn.className = 'dhikr-settings-icon';
-    btn.title = 'نیشانکراوەکان';
-    btn.setAttribute('aria-label', 'نیشانکراوەکان');
-    btn.textContent = '★';
-    btn.setAttribute('data-n', String(marksCount()));
-    btn.onclick = function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      zikrShowChapMarks();
-    };
-    return btn;
-  }
-
   function ensureToolbarIcons() {
     injectCss();
-    var bars = document.querySelectorAll('.dhikr-toolbar');
-    bars.forEach(function (bar, idx) {
-      var id = idx === 0 ? 'zikrMarksBtn' : 'zikrMarksBtn2';
-      var existing = bar.querySelector('[data-zikr-marks]');
+    document.querySelectorAll('.dhikr-toolbar').forEach(function (bar, idx) {
+      var right = bar.querySelector('.dhikr-toolbar-right');
+      if (!right) {
+        right = document.createElement('div');
+        right.className = 'dhikr-toolbar-right';
+        bar.querySelectorAll('.dhikr-settings-icon').forEach(function (g) {
+          if (!g.getAttribute('data-zikr-marks')) right.appendChild(g);
+        });
+        bar.appendChild(right);
+      }
+      var existing = right.querySelector('[data-zikr-marks]');
       if (existing) {
         existing.setAttribute('data-n', String(marksCount()));
         return;
       }
-      var btn = makeMarksBtn(id);
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'dhikr-settings-icon';
+      btn.title = 'نیشانکراوەکان';
       btn.setAttribute('data-zikr-marks', '1');
-      var gear = bar.querySelector('.dhikr-settings-icon');
-      if (gear) bar.insertBefore(btn, gear);
-      else bar.appendChild(btn);
+      btn.setAttribute('data-n', String(marksCount()));
+      btn.textContent = '★';
+      btn.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        zikrShowChapMarks();
+      };
+      var gear = right.querySelector('.dhikr-settings-icon:not([data-zikr-marks])');
+      if (gear) right.insertBefore(btn, gear);
+      else right.appendChild(btn);
     });
   }
 
@@ -118,6 +95,21 @@
       b.setAttribute('data-n', String(marksCount()));
     });
   }
+
+  window.zikrToggleChap = function (c, h, btn) {
+    var name = '', count = 0;
+    try {
+      var ch = window.azkar[c].chapters[h];
+      name = (typeof pick === 'function' ? pick(ch, window.zlang || 'ckb') : null) || ch.ckb || ch.ar || '';
+      count = (ch.items && ch.items.length) || 0;
+    } catch (e) {}
+    var on = toggleChapMark(c, h, name, count);
+    if (btn) {
+      btn.textContent = on ? '★' : '☆';
+      btn.classList.toggle('on', on);
+    }
+    return on;
+  };
 
   window.zikrShowChapMarks = async function () {
     ensureToolbarIcons();
@@ -132,13 +124,11 @@
     var list = document.getElementById('detailList');
     if (!list) return;
     if (!marks.length) {
-      list.innerHTML = '<div class="card muted">هیچ بەشێک نیشان نەکراوە.<br>لە لیست یان ناو بەش (وەک ویردی بەیانیان) دوگمەی ★ دابگرە بۆ نیشانەکردنی <b>هەمووی</b>.</div>';
-      ensureToolbarIcons();
+      list.innerHTML = '<div class="card muted">هیچ بەشێک نیشان نەکراوە.</div>';
       return;
     }
     list.innerHTML = marks.map(function (m) {
-      var name = m.name || '';
-      var n = m.count || 0;
+      var name = m.name || '', n = m.count || 0;
       try {
         var ch = data[m.c].chapters[m.h];
         if (ch) {
@@ -146,41 +136,184 @@
           n = (ch.items && ch.items.length) || n;
         }
       } catch (e) {}
-      return (
-        '<div class="zikr-item" style="display:flex;align-items:center;gap:8px">' +
-        '<div style="flex:1;cursor:pointer" onclick="openChapter(' + m.c + ',' + m.h + ')">' +
-        '<b>' + (typeof esc === 'function' ? esc(name) : name) + '</b>' +
-        '<div class="muted">' + n + ' زیکر · کلیک = کردنەوە</div></div>' +
-        '<button type="button" class="zchap-mark on" title="لابردنی نیشانە" ' +
-        'onclick="event.stopPropagation();zikrToggleChap(' + m.c + ',' + m.h + ',this);setTimeout(zikrShowChapMarks,40)">★</button>' +
-        '</div>'
-      );
+      return '<div class="zikr-item" style="display:flex;align-items:center;gap:8px"><div style="flex:1;cursor:pointer" onclick="openChapter(' +
+        m.c + ',' + m.h + ')"><b>' + (typeof esc === 'function' ? esc(name) : name) + '</b><div class="muted">' +
+        n + ' زیکر</div></div><button type="button" class="zchap-mark on" onclick="event.stopPropagation();zikrToggleChap(' +
+        m.c + ',' + m.h + ',this);setTimeout(zikrShowChapMarks,40)">★</button></div>';
     }).join('');
-    ensureToolbarIcons();
   };
 
-  window.zikrToggleChap = function (c, h, btn) {
-    var name = '', count = 0;
-    try {
-      var data = window.azkar;
-      var ch = data[c].chapters[h];
-      name = (typeof pick === 'function' ? pick(ch, window.zlang || 'ckb') : null) || ch.ckb || ch.ar || '';
-      count = (ch.items && ch.items.length) || 0;
-    } catch (e) {}
-    var on = toggleChapMark(c, h, name, count);
-    if (btn) {
-      btn.textContent = on ? '★' : '☆';
-      btn.classList.toggle('on', on);
-      btn.title = on ? 'لابردنی نیشانە' : 'نیشانەکردنی هەموو ئەم بەشە';
+  function ensureSearch() {
+    var zikr = document.getElementById('zikr');
+    var list = document.getElementById('zikrList');
+    if (!zikr || !list || document.getElementById('zikrSearchWrap')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'zikrSearchWrap';
+    wrap.innerHTML = '<input id="zikrSearch" type="search" placeholder="گەڕان لە زیکرەکان..." autocomplete="off">';
+    var lang = document.getElementById('langBtn');
+    if (lang && lang.parentNode === zikr) lang.insertAdjacentElement('afterend', wrap);
+    else list.parentNode.insertBefore(wrap, list);
+    var input = wrap.querySelector('#zikrSearch');
+    var timer = null;
+    input.addEventListener('input', function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () { applySearch(input.value); }, 180);
+    });
+  }
+
+  async function applySearch(q) {
+    q = (q || '').trim().toLowerCase();
+    var box = document.getElementById('zikrList');
+    if (!box) return;
+    if (!q) {
+      if (typeof zcat === 'number' && zcat >= 0 && typeof openCategory === 'function') openCategory(zcat);
+      else if (typeof showCategories === 'function') showCategories();
+      return;
     }
-    return on;
-  };
+    var data = typeof ensureAzkar === 'function' ? await ensureAzkar() : window.azkar;
+    if (!data) return;
+    var hits = [];
+    data.forEach(function (cat, ci) {
+      (cat.chapters || []).forEach(function (ch, hi) {
+        var names = [cat.ar, cat.ckb, cat.bad, ch.ar, ch.ckb, ch.bad]
+          .concat((ch.items || []).map(function (it) { return (it.ar || '') + ' ' + (it.ckb || '') + ' ' + (it.bad || ''); }))
+          .join(' ').toLowerCase();
+        if (names.indexOf(q) >= 0) {
+          var title = (typeof pick === 'function' ? pick(ch, window.zlang || 'ckb') : null) || ch.ckb || ch.ar || '';
+          var catTitle = (typeof pick === 'function' ? pick(cat, window.zlang || 'ckb') : null) || cat.ckb || cat.ar || '';
+          hits.push({ c: ci, h: hi, title: title, cat: catTitle, n: (ch.items && ch.items.length) || 0 });
+        }
+      });
+    });
+    if (!hits.length) {
+      box.innerHTML = '<div class="card muted">هیچ ئەنجامێک نەدۆزرایەوە.</div>';
+      return;
+    }
+    box.innerHTML = hits.slice(0, 80).map(function (h) {
+      return '<div class="zikr-item" style="display:flex;align-items:center;gap:8px"><div style="flex:1;cursor:pointer" onclick="openChapter(' +
+        h.c + ',' + h.h + ')"><b>' + (typeof esc === 'function' ? esc(h.title) : h.title) + '</b><div class="muted">' +
+        (typeof esc === 'function' ? esc(h.cat) : h.cat) + ' · ' + h.n + ' زیکر</div></div><button type="button" class="zchap-mark' +
+        (isChapMarked(h.c, h.h) ? ' on' : '') + '" onclick="event.stopPropagation();zikrToggleChap(' + h.c + ',' + h.h +
+        ',this)">' + (isChapMarked(h.c, h.h) ? '★' : '☆') + '</button></div>';
+    }).join('');
+  }
+
+  var NOTIF_DEFAULTS = { master: true, morning: true, evening: true, sleep: true, morningTime: '06:30', eveningTime: '17:45', sleepTime: '21:30' };
+  var notifTimers = [];
+  function loadNotifPrefs() {
+    try { return Object.assign({}, NOTIF_DEFAULTS, JSON.parse(localStorage.getItem('zikr_notif_prefs') || '{}')); }
+    catch (e) { return Object.assign({}, NOTIF_DEFAULTS); }
+  }
+  function saveNotifPrefs(p) {
+    try { localStorage.setItem('zikr_notif_prefs', JSON.stringify(p)); } catch (e) {}
+  }
+  function msUntilTime(hhmm) {
+    var parts = String(hhmm || '06:30').split(':');
+    var h = +parts[0] || 0, m = +parts[1] || 0;
+    var now = new Date();
+    var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+    if (target <= now) target.setDate(target.getDate() + 1);
+    return target - now;
+  }
+  function showLocalNotif(title, body, tag) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      var n = new Notification(title, { body: body, tag: tag || 'zikr', lang: 'ku', dir: 'rtl', icon: 'icon.svg' });
+      n.onclick = function () {
+        window.focus();
+        try { if (typeof enterDhikr === 'function') enterDhikr(); } catch (e) {}
+        n.close();
+      };
+    } catch (e) {
+      try {
+        navigator.serviceWorker.getRegistration().then(function (reg) {
+          if (reg) reg.showNotification(title, { body: body, tag: tag || 'zikr', icon: 'icon.svg' });
+        });
+      } catch (e2) {}
+    }
+  }
+  function clearNotifTimers() {
+    notifTimers.forEach(function (id) { clearTimeout(id); });
+    notifTimers = [];
+  }
+  function scheduleOne(key, title, body, hhmm) {
+    var delay = msUntilTime(hhmm);
+    var id = setTimeout(function () {
+      showLocalNotif(title, body, 'zikr-' + key);
+      scheduleOne(key, title, body, hhmm);
+    }, Math.min(delay, 2147483647));
+    notifTimers.push(id);
+  }
+  function rescheduleNotifications() {
+    clearNotifTimers();
+    var p = loadNotifPrefs();
+    if (!p.master) return;
+    if (p.morning) scheduleOne('morning', 'زیکری بەیانیان', 'کاتی ویردی بەیانیانە.', p.morningTime);
+    if (p.evening) scheduleOne('evening', 'زیکری ئێواران', 'پێش مەغریب — ویردی ئێواران.', p.eveningTime);
+    if (p.sleep) scheduleOne('sleep', 'زیکری خەوتن', 'پێش خەوتن — ویردی خەوتن.', p.sleepTime);
+  }
+  async function ensureNotifPermission() {
+    if (!('Notification' in window)) return false;
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') return false;
+    try { return (await Notification.requestPermission()) === 'granted'; } catch (e) { return false; }
+  }
+  function switchHtml(id, checked) {
+    return '<label class="zikr-switch"><input type="checkbox" id="' + id + '"' + (checked ? ' checked' : '') + '><span></span></label>';
+  }
+  function injectNotifSettings() {
+    var modal = document.getElementById('dhikrSettingsModal');
+    if (!modal) return;
+    var sheet = modal.querySelector('.sheet');
+    if (!sheet || sheet.querySelector('#zikrNotifBlock')) return;
+    var p = loadNotifPrefs();
+    var block = document.createElement('div');
+    block.id = 'zikrNotifBlock';
+    block.innerHTML =
+      '<hr style="border:0;border-top:1px solid #dce5e1;margin:16px 0">' +
+      '<label style="font-weight:bold;display:block;margin-bottom:6px">🔔 ئاگادارکردنەوەی زیکر</label>' +
+      '<p class="muted" style="margin:0 0 8px;font-size:12px">دەتوانیت هەریەکەیان بکوژێنیتەوە یان هەڵبگریت.</p>' +
+      '<div class="zikr-notif-row"><div><b>هەموو ئاگادارکردنەوەکان</b><small>کوژاندنەوەی گشتی</small></div>' + switchHtml('znMaster', p.master) + '</div>' +
+      '<div class="zikr-notif-row"><div><b>زیکری بەیانیان</b><small>کات: ' + p.morningTime + '</small></div>' + switchHtml('znMorning', p.morning) + '</div>' +
+      '<div class="zikr-notif-row"><div><b>زیکری ئێواران (پێش مەغریب)</b><small>کات: ' + p.eveningTime + '</small></div>' + switchHtml('znEvening', p.evening) + '</div>' +
+      '<div class="zikr-notif-row"><div><b>زیکری خەوتن</b><small>کات: ' + p.sleepTime + '</small></div>' + switchHtml('znSleep', p.sleep) + '</div>' +
+      '<button type="button" class="primary" id="znTestBtn" style="width:100%;margin-top:10px">تاقیکردنەوەی ئاگادارکردنەوە</button>';
+    var lastBtn = sheet.querySelector('button.primary:last-of-type');
+    if (lastBtn) sheet.insertBefore(block, lastBtn);
+    else sheet.appendChild(block);
+    ['znMaster', 'znMorning', 'znEvening', 'znSleep'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el || el.__bound) return;
+      el.__bound = true;
+      el.addEventListener('change', async function () {
+        var p2 = loadNotifPrefs();
+        p2.master = !!(document.getElementById('znMaster') || {}).checked;
+        p2.morning = !!(document.getElementById('znMorning') || {}).checked;
+        p2.evening = !!(document.getElementById('znEvening') || {}).checked;
+        p2.sleep = !!(document.getElementById('znSleep') || {}).checked;
+        saveNotifPrefs(p2);
+        if (p2.master && (p2.morning || p2.evening || p2.sleep)) {
+          var ok = await ensureNotifPermission();
+          if (!ok) alert('تکایە ڕێگە بە ئاگادارکردنەوە بدە لە ڕێکخستنی وێبگەڕ.');
+        }
+        rescheduleNotifications();
+      });
+    });
+    var test = document.getElementById('znTestBtn');
+    if (test && !test.__bound) {
+      test.__bound = true;
+      test.onclick = async function () {
+        var ok = await ensureNotifPermission();
+        if (!ok) { alert('ڕێگە بە ئاگادارکردنەوە نەدرا.'); return; }
+        showLocalNotif('زیکرەکانم', 'ئاگادارکردنەوە کار دەکات ✓', 'zikr-test');
+      };
+    }
+  }
 
   function enhanceCategoryList() {
     var box = document.getElementById('zikrList');
     if (!box) return;
-    var items = box.querySelectorAll('.zikr-item');
-    items.forEach(function (el) {
+    box.querySelectorAll('.zikr-item').forEach(function (el) {
       if (el.querySelector('.zchap-mark')) return;
       var onclk = el.getAttribute('onclick') || '';
       var m = onclk.match(/openChapter\(\s*(\d+)\s*,\s*(\d+)\s*\)/);
@@ -200,7 +333,6 @@
       star.type = 'button';
       star.className = 'zchap-mark' + (isChapMarked(c, h) ? ' on' : '');
       star.textContent = isChapMarked(c, h) ? '★' : '☆';
-      star.title = 'نیشانەکردنی هەموو ئەم بەشە';
       star.onclick = function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -217,12 +349,9 @@
       var bar = document.createElement('div');
       bar.className = 'zchap-mark-bar';
       var on = isChapMarked(i, j);
-      bar.innerHTML =
-        '<span style="font-size:14px;color:#5a4a2a">نیشانەکردنی <b>هەموو</b> ئەم بەشە</span>' +
-        '<button type="button" class="zchap-mark' + (on ? ' on' : '') + '" style="font-size:28px">' +
-        (on ? '★' : '☆') + '</button>';
-      var starBtn = bar.querySelector('button');
-      starBtn.onclick = function () { zikrToggleChap(i, j, starBtn); };
+      bar.innerHTML = '<span style="font-size:14px;color:#5a4a2a">نیشانەکردنی <b>هەموو</b> ئەم بەشە</span><button type="button" class="zchap-mark' +
+        (on ? ' on' : '') + '" style="font-size:28px">' + (on ? '★' : '☆') + '</button>';
+      bar.querySelector('button').onclick = function () { zikrToggleChap(i, j, bar.querySelector('button')); };
       list.insertBefore(bar, list.firstChild);
     }
     list.querySelectorAll('.card .counter').forEach(function (counter) {
@@ -262,72 +391,62 @@
   }
 
   function boot() {
-    if (typeof window.ensureAzkar === 'function' && !window.ensureAzkar.__ze3) {
-      var o = window.ensureAzkar;
-      window.ensureAzkar = async function () {
-        var data = await o.apply(this, arguments);
-        fillBadini(data);
-        return data;
-      };
-      window.ensureAzkar.__ze3 = true;
-    }
-    patch('openChapter', '__ze3', function (args) {
+    patch('openChapter', '__ze4', function (args) {
       enhanceChapterView(args[0], args[1]);
       ensureToolbarIcons();
     });
-    patch('openCategory', '__ze3', function () {
+    patch('openCategory', '__ze4', function () {
       enhanceCategoryList();
       ensureToolbarIcons();
+      ensureSearch();
     });
-    patch('showCategories', '__ze3', function () {
+    patch('showCategories', '__ze4', function () {
       ensureToolbarIcons();
+      ensureSearch();
     });
-    patch('showZikr', '__ze3', function () {
+    patch('showZikr', '__ze4', function () {
       ensureToolbarIcons();
+      ensureSearch();
+    });
+    patch('openDhikrSettings', '__ze4', function () {
+      injectNotifSettings();
     });
     ensureToolbarIcons();
+    ensureSearch();
     enhanceCategoryList();
-    if (typeof zcat === 'number' && typeof zchap === 'number' && zchap >= 0) {
-      enhanceChapterView(zcat, zchap);
-    }
-  }
-
-  function watch() {
-    if (window.__zikrMO) return;
-    try {
-      window.__zikrMO = new MutationObserver(function () {
-        ensureToolbarIcons();
-        enhanceCategoryList();
-        if (typeof zcat === 'number' && typeof zchap === 'number' && zchap >= 0) {
-          enhanceChapterView(zcat, zchap);
-        } else {
-          var list = document.getElementById('detailList');
-          if (list && list.querySelector('.counter')) enhanceChapterView(-1, -1);
-        }
-      });
-      window.__zikrMO.observe(document.body, { childList: true, subtree: true });
-    } catch (e) {}
+    injectNotifSettings();
+    rescheduleNotifications();
   }
 
   function start() {
     boot();
-    watch();
+    if (!window.__zikrMO4) {
+      try {
+        window.__zikrMO4 = new MutationObserver(function () {
+          ensureToolbarIcons();
+          ensureSearch();
+          enhanceCategoryList();
+        });
+        window.__zikrMO4.observe(document.body, { childList: true, subtree: true });
+      } catch (e) {}
+    }
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       setTimeout(start, 30);
-      setTimeout(start, 300);
-      setTimeout(start, 1000);
+      setTimeout(start, 400);
     });
   } else {
     setTimeout(start, 30);
-    setTimeout(start, 300);
-    setTimeout(start, 1000);
+    setTimeout(start, 400);
   }
   var tries = 0;
   var t = setInterval(function () {
     boot();
-    if (++tries > 50) clearInterval(t);
-  }, 200);
+    if (++tries > 40) clearInterval(t);
+  }, 250);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) rescheduleNotifications();
+  });
 })();
