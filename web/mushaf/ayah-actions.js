@@ -1,6 +1,8 @@
-/* Ayah toolbar for the reader. Loaded from language-ui.js (served as mushaf/ayah-actions.js).
-   Tap an ayah   -> floating toolbar above it: bookmark, share, tafsir, play & continue.
-   Tap elsewhere -> show / hide the reciter player (bottom); if the toolbar is open it just closes. */
+/* Reader extras. Loaded from language-ui.js (served as mushaf/ayah-actions.js).
+   - Page fills the whole screen.
+   - Tap an ayah   -> floating toolbar above it: bookmark, share, tafsir, play & continue.
+   - Tap elsewhere -> top buttons (back, tafsir of the whole surah, bookmark this page) + player at the bottom;
+                      tap again to hide them. If the toolbar is open the tap just closes it. */
 (function () {
   if (window.__ayahActionsInstalled) return;
   window.__ayahActionsInstalled = true;
@@ -43,6 +45,8 @@
   }
   function tr(k) { return T[lang()][k]; }
   function $(id) { return document.getElementById(id); }
+  function curPage() { return (typeof currentPage !== 'undefined' && currentPage) || 1; }
+  function readerActive() { var r = $('reader'); return !!(r && r.classList.contains('active')); }
 
   /* ---------- styles ---------- */
   var st = document.createElement('style');
@@ -51,8 +55,21 @@
     '#mushaf,#mushaf *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}',
     '#mushaf ::selection,#mushaf::selection{background:transparent}',
     '#mushaf{touch-action:manipulation}',
+    /* the page fills the whole screen */
+    '.phone:has(#reader.active){background:#fff}',
+    '.phone:has(#reader.active) .main{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)!important;overflow:hidden!important;height:100%!important}',
+    '.phone:has(#reader.active) #reader{height:100%}',
+    '.phone:has(#reader.active) .mushaf{height:100%!important;min-height:0!important;padding:0!important;border-radius:0!important;background:#fff!important}',
+    '.phone:has(#reader.active) .mushaf img{box-shadow:none!important;max-height:none!important}',
     /* player at the bottom */
     '#madaniPlayer{position:fixed!important;top:auto!important;bottom:calc(10px + env(safe-area-inset-bottom));left:8px;right:8px;z-index:35;margin:0!important;box-shadow:0 8px 24px #0005}',
+    'body:not(:has(#reader.active)) #madaniPlayer,body:not(:has(#reader.active)) #readerTop,body:not(:has(#reader.active)) #ayahBar{display:none!important}',
+    /* top round buttons */
+    '#readerTop{position:fixed;top:calc(10px + env(safe-area-inset-top));left:0;right:0;z-index:36;display:none;justify-content:center;gap:16px;pointer-events:none}',
+    '#readerTop.on{display:flex}',
+    '#readerTop button{pointer-events:auto;width:48px;height:48px;border-radius:50%;border:0;background:#176b4b;display:grid;place-items:center;box-shadow:0 4px 14px #0005;cursor:pointer;padding:0}',
+    '#readerTop button:active{transform:scale(.94)}',
+    '#readerTop svg{width:24px;height:24px}',
     /* floating toolbar */
     '#ayahBar{position:fixed;z-index:40;display:none;background:#2f6b45;border-radius:6px;box-shadow:0 6px 20px #0005;padding:4px;direction:ltr}',
     '#ayahBar.on{display:flex}',
@@ -72,7 +89,8 @@
     '#tafsirPanel .tp-x{border:0;border-radius:9px;padding:6px 12px;font:inherit;background:#e8f3ee;color:#173f35;cursor:pointer}',
     '#tafsirPanel select{margin:10px 12px 0;padding:10px;border:1px solid #dce5e1;border-radius:11px;background:#fff;font:inherit;color:#173f35}',
     '#tafsirPanel .tp-note{margin:6px 14px 0;color:#6d7975;font-size:12px}',
-    '#tafsirPanel .tp-body{flex:1;overflow:auto;padding:12px 14px calc(16px + env(safe-area-inset-bottom));white-space:pre-wrap;line-height:2;font-size:17px;color:#18231f;-webkit-user-select:text;user-select:text}'
+    '#tafsirPanel .tp-body{flex:1;overflow:auto;padding:12px 14px calc(16px + env(safe-area-inset-bottom));white-space:pre-wrap;line-height:2;font-size:17px;color:#18231f;-webkit-user-select:text;user-select:text}',
+    '#tafsirPanel .tp-ay{margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid #e8ece9}'
   ].join('\n');
   document.head.appendChild(st);
 
@@ -90,6 +108,10 @@
     try { if (typeof surahs !== 'undefined' && surahs[s - 1]) return surahs[s - 1][0]; } catch (e) {}
     return String(s);
   }
+  function surahStart(s) {
+    try { if (typeof surahs !== 'undefined' && surahs[s - 1]) return surahs[s - 1][3]; } catch (e) {}
+    return 1;
+  }
 
   function clean(h) {
     if (!h) return '';
@@ -99,25 +121,89 @@
     } catch (e) { return ''; }
   }
 
-  function bmKey(s, a) { return s + ':' + a; }
-  function bmList() { try { return JSON.parse(localStorage.getItem('ayah_bookmarks') || '[]'); } catch (e) { return []; } }
-  function bmHas(s, a) { return bmList().indexOf(bmKey(s, a)) >= 0; }
+  function getJSON(k) { try { var v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function setJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  /* ayah bookmarks are stored as "sura:ayah:page" */
+  function ayahBmIndex(l, s, a) {
+    for (var i = 0; i < l.length; i++) { var p = String(l[i]).split(':'); if (+p[0] === s && +p[1] === a) return i; }
+    return -1;
+  }
+  function bmHas(s, a) { return ayahBmIndex(getJSON('ayah_bookmarks'), s, a) >= 0; }
   function bmToggle(s, a) {
-    var l = bmList(), k = bmKey(s, a), i = l.indexOf(k), on;
-    if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(k); on = true; }
-    try { localStorage.setItem('ayah_bookmarks', JSON.stringify(l)); } catch (e) {}
+    var l = getJSON('ayah_bookmarks'), i = ayahBmIndex(l, s, a), on;
+    if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(s + ':' + a + ':' + curPage()); on = true; }
+    setJSON('ayah_bookmarks', l);
+    return on;
+  }
+  function pageBmHas(p) { return getJSON('page_bookmarks').indexOf(p) >= 0; }
+  function pageBmToggle(p) {
+    var l = getJSON('page_bookmarks'), i = l.indexOf(p), on;
+    if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(p); on = true; }
+    setJSON('page_bookmarks', l);
     return on;
   }
 
-  /* ---------- toolbar ---------- */
+  /* ---------- page fills the screen ---------- */
+  function fit() {
+    try {
+      var m = $('mushaf'), w = $('madaniWrap');
+      if (!m || !w || !readerActive()) return;
+      var aw = m.clientWidth, ah = m.clientHeight;
+      if (!aw || !ah) return;
+      var W = Math.floor(Math.min(aw, (ah * 1260) / 2038));
+      w.style.width = W + 'px';
+      w.style.margin = '0 auto';
+      var ov = $('madaniOverlay'), img = $('pageImg');
+      if (ov && img && img.offsetHeight) ov.style.height = img.offsetHeight + 'px';
+    } catch (e) {}
+  }
+  function fitSoon() { fit(); setTimeout(fit, 150); setTimeout(fit, 500); setTimeout(fit, 1200); }
+
+  /* ---------- icons ---------- */
   var ICON = {
     bm0: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>',
     bm1: '<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>',
     share: '<svg viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="2"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.4M8.3 13.3l7.4 4.4" fill="none"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3 3.2 15 0 18M12 3c-3.2 3-3.2 15 0 18"/></svg>',
-    play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff"/></svg>'
+    play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="#fff"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v13c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v13"/></svg>',
+    list: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"/></svg>'
   };
 
+  /* ---------- top round buttons ---------- */
+  var top = null;
+  function buildTop() {
+    if (top) return top;
+    top = document.createElement('div');
+    top.id = 'readerTop';
+    top.innerHTML = '<button type="button" id="rtBack">' + ICON.list + '</button><button type="button" id="rtTafsir">' + ICON.book + '</button><button type="button" id="rtBm"></button>';
+    document.body.appendChild(top);
+    $('rtBack').onclick = function () {
+      showTop(false);
+      try { window.__madani.pause(); window.__madani.togglePlayer(false); } catch (e) {}
+      if (typeof goHome === 'function') goHome(); else history.back();
+    };
+    $('rtTafsir').onclick = function () {
+      var s = 1;
+      try { s = window.__madani.surahOfPage(curPage()); } catch (e) {}
+      openTafsir(s, 0);
+    };
+    $('rtBm').onclick = function () {
+      var on = pageBmToggle(curPage());
+      $('rtBm').innerHTML = on ? ICON.bm1 : ICON.bm0;
+      toast(on ? tr('bm1') : tr('bm0'));
+    };
+    return top;
+  }
+  function showTop(on) {
+    buildTop();
+    if (on && !readerActive()) on = false;
+    if (on) $('rtBm').innerHTML = pageBmHas(curPage()) ? ICON.bm1 : ICON.bm0;
+    top.className = on ? 'on' : '';
+  }
+
+  /* ---------- ayah toolbar ---------- */
   var bar = null, sel = null;
 
   function buildBar() {
@@ -147,13 +233,13 @@
   function anchorRect() {
     var els = document.querySelectorAll('#madaniOverlay .ma-hl');
     if (!els.length) return null;
-    var top = 1e9, bottom = -1e9, cx = 0;
+    var tp = 1e9, bottom = -1e9, cx = 0;
     for (var i = 0; i < els.length; i++) {
       var r = els[i].getBoundingClientRect();
-      if (r.top < top) { top = r.top; cx = (r.left + r.right) / 2; }
+      if (r.top < tp) { tp = r.top; cx = (r.left + r.right) / 2; }
       if (r.bottom > bottom) bottom = r.bottom;
     }
-    return { top: top, bottom: bottom, cx: cx };
+    return { top: tp, bottom: bottom, cx: cx };
   }
 
   function placeBar() {
@@ -161,9 +247,9 @@
     var w = bar.offsetWidth, h = bar.offsetHeight, gap = 12;
     var left = Math.max(8, Math.min(window.innerWidth - w - 8, a.cx - w / 2));
     var up = a.top - h - gap >= 8;
-    var top = up ? a.top - h - gap : a.bottom + gap;
+    var tp = up ? a.top - h - gap : a.bottom + gap;
     bar.style.left = left + 'px';
-    bar.style.top = top + 'px';
+    bar.style.top = tp + 'px';
     bar.className = 'on ' + (up ? 'up' : 'down');
     var ax = Math.max(14, Math.min(w - 14, a.cx - left)) - 9;
     $('abArrow').style.left = ax + 'px';
@@ -217,7 +303,7 @@
     }).catch(function () { toast(tr('fail')); });
   }
 
-  /* ---------- tafsir ---------- */
+  /* ---------- tafsir (one ayah, or the whole surah when ayah is 0) ---------- */
   var panel = null, tafSeq = 0, tafAyah = null;
 
   function groups() {
@@ -258,22 +344,38 @@
 
   function loadTafsir() {
     if (!tafAyah) return;
-    var ed = $('tpSel').value, body = $('tpBody'), seq = ++tafSeq;
+    var ed = $('tpSel').value, body = $('tpBody'), seq = ++tafSeq, one = tafAyah.ayah > 0;
     body.dir = RTL[SLUG[ed]] ? 'rtl' : 'ltr';
     body.textContent = tr('loading');
-    fetch(BASE + ed + '/' + tafAyah.sura + '/' + tafAyah.ayah + '.json').then(function (r) {
+    fetch(BASE + ed + '/' + tafAyah.sura + (one ? '/' + tafAyah.ayah : '') + '.json').then(function (r) {
       if (!r.ok) throw 0; return r.json();
     }).then(function (j) {
       if (seq !== tafSeq) return;
-      body.textContent = clean(j && j.text) || tr('na');
+      if (one) { body.textContent = clean(j && j.text) || tr('na'); body.scrollTop = 0; return; }
+      var arr = Array.isArray(j) ? j : ((j && (j.ayahs || j.tafsir)) || []);
+      body.textContent = '';
+      var any = false;
+      arr.forEach(function (x, i) {
+        var t = clean(x && x.text);
+        if (!t) return;
+        any = true;
+        var d = document.createElement('div');
+        d.className = 'tp-ay';
+        var b = document.createElement('b');
+        b.textContent = ((x && (x.ayah || x.number)) || i + 1) + ' · ';
+        d.appendChild(b);
+        d.appendChild(document.createTextNode(t));
+        body.appendChild(d);
+      });
+      if (!any) body.textContent = tr('na');
       body.scrollTop = 0;
     }).catch(function () { if (seq === tafSeq) body.textContent = tr('na'); });
   }
 
   function openTafsir(s, a) {
     buildPanel();
-    tafAyah = { sura: s, ayah: a };
-    $('tpTitle').textContent = tr('tafsir') + ' · ' + surahName(s) + ' : ' + a;
+    tafAyah = { sura: s, ayah: a || 0 };
+    $('tpTitle').textContent = tr('tafsir') + ' · ' + surahName(s) + (a ? ' : ' + a : '');
     $('tpX').textContent = tr('close');
     $('tpNote').textContent = T[lang()].note || '';
     fillEditions();
@@ -290,7 +392,9 @@
   function blankTap() {
     if (panel && panel.classList.contains('on')) return;
     if (barOpen()) { closeBar(false); return; }
-    try { window.__madani.togglePlayer(); } catch (e) {}
+    var on = false;
+    try { on = window.__madani.togglePlayer(); } catch (e) {}
+    showTop(on);
   }
   window.__onBlankTap = blankTap;
 
@@ -301,12 +405,51 @@
       if (e.target && e.target.closest && e.target.closest('#madaniOverlay')) return;
       blankTap();
     });
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(m);
   }
 
-  /* page changed: close the toolbar */
+  /* page changed: close the toolbar, refit */
   var img = $('pageImg');
-  if (img && window.MutationObserver) {
-    new MutationObserver(function () { if (barOpen()) closeBar(false); }).observe(img, { attributes: true, attributeFilter: ['src'] });
+  if (img) {
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        if (barOpen()) closeBar(false);
+        var tp = $('readerTop');
+        if (tp && tp.classList.contains('on')) $('rtBm').innerHTML = pageBmHas(curPage()) ? ICON.bm1 : ICON.bm0;
+        fitSoon();
+      }).observe(img, { attributes: true, attributeFilter: ['src'] });
+    }
+    img.addEventListener('load', fitSoon);
   }
-  window.addEventListener('resize', function () { if (barOpen() && sel) placeBar(); });
+  window.addEventListener('resize', function () { if (barOpen() && sel) placeBar(); fitSoon(); });
+  window.addEventListener('orientationchange', fitSoon);
+  fitSoon();
+
+  /* ---------- "نیشانکراوەکان" tab: explicit page + ayah bookmarks ---------- */
+  function escH(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function bmRow(title, sub, page) {
+    return '<div class="surah" onclick="openPage(' + (+page || 1) + ')"><span class="num">★</span><div class="name"><b>' + escH(title) + '</b><small>' + escH(sub) + '</small></div><span class="arrow">‹</span></div>';
+  }
+  function hookBookmarkTab() {
+    var o = window.renderSurahs;
+    if (typeof o !== 'function' || o.__bmHooked) return;
+    window.renderSurahs = function () {
+      var ret = o.apply(this, arguments);
+      try {
+        if (typeof homeTab !== 'undefined' && homeTab === 'bookmark') {
+          var html = '';
+          getJSON('page_bookmarks').forEach(function (p) { html += bmRow('پەڕەی ' + p, 'پەڕە ' + p, p); });
+          getJSON('ayah_bookmarks').forEach(function (k) {
+            var x = String(k).split(':'), s = +x[0], a = +x[1], p = +x[2] || surahStart(s);
+            html += bmRow(surahName(s) + ' : ' + a, 'پەڕە ' + p, p);
+          });
+          $('surahList').innerHTML = html || '<div class="card muted">هیچ نیشانکراوێک نییە.</div>';
+        }
+      } catch (e) {}
+      return ret;
+    };
+    window.renderSurahs.__bmHooked = true;
+  }
+  hookBookmarkTab();
+  var tries = 0, ti = setInterval(function () { hookBookmarkTab(); if (++tries > 20) clearInterval(ti); }, 250);
 })();
