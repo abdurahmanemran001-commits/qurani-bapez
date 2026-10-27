@@ -16,7 +16,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s3);
 
   var s4 = document.createElement('script');
-  s4.src = 'zikr-streak.js?v=2';
+  s4.src = 'zikr-streak.js?v=3';
   s4.async = true;
   document.head.appendChild(s4);
 
