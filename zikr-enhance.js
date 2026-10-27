@@ -1,9 +1,8 @@
-/* zikr-enhance.js v2 — chapter bookmarks next to settings + Badini + reset */
+/* zikr-enhance.js v3 — chapter bookmarks + reset; robust DOM inject */
 (function () {
-  if (window.__zikrEnhanceV2) return;
-  window.__zikrEnhanceV2 = true;
+  if (window.__zikrEnhanceV3) return;
+  window.__zikrEnhanceV3 = true;
 
-  /* ---------- Badini fill when missing ---------- */
   var WORD_MAP = [
     [/\bخوایە\b/g, 'يا خودێ'], [/\bخوا\b/g, 'خودێ'],
     [/\bپەروەردگارمان\b/g, 'خودايێ مە'], [/\bپەروەردگار\b/g, 'خودايێ'],
@@ -37,7 +36,6 @@
     });
   }
 
-  /* ---------- Chapter-level bookmarks ---------- */
   function loadMarks() {
     try { return JSON.parse(localStorage.getItem('zikr_chap_marks') || '[]'); } catch (e) { return []; }
   }
@@ -49,6 +47,7 @@
     var k = chapKey(c, h);
     return loadMarks().some(function (m) { return m.key === k; });
   }
+  function marksCount() { return loadMarks().length; }
   function toggleChapMark(c, h, name, count) {
     var k = chapKey(c, h);
     var all = loadMarks();
@@ -56,61 +55,73 @@
     if (i >= 0) all.splice(i, 1);
     else all.unshift({ key: k, c: c, h: h, name: name || '', count: count || 0, t: Date.now() });
     saveMarks(all);
+    refreshMarkButtons();
     return i < 0;
   }
-  function marksCount() { return loadMarks().length; }
 
-  /* ---------- Toolbar icon next to settings ---------- */
-  function ensureToolbarIcon() {
-    var bar = document.querySelector('.dhikr-toolbar');
-    if (!bar) return;
-    var old = document.getElementById('zikrMarksBtn');
-    if (old) {
-      old.textContent = '★';
-      old.setAttribute('data-n', String(marksCount()));
-      return;
-    }
+  function injectCss() {
+    if (document.getElementById('zikrMarksCss')) return;
+    var st = document.createElement('style');
+    st.id = 'zikrMarksCss';
+    st.textContent = [
+      '#zikrMarksBtn,#zikrMarksBtn2{position:relative;color:#b48a3c!important;font-size:20px!important}',
+      '#zikrMarksBtn::after,#zikrMarksBtn2::after{content:attr(data-n);position:absolute;top:-4px;left:-4px;',
+      '  background:#b48a3c;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;',
+      '  display:flex;align-items:center;justify-content:center;padding:0 3px}',
+      '#zikrMarksBtn[data-n="0"]::after,#zikrMarksBtn2[data-n="0"]::after{display:none}',
+      '.zchap-mark{border:0;background:transparent;font-size:22px;cursor:pointer;color:#71857a;padding:0 6px;line-height:1}',
+      '.zchap-mark.on{color:#b48a3c}',
+      '.zchap-mark-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;',
+      '  margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf5e7;border:1px solid #e4d5ad}',
+      '.zreset{width:52px;height:52px;border:0;border-radius:50%;background:#6b7c74;color:#fff;font-size:22px;cursor:pointer;flex:0 0 auto}'
+    ].join('');
+    document.head.appendChild(st);
+  }
+
+  function makeMarksBtn(id) {
     var btn = document.createElement('button');
-    btn.id = 'zikrMarksBtn';
+    btn.id = id;
     btn.type = 'button';
     btn.className = 'dhikr-settings-icon';
     btn.title = 'نیشانکراوەکان';
     btn.setAttribute('aria-label', 'نیشانکراوەکان');
     btn.textContent = '★';
-    btn.style.cssText = 'color:#b48a3c;font-size:20px;margin-left:6px';
+    btn.setAttribute('data-n', String(marksCount()));
     btn.onclick = function (e) {
       e.preventDefault();
       e.stopPropagation();
       zikrShowChapMarks();
     };
-    // put before settings gear if present
-    var gear = bar.querySelector('.dhikr-settings-icon');
-    if (gear) bar.insertBefore(btn, gear);
-    else bar.appendChild(btn);
+    return btn;
+  }
 
-    if (!document.getElementById('zikrMarksCss')) {
-      var st = document.createElement('style');
-      st.id = 'zikrMarksCss';
-      st.textContent = [
-        '#zikrMarksBtn{position:relative}',
-        '#zikrMarksBtn::after{content:attr(data-n);position:absolute;top:-4px;left:-4px;',
-        '  background:#b48a3c;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;',
-        '  display:flex;align-items:center;justify-content:center;padding:0 3px}',
-        '#zikrMarksBtn[data-n="0"]::after{display:none}',
-        '.zchap-mark{border:0;background:transparent;font-size:22px;cursor:pointer;color:#71857a;padding:0 6px;line-height:1}',
-        '.zchap-mark.on{color:#b48a3c}',
-        '.zchap-mark-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;',
-        '  margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf5e7;border:1px solid #e4d5ad}',
-        '.zreset{width:52px;height:52px;border:0;border-radius:50%;background:#6b7c74;color:#fff;font-size:22px;cursor:pointer}'
-      ].join('');
-      document.head.appendChild(st);
-    }
-    btn.setAttribute('data-n', String(marksCount()));
+  function ensureToolbarIcons() {
+    injectCss();
+    var bars = document.querySelectorAll('.dhikr-toolbar');
+    bars.forEach(function (bar, idx) {
+      var id = idx === 0 ? 'zikrMarksBtn' : 'zikrMarksBtn2';
+      var existing = bar.querySelector('[data-zikr-marks]');
+      if (existing) {
+        existing.setAttribute('data-n', String(marksCount()));
+        return;
+      }
+      var btn = makeMarksBtn(id);
+      btn.setAttribute('data-zikr-marks', '1');
+      var gear = bar.querySelector('.dhikr-settings-icon');
+      if (gear) bar.insertBefore(btn, gear);
+      else bar.appendChild(btn);
+    });
+  }
+
+  function refreshMarkButtons() {
+    document.querySelectorAll('[data-zikr-marks]').forEach(function (b) {
+      b.setAttribute('data-n', String(marksCount()));
+    });
   }
 
   window.zikrShowChapMarks = async function () {
-    ensureToolbarIcon();
-    var data = typeof ensureAzkar === 'function' ? await ensureAzkar() : null;
+    ensureToolbarIcons();
+    var data = typeof ensureAzkar === 'function' ? await ensureAzkar() : window.azkar;
     if (!data) return;
     var marks = loadMarks();
     if (typeof showView === 'function') showView('detail', 'زیکرەکانم');
@@ -121,7 +132,8 @@
     var list = document.getElementById('detailList');
     if (!list) return;
     if (!marks.length) {
-      list.innerHTML = '<div class="card muted">هیچ بەشێک نیشان نەکراوە.<br>لەناو بەشێک (وەک ویردی بەیانیان) دوگمەی ★ دابگرە بۆ نیشانەکردنی هەمووی.</div>';
+      list.innerHTML = '<div class="card muted">هیچ بەشێک نیشان نەکراوە.<br>لە لیست یان ناو بەش (وەک ویردی بەیانیان) دوگمەی ★ دابگرە بۆ نیشانەکردنی <b>هەمووی</b>.</div>';
+      ensureToolbarIcons();
       return;
     }
     list.innerHTML = marks.map(function (m) {
@@ -130,7 +142,7 @@
       try {
         var ch = data[m.c].chapters[m.h];
         if (ch) {
-          name = (typeof pick === 'function' ? pick(ch, typeof zlang !== 'undefined' ? zlang : 'ckb') : null) || ch.ckb || ch.ar || name;
+          name = (typeof pick === 'function' ? pick(ch, window.zlang || 'ckb') : null) || ch.ckb || ch.ar || name;
           n = (ch.items && ch.items.length) || n;
         }
       } catch (e) {}
@@ -144,6 +156,7 @@
         '</div>'
       );
     }).join('');
+    ensureToolbarIcons();
   };
 
   window.zikrToggleChap = function (c, h, btn) {
@@ -151,7 +164,7 @@
     try {
       var data = window.azkar;
       var ch = data[c].chapters[h];
-      name = (typeof pick === 'function' ? pick(ch, typeof zlang !== 'undefined' ? zlang : 'ckb') : null) || ch.ckb || ch.ar || '';
+      name = (typeof pick === 'function' ? pick(ch, window.zlang || 'ckb') : null) || ch.ckb || ch.ar || '';
       count = (ch.items && ch.items.length) || 0;
     } catch (e) {}
     var on = toggleChapMark(c, h, name, count);
@@ -160,43 +173,29 @@
       btn.classList.toggle('on', on);
       btn.title = on ? 'لابردنی نیشانە' : 'نیشانەکردنی هەموو ئەم بەشە';
     }
-    ensureToolbarIcon();
     return on;
   };
 
-  /* ---------- Enhance chapter list rows with ★ ---------- */
-  function enhanceCategoryList(catIndex) {
+  function enhanceCategoryList() {
     var box = document.getElementById('zikrList');
-    if (!box || catIndex < 0) return;
+    if (!box) return;
     var items = box.querySelectorAll('.zikr-item');
-    items.forEach(function (el, j) {
+    items.forEach(function (el) {
       if (el.querySelector('.zchap-mark')) return;
-      // skip if this is not a chapter row (no openChapter in onclick of children)
       var onclk = el.getAttribute('onclick') || '';
-      if (onclk.indexOf('openChapter') < 0 && onclk.indexOf('openCategory') >= 0) return;
-      // wrap content
+      var m = onclk.match(/openChapter\(\s*(\d+)\s*,\s*(\d+)\s*\)/);
+      if (!m) return;
+      var c = +m[1], h = +m[2];
       el.style.display = 'flex';
       el.style.alignItems = 'center';
       el.style.gap = '8px';
       var inner = document.createElement('div');
       inner.style.flex = '1';
+      inner.style.cursor = 'pointer';
       while (el.firstChild) inner.appendChild(el.firstChild);
+      el.removeAttribute('onclick');
+      inner.onclick = function () { openChapter(c, h); };
       el.appendChild(inner);
-      // extract chapter index from onclick on el
-      var m = onclk.match(/openChapter\(\s*(\d+)\s*,\s*(\d+)\s*\)/);
-      var c = catIndex, h = j;
-      if (m) { c = +m[1]; h = +m[2]; }
-      else {
-        // onclick might be on el still
-        el.setAttribute('onclick', '');
-        inner.setAttribute('onclick', onclk);
-        inner.style.cursor = 'pointer';
-      }
-      if (m) {
-        el.removeAttribute('onclick');
-        inner.style.cursor = 'pointer';
-        inner.onclick = function () { openChapter(c, h); };
-      }
       var star = document.createElement('button');
       star.type = 'button';
       star.className = 'zchap-mark' + (isChapMarked(c, h) ? ' on' : '');
@@ -211,26 +210,21 @@
     });
   }
 
-  /* ---------- Inside chapter: big mark-all bar + reset on counters ---------- */
   function enhanceChapterView(i, j) {
     var list = document.getElementById('detailList');
     if (!list) return;
-
-    // chapter mark bar at top
-    if (!list.querySelector('.zchap-mark-bar')) {
+    if (!list.querySelector('.zchap-mark-bar') && i != null && j != null && i >= 0 && j >= 0) {
       var bar = document.createElement('div');
       bar.className = 'zchap-mark-bar';
       var on = isChapMarked(i, j);
       bar.innerHTML =
         '<span style="font-size:14px;color:#5a4a2a">نیشانەکردنی <b>هەموو</b> ئەم بەشە</span>' +
-        '<button type="button" class="zchap-mark' + (on ? ' on' : '') + '" style="font-size:28px" ' +
-        'title="نیشانەکردنی هەموو ئەم بەشە">' + (on ? '★' : '☆') + '</button>';
+        '<button type="button" class="zchap-mark' + (on ? ' on' : '') + '" style="font-size:28px">' +
+        (on ? '★' : '☆') + '</button>';
       var starBtn = bar.querySelector('button');
       starBtn.onclick = function () { zikrToggleChap(i, j, starBtn); };
       list.insertBefore(bar, list.firstChild);
     }
-
-    // reset buttons next to counters
     list.querySelectorAll('.card .counter').forEach(function (counter) {
       if (counter.querySelector('.zreset')) return;
       var tickBtn = counter.querySelector('button[data-target]');
@@ -252,81 +246,88 @@
     });
   }
 
-  /* ---------- Hooks ---------- */
-  function patchEnsureAzkar() {
-    if (typeof window.ensureAzkar !== 'function' || window.ensureAzkar.__ze) return;
-    var orig = window.ensureAzkar;
-    window.ensureAzkar = async function () {
-      var data = await orig.apply(this, arguments);
-      fillBadini(data);
-      return data;
-    };
-    window.ensureAzkar.__ze = true;
-  }
-
-  function patchOpenChapter() {
-    if (typeof window.openChapter !== 'function' || window.openChapter.__ze) return;
-    var orig = window.openChapter;
-    window.openChapter = async function (i, j) {
-      var ret = await orig.apply(this, arguments);
-      setTimeout(function () { enhanceChapterView(i, j); ensureToolbarIcon(); }, 0);
-      setTimeout(function () { enhanceChapterView(i, j); }, 100);
+  function patch(name, flag, after) {
+    var fn = window[name];
+    if (typeof fn !== 'function' || fn[flag]) return;
+    window[name] = function () {
+      var args = arguments;
+      var ret = fn.apply(this, args);
+      Promise.resolve(ret).then(function () {
+        setTimeout(function () { after(args); }, 0);
+        setTimeout(function () { after(args); }, 120);
+      });
       return ret;
     };
-    window.openChapter.__ze = true;
-  }
-
-  function patchOpenCategory() {
-    if (typeof window.openCategory !== 'function' || window.openCategory.__ze) return;
-    var orig = window.openCategory;
-    window.openCategory = async function (i) {
-      var ret = await orig.apply(this, arguments);
-      setTimeout(function () { enhanceCategoryList(i); ensureToolbarIcon(); }, 40);
-      setTimeout(function () { enhanceCategoryList(i); }, 150);
-      return ret;
-    };
-    window.openCategory.__ze = true;
-  }
-
-  function patchShowCategories() {
-    if (typeof window.showCategories !== 'function' || window.showCategories.__ze) return;
-    var orig = window.showCategories;
-    window.showCategories = async function () {
-      var ret = await orig.apply(this, arguments);
-      setTimeout(ensureToolbarIcon, 40);
-      return ret;
-    };
-    window.showCategories.__ze = true;
-  }
-
-  function patchShowZikr() {
-    if (typeof window.showZikr !== 'function' || window.showZikr.__ze) return;
-    var orig = window.showZikr;
-    window.showZikr = function () {
-      var ret = orig.apply(this, arguments);
-      setTimeout(ensureToolbarIcon, 50);
-      setTimeout(ensureToolbarIcon, 300);
-      return ret;
-    };
-    window.showZikr.__ze = true;
+    window[name][flag] = true;
   }
 
   function boot() {
-    patchEnsureAzkar();
-    patchOpenChapter();
-    patchOpenCategory();
-    patchShowCategories();
-    patchShowZikr();
-    ensureToolbarIcon();
+    if (typeof window.ensureAzkar === 'function' && !window.ensureAzkar.__ze3) {
+      var o = window.ensureAzkar;
+      window.ensureAzkar = async function () {
+        var data = await o.apply(this, arguments);
+        fillBadini(data);
+        return data;
+      };
+      window.ensureAzkar.__ze3 = true;
+    }
+    patch('openChapter', '__ze3', function (args) {
+      enhanceChapterView(args[0], args[1]);
+      ensureToolbarIcons();
+    });
+    patch('openCategory', '__ze3', function () {
+      enhanceCategoryList();
+      ensureToolbarIcons();
+    });
+    patch('showCategories', '__ze3', function () {
+      ensureToolbarIcons();
+    });
+    patch('showZikr', '__ze3', function () {
+      ensureToolbarIcons();
+    });
+    ensureToolbarIcons();
+    enhanceCategoryList();
+    if (typeof zcat === 'number' && typeof zchap === 'number' && zchap >= 0) {
+      enhanceChapterView(zcat, zchap);
+    }
+  }
+
+  function watch() {
+    if (window.__zikrMO) return;
+    try {
+      window.__zikrMO = new MutationObserver(function () {
+        ensureToolbarIcons();
+        enhanceCategoryList();
+        if (typeof zcat === 'number' && typeof zchap === 'number' && zchap >= 0) {
+          enhanceChapterView(zcat, zchap);
+        } else {
+          var list = document.getElementById('detailList');
+          if (list && list.querySelector('.counter')) enhanceChapterView(-1, -1);
+        }
+      });
+      window.__zikrMO.observe(document.body, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+
+  function start() {
+    boot();
+    watch();
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 40); setTimeout(boot, 400); setTimeout(boot, 1200);
+      setTimeout(start, 30);
+      setTimeout(start, 300);
+      setTimeout(start, 1000);
     });
   } else {
-    setTimeout(boot, 40); setTimeout(boot, 400); setTimeout(boot, 1200);
+    setTimeout(start, 30);
+    setTimeout(start, 300);
+    setTimeout(start, 1000);
   }
   var tries = 0;
-  var t = setInterval(function () { boot(); if (++tries > 40) clearInterval(t); }, 250);
+  var t = setInterval(function () {
+    boot();
+    if (++tries > 50) clearInterval(t);
+  }, 200);
 })();
