@@ -5,22 +5,17 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
-  /* reader extras: full-screen page, hold-an-ayah toolbar (bookmark / share / tafsir / play), top buttons,
-     full-screen page tafsir, show-hide player on tap; if this file fails to load,
-     tapping an ayah simply plays it like before */
   var s2 = document.createElement('script');
   s2.src = 'mushaf/ayah-actions.js?v=4';
   s2.async = true;
   document.head.appendChild(s2);
 
-  /* Zikr: Badini fill for all, bookmarks, counter reset, ensure play */
+  /* Zikr: chapter-level bookmarks next to settings + reset + Badini */
   var s3 = document.createElement('script');
-  s3.src = 'zikr-enhance.js?v=1';
+  s3.src = 'zikr-enhance.js?v=2';
   s3.async = true;
   document.head.appendChild(s3);
 
-  /* Reader only: hide the green top bar, the "فهرست / ڕەنگاوڕەنگ / 604" header, the bottom menu,
-     the page number bar and the "پەڕەی موسحەف" card. */
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
@@ -36,8 +31,6 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   ].join('\n');
   document.head.appendChild(st);
 
-  /* The page number bar is gone, so swipe left/right on the page to turn it
-     (same direction as the colourful mushaf: finger moves right = next page). */
   var m = document.getElementById('mushaf');
   if (m) {
     var sx = 0, sy = 0, t0 = 0;
