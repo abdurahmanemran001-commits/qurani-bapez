@@ -20,6 +20,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s4.async = true;
   document.head.appendChild(s4);
 
+  var s5 = document.createElement('script');
+  s5.src = 'tasbih.js?v=1';
+  s5.async = true;
+  document.head.appendChild(s5);
+
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
