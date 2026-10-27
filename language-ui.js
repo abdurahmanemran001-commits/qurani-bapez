@@ -13,6 +13,12 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s2.async = true;
   document.head.appendChild(s2);
 
+  /* Zikr: Badini fill for all, bookmarks, counter reset, ensure play */
+  var s3 = document.createElement('script');
+  s3.src = 'zikr-enhance.js?v=1';
+  s3.async = true;
+  document.head.appendChild(s3);
+
   /* Reader only: hide the green top bar, the "فهرست / ڕەنگاوڕەنگ / 604" header, the bottom menu,
      the page number bar and the "پەڕەی موسحەف" card. */
   var st = document.createElement('style');
