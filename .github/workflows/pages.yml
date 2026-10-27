@@ -31,18 +31,18 @@ jobs:
             echo "index.html looks broken ($(wc -c < index.html) bytes) — restoring from last good commit"
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
           fi
-          # Ensure zikr-enhance is loaded from index
           if ! grep -q 'zikr-enhance.js' index.html; then
-            sed -i 's|<script src="language-ui.js[^"]*"></script>|<script src="language-ui.js?v=3"></script>\n<script src="zikr-enhance.js?v=3"></script>|' index.html
+            sed -i 's|<script src="language-ui.js[^"]*"></script>|<script src="language-ui.js?v=4"></script>\n<script src="zikr-enhance.js?v=4"></script>|' index.html
+          else
+            sed -i 's|zikr-enhance.js?v=[0-9]*|zikr-enhance.js?v=4|g' index.html
+            sed -i 's|language-ui.js?v=[0-9]*|language-ui.js?v=4|g' index.html
           fi
           wc -c index.html
-          head -c 80 index.html; echo
 
       - name: Prepare web preview
         run: |
           mkdir -p dist
           cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js icon.svg manifest.webmanifest sw.js dist/
-          # ship any prebuilt timing JSON already in repo
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
 
@@ -109,9 +109,7 @@ jobs:
               rid = r['id']
               dest = os.path.join(out, rid + '.json')
               if os.path.isfile(dest) and os.path.getsize(dest) > 100:
-                  print('KEEP', rid)
-                  ok += 1
-                  continue
+                  print('KEEP', rid); ok += 1; continue
               base = r['u'].rstrip('/') + '/'
               tag = base.rstrip('/').split('/')[-1]
               candidates = ALT.get(rid, []) + [tag + '.db', rid.replace('g_', '') + '.db']
@@ -121,18 +119,14 @@ jobs:
                       seen.add(n); names.append(n)
               path = None
               for name in names:
-                  db_url = base + name
                   try:
-                      urllib.request.urlretrieve(db_url, '/tmp/tmdb/' + name)
+                      urllib.request.urlretrieve(base + name, '/tmp/tmdb/' + name)
                       path = '/tmp/tmdb/' + name
-                      print('DL', rid, name)
                       break
                   except Exception:
                       continue
               if not path:
-                  print('FAIL download', rid)
-                  fail += 1
-                  continue
+                  print('FAIL download', rid); fail += 1; continue
               try:
                   conn = sqlite3.connect(path)
                   data = {}
@@ -142,18 +136,13 @@ jobs:
                       except Exception:
                           continue
                       data.setdefault(str(sura), {})[str(ayah)] = time
-                  if not data:
-                      raise RuntimeError('empty timings')
-                  with open(dest, 'w') as f:
-                      json.dump(data, f, separators=(',', ':'))
+                  if not data: raise RuntimeError('empty')
+                  with open(dest, 'w') as f: json.dump(data, f, separators=(',', ':'))
                   ok += 1
-                  print('OK', rid, 'suras', len(data), 'ayahs', sum(len(v) for v in data.values()))
               except Exception as e:
-                  print('FAIL parse', rid, e)
-                  fail += 1
+                  print('FAIL parse', rid, e); fail += 1
           print('timing ok', ok, 'fail', fail)
           PY
-          echo "timing files: $(ls dist/madani-timing | wc -l)"
 
       - name: Verify web data
         run: |
