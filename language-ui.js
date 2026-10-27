@@ -5,10 +5,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
-  /* reader extras: full-screen page, ayah toolbar (bookmark / share / tafsir / play), top buttons,
-     show-hide player on tap; if this file fails to load, tapping an ayah simply plays it like before */
+  /* reader extras: full-screen page, hold-an-ayah toolbar (bookmark / share / tafsir / play), top buttons,
+     full-screen page tafsir, show-hide player on tap; if this file fails to load,
+     tapping an ayah simply plays it like before */
   var s2 = document.createElement('script');
-  s2.src = 'mushaf/ayah-actions.js?v=3';
+  s2.src = 'mushaf/ayah-actions.js?v=4';
   s2.async = true;
   document.head.appendChild(s2);
 
