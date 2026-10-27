@@ -1,4 +1,4 @@
-/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v16 */
+/* Madinah IMAGE + APK bounds + gapless + custom ayah URL. v17 */
 (function () {
   if (window.__madaniAyahInstalled) return;
   window.__madaniAyahInstalled = true;
@@ -10,6 +10,7 @@
   var timingCache = {};
   var watchTimer = null;
   var pendingNext = null, sharedAudio = null;
+  var resumable = false;
 
   var AYAH_COUNT = [0,7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
 
@@ -38,6 +39,30 @@
   function setStatus(msg) {
     var st = document.getElementById('pageStatus');
     if (st) st.textContent = msg;
+  }
+
+  /* surah list of the site: [name, id, ayahs, start page] */
+  function listSurahs() {
+    try { return (typeof surahs !== 'undefined' && surahs) || null; } catch (e) { return null; }
+  }
+  function surahOfPage(page) {
+    var l = listSurahs(), s = 1;
+    if (l) for (var i = 0; i < l.length; i++) { if (l[i][3] <= page) s = l[i][1]; else break; }
+    return s;
+  }
+  function surahStartPage(s) {
+    var l = listSurahs();
+    if (l) for (var i = 0; i < l.length; i++) if (l[i][1] === s) return l[i][3];
+    return 1;
+  }
+
+  function finishPlayback() {
+    var b = playerBar && playerBar.querySelector('#madaniPlay');
+    if (b) b.textContent = '▶';
+    clearHighlight();
+    stopWatch();
+    window.__surahOnly = null;
+    resumable = false;
   }
 
   function loadTimings(m, sura, cb) {
@@ -90,6 +115,34 @@
     });
   }
 
+  /* Play button of the player: resume if it was paused, otherwise read the whole surah of this page
+     from its first ayah to its last. */
+  function startSurah(s) {
+    s = +s || 1;
+    window.__surahOnly = s;
+    var start = surahStartPage(s);
+    if (lastPage !== start && typeof window.openPage === 'function') window.openPage(start);
+    playAyah(s, 1);
+  }
+
+  function onPlayerButton() {
+    var self = this;
+    if (audio && !audio.paused) { audio.pause(); self.textContent = '▶'; stopWatch(); resumable = true; return; }
+    if (resumable && audio && audio.src && current) {
+      audio.play().then(function () {
+        self.textContent = '⏸'; resumable = false;
+        if (isGapless() && current) {
+          var m = recMeta();
+          var map = timingCache[(m && m.id) + ':' + current.sura];
+          if (map) startWatch(map, current.sura);
+        }
+      }).catch(function () { self.textContent = '▶'; });
+      return;
+    }
+    var pg = (lastPage > 0 ? lastPage : 0) || (typeof currentPage !== 'undefined' && currentPage) || 1;
+    startSurah(surahOfPage(pg));
+  }
+
   function ensureUI() {
     var mushaf = document.getElementById('mushaf');
     var img = document.getElementById('pageImg');
@@ -136,9 +189,9 @@
         }
         if (hit) {
           var p = hit.split(':');
-          /* ayah menu (ayah-actions.js) if present, otherwise play straight away */
+          /* ayah toolbar (ayah-actions.js) if present, otherwise play straight away */
           if (typeof window.__onAyahTap === 'function') window.__onAyahTap(+p[0], +p[1]);
-          else playAyah(+p[0], +p[1]);
+          else { window.__surahOnly = null; playAyah(+p[0], +p[1]); }
         } else if (typeof window.__onBlankTap === 'function') {
           window.__onBlankTap();
         }
@@ -163,21 +216,7 @@
         try { localStorage.setItem('madani_reciter', reciterId); } catch (e) {}
         if (current) playAyah(current.sura, current.ayah);
       };
-      playerBar.querySelector('#madaniPlay').onclick = function () {
-        if (!current) return;
-        if (audio && !audio.paused) { audio.pause(); this.textContent = '▶'; stopWatch(); }
-        else if (audio && audio.src) {
-          var self = this;
-          audio.play().then(function () {
-            self.textContent = '⏸';
-            if (isGapless() && current) {
-              var m = recMeta();
-              var map = timingCache[(m && m.id) + ':' + current.sura];
-              if (map) startWatch(map, current.sura);
-            }
-          }).catch(function () { self.textContent = '▶'; });
-        } else playAyah(current.sura, current.ayah);
-      };
+      playerBar.querySelector('#madaniPlay').onclick = onPlayerButton;
     }
     return true;
   }
@@ -261,17 +300,14 @@
       }, { once: true });
       audio.load();
     }
-    audio.onended = function () {
-      stopWatch();
-      var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶';
-      clearHighlight();
-    };
+    audio.onended = function () { finishPlayback(); };
   }
 
   function playAyah(sura, ayah) {
     sura = +sura; ayah = +ayah;
     current = { sura: sura, ayah: ayah };
     pendingNext = null;
+    resumable = false;
     drawHighlight(sura, ayah); stopWatch();
     if (playerBar) {
       var lab = playerBar.querySelector('#madaniLabel'); if (lab) lab.textContent = sura + ' : ' + ayah;
@@ -291,17 +327,19 @@
       var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶';
     });
     audio.onended = function () {
-      var b = playerBar && playerBar.querySelector('#madaniPlay');
+      var so = window.__surahOnly;
       var next = null;
       for (var i = 0; i < pageAyahOrder.length; i++) {
         if (pageAyahOrder[i].sura === sura && pageAyahOrder[i].ayah === ayah && i + 1 < pageAyahOrder.length) { next = pageAyahOrder[i + 1]; break; }
       }
+      /* "read the surah" stops at the last ayah of that surah */
+      if (so && ((AYAH_COUNT[sura] && ayah >= AYAH_COUNT[sura]) || (next && next.sura !== so))) { finishPlayback(); return; }
       if (next) playAyah(next.sura, next.ayah);
       else if (window.__madaniContinue !== false && lastPage > 0 && lastPage < 604 && typeof window.openPage === 'function') {
         /* last ayah of the page: go to the next page and keep reading */
         pendingNext = { sura: sura, ayah: ayah };
         window.openPage(lastPage + 1);
-      } else { if (b) b.textContent = '▶'; clearHighlight(); }
+      } else finishPlayback();
     };
   }
 
@@ -320,7 +358,8 @@
           if (o.sura > last.sura || (o.sura === last.sura && o.ayah > last.ayah)) { nx = o; break; }
         }
         if (!nx && pageAyahOrder.length) nx = pageAyahOrder[0];
-        if (nx) playAyah(nx.sura, nx.ayah);
+        if (nx && window.__surahOnly && nx.sura !== window.__surahOnly) nx = null;
+        if (nx) playAyah(nx.sura, nx.ayah); else finishPlayback();
       } else if (current) {
         drawHighlight(current.sura, current.ayah);
       }
@@ -373,13 +412,16 @@
     } catch (e) {}
   }
 
-  /* Small API used by ayah-actions.js (menu: play / share / tafsir, show-hide player) */
+  /* Small API used by ayah-actions.js (toolbar: play / share / tafsir, show-hide player) */
   window.__madani = {
-    play: playAyah,
+    /* play from this ayah and keep going (not limited to one surah) */
+    play: function (s, a) { window.__surahOnly = null; playAyah(s, a); },
+    startSurah: startSurah,
+    surahOfPage: surahOfPage,
     mark: function (s, a) { current = { sura: +s, ayah: +a }; drawHighlight(+s, +a); var lab = playerBar && playerBar.querySelector('#madaniLabel'); if (lab) lab.textContent = s + ' : ' + a; },
     clearMark: function () { if (!audio || audio.paused) clearHighlight(); },
     pause: function () {
-      if (audio && !audio.paused) { audio.pause(); stopWatch(); var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶'; }
+      if (audio && !audio.paused) { audio.pause(); stopWatch(); resumable = true; var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶'; }
     },
     current: function () { return current; },
     togglePlayer: function (show) {
