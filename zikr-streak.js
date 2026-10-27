@@ -105,8 +105,9 @@
       '#zStreak .zs-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}',
       '#zStreak .zs-chip{padding:5px 10px;border-radius:14px;background:rgba(255,255,255,.16);font-size:12px}',
       '#zStreak .zs-chip.on{background:#b48a3c}',
-      '.zshare{border:0;background:#e8f3ee;color:#176b4b;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;flex:0 0 auto}',
-      '.dhikr-settings-icon.zshare-tb{color:#176b4b!important;font-size:20px!important}',
+      '#zikrSearchWrap{display:none}',
+      '#zikrSearchWrap.zopen{display:block}',
+      '.dhikr-settings-icon.zsearch-tb{font-size:19px!important}',
       '#zToast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#173f35;color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;z-index:99999;max-width:85%;text-align:center}'
     ].join('');
     document.head.appendChild(s);
@@ -156,8 +157,12 @@
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(full).then(done, function () { prompt('کۆپی بکە:', full); });
     else prompt('کۆپی بکە:', full);
   }
-  function shareApp() {
-    share('زیکرەکانم', 'زیکرەکانی بەیانی و ئێوارە و خەوتن بە عەرەبی و کوردی، لەگەڵ دەنگ و ژمارەکەر 🤲');
+  function toggleSearch() {
+    var w = document.getElementById('zikrSearchWrap');
+    if (!w) return;
+    var open = w.classList.toggle('zopen');
+    var i = document.getElementById('zikrSearch');
+    if (open && i) { try { i.scrollIntoView({ block: 'center' }); } catch (e) {} i.focus(); }
   }
   function shareCard(card) {
     var ar = card.querySelector('.zikr-text'), tr = card.querySelector('.zikr-tr'), ref = card.querySelector('.zikr-ref');
@@ -170,16 +175,18 @@
 
   function addShareButtons() {
     document.querySelectorAll('.dhikr-toolbar').forEach(function (bar) {
-      if (bar.querySelector('.zshare-tb')) return;
+      var old = bar.querySelector('.zshare-tb'); if (old) old.remove();
+      if (bar.querySelector('.zsearch-tb')) return;
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'dhikr-settings-icon zshare-tb';
-      b.title = 'هاوبەشکردن';
-      b.setAttribute('aria-label', 'Share');
-      b.textContent = '↗';
-      b.onclick = function (e) { e.preventDefault(); e.stopPropagation(); shareApp(); };
+      b.className = 'dhikr-settings-icon zsearch-tb';
+      b.title = 'گەڕان';
+      b.setAttribute('aria-label', 'Search');
+      b.textContent = '🔍';
+      b.onclick = function (e) { e.preventDefault(); e.stopPropagation(); toggleSearch(); };
       var right = bar.querySelector('.dhikr-toolbar-right') || bar;
-      right.insertBefore(b, right.firstChild);
+      var gear = right.querySelector('.dhikr-settings-icon:not([data-zikr-marks]):not(.zsearch-tb)');
+      if (gear) right.insertBefore(b, gear); else right.appendChild(b);
     });
     var list = document.getElementById('detailList');
     if (list) list.querySelectorAll('.card').forEach(function (card) {
@@ -187,9 +194,9 @@
       var row = card.querySelector('.counter') || card;
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'zshare';
-      b.title = 'هاوبەشکردن';
-      b.textContent = '↗';
+      b.className = 'zplay zshare';
+      b.title = 'شەیرکردنی ئەم زیکرە';
+      b.textContent = '↗ شەیر';
       b.onclick = function (e) { e.stopPropagation(); shareCard(card); };
       row.appendChild(b);
     });
