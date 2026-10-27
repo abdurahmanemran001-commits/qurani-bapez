@@ -25,6 +25,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore index.html if corrupted
+        run: |
+          if [ ! -s index.html ] || [ "$(wc -c < index.html)" -lt 10000 ]; then
+            echo "index.html looks broken ($(wc -c < index.html) bytes) — restoring from last good commit"
+            curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
+          fi
+          # Ensure zikr-enhance is loaded from index
+          if ! grep -q 'zikr-enhance.js' index.html; then
+            sed -i 's|<script src="language-ui.js[^"]*"></script>|<script src="language-ui.js?v=3"></script>\n<script src="zikr-enhance.js?v=3"></script>|' index.html
+          fi
+          wc -c index.html
+          head -c 80 index.html; echo
+
       - name: Prepare web preview
         run: |
           mkdir -p dist
@@ -75,8 +88,6 @@ jobs:
           recs = json.load(open('web/mushaf/reciters.json'))
           out = 'dist/madani-timing'
           os.makedirs(out, exist_ok=True)
-
-          # Known alternate .db filenames on GitHub releases
           ALT = {
             'g_hamza': ['hamza_barznji_mutasil.db', 'hamza.db'],
             'g_dlshad': ['dlshad_kurdi_mutasil.db', 'dlshad.db'],
@@ -91,13 +102,11 @@ jobs:
             'g_abdulhadi_kurdi_mutasil': ['abdulhadi_kurdi_mutasil.db'],
             'g_ghamdi_handren_kurdi': ['ghamdi_handren_kurdi.db'],
           }
-
           ok = fail = 0
           for r in recs:
               if r.get('t') != 'g' or not r.get('u'):
                   continue
               rid = r['id']
-              # keep prebuilt if already present and non-placeholder
               dest = os.path.join(out, rid + '.json')
               if os.path.isfile(dest) and os.path.getsize(dest) > 100:
                   print('KEEP', rid)
@@ -106,7 +115,6 @@ jobs:
               base = r['u'].rstrip('/') + '/'
               tag = base.rstrip('/').split('/')[-1]
               candidates = ALT.get(rid, []) + [tag + '.db', rid.replace('g_', '') + '.db']
-              # unique preserve order
               seen = set(); names = []
               for n in candidates:
                   if n not in seen:
