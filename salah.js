@@ -1,7 +1,7 @@
-/* salah.js v6 — loads places from window.__SALAH_PLACES */
+/* salah.js v7 — local minute offsets — loads places from window.__SALAH_PLACES */
 (function () {
-  if (window.__salahV6) return;
-  window.__salahV6 = true;
+  if (window.__salahV7) return;
+  window.__salahV7 = true;
   var KEY = 'salah_v1';
   var NAMES = [
     { id: 'Fajr', ku: 'بەیانی', ar: 'الفجر' },
@@ -54,11 +54,48 @@
     if(!current&&list.length){var isha=list.find(function(x){return x.id==='Isha';});if(isha){current=Object.assign({},isha);current.date=new Date(isha.date.getTime()-86400000);current.yesterday=true;}}
     return{list:list,current:current,next:next,now:now};
   }
+  function getOffsets() {
+    var o = { Fajr: 0, Sunrise: 0, Dhuhr: 10, Asr: 0, Maghrib: 3, Isha: 0 };
+    try {
+      var cfg = JSON.parse(localStorage.getItem('salah_settings_v1') || '{}');
+      if (cfg.method != null) S.method = cfg.method;
+      if (cfg.school != null) S.school = cfg.school;
+      if (cfg.offsets) {
+        ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'].forEach(function (k) {
+          if (typeof cfg.offsets[k] === 'number') o[k] = cfg.offsets[k];
+        });
+      }
+    } catch (e) {}
+    return o;
+  }
+  function addMinutes(hmStr, mins) {
+    var m = String(hmStr || '').match(/(\d{1,2}):(\d{2})/);
+    if (!m) return hmStr;
+    var total = (+m[1]) * 60 + (+m[2]) + (mins || 0);
+    if (total < 0) total += 24 * 60;
+    total = total % (24 * 60);
+    var h = Math.floor(total / 60), mi = total % 60;
+    return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
+  }
   async function fetchTimes(){
-    var url='https://api.aladhan.com/v1/timings?latitude='+encodeURIComponent(S.lat)+'&longitude='+encodeURIComponent(S.lng)+'&method='+encodeURIComponent(S.method||3)+'&_='+Date.now();
+    var off = getOffsets();
+    var school = 0;
+    try { var c = JSON.parse(localStorage.getItem('salah_settings_v1')||'{}'); if (c.school!=null) school=+c.school; } catch(e){}
+    var tz = (S.country === 'Iraq' || !S.country || S.country === '') ? 'Asia/Baghdad' : '';
+    var url='https://api.aladhan.com/v1/timings?latitude='+encodeURIComponent(S.lat)
+      +'&longitude='+encodeURIComponent(S.lng)
+      +'&method='+encodeURIComponent(S.method||3)
+      +'&school='+encodeURIComponent(school)
+      +(tz ? '&timezonestring='+encodeURIComponent(tz) : '')
+      +'&_='+Date.now();
     var r=await fetch(url);if(!r.ok)throw new Error('net');
     var j=await r.json();if(!j.data||!j.data.timings)throw new Error('empty');
-    times=j.data.timings;return times;
+    var raw = j.data.timings;
+    times = {};
+    ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha','Sunset','Imsak','Midnight'].forEach(function(k){
+      if (raw[k] != null) times[k] = addMinutes(raw[k], off[k] || 0);
+    });
+    return times;
   }
   async function applyPlace(p){
     S.lat=+p.lat;S.lng=+p.lng;S.city=p.ku;S.country='Iraq';times=null;save();await fetchTimes();
@@ -87,7 +124,7 @@
   async function useGPSAndLoad(){
     if(!navigator.geolocation)throw new Error('no-geo');
     var pos=await new Promise(function(res,rej){navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:15000});});
-    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city='شوێنی ئێستا';S.country='';times=null;save();await fetchTimes();
+    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city='شوێنی ئێستا';S.country='Iraq';times=null;save();await fetchTimes();
   }
   function qiblaBearing(lat,lng){
     var kLat=21.4225*Math.PI/180,kLng=39.8262*Math.PI/180;
