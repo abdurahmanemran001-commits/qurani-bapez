@@ -1,7 +1,7 @@
-/* salah.js v3 — live countdown + fixed city search (Kurdish aliases, force refresh) */
+/* salah.js v4 — province list picker + auto GPS times + live countdown */
 (function () {
-  if (window.__salahV3) return;
-  window.__salahV3 = true;
+  if (window.__salahV4) return;
+  window.__salahV4 = true;
 
   var KEY = 'salah_v1';
   var NAMES = [
@@ -13,27 +13,44 @@
     { id: 'Isha', ku: 'عیشا', ar: 'العشاء' }
   ];
 
-  /* Kurdish / Arabic / common spellings → English for geocoding */
-  var CITY_ALIASES = {
-    'سلێمانی': 'Sulaymaniyah', 'سليماني': 'Sulaymaniyah', 'سليمانية': 'Sulaymaniyah',
-    'السليمانية': 'Sulaymaniyah', 'slemani': 'Sulaymaniyah', 'sulaymaniyah': 'Sulaymaniyah',
-    'sulaimani': 'Sulaymaniyah', 'sulaimaniya': 'Sulaymaniyah',
-    'هەولێر': 'Erbil', 'أربيل': 'Erbil', 'اربیل': 'Erbil', 'اربيل': 'Erbil',
-    'هەولير': 'Erbil', 'hawler': 'Erbil', 'erbil': 'Erbil',
-    'دهۆک': 'Duhok', 'دهوك': 'Duhok', 'دهوق': 'Duhok', 'duhok': 'Duhok', 'dahuk': 'Duhok',
-    'کەرکوک': 'Kirkuk', 'كركوك': 'Kirkuk', 'kirkuk': 'Kirkuk',
-    'بەغدا': 'Baghdad', 'بغداد': 'Baghdad', 'baghdad': 'Baghdad',
-    'مووسڵ': 'Mosul', 'موصل': 'Mosul', 'mosul': 'Mosul',
-    'بەسڕە': 'Basra', 'بصرە': 'Basra', 'البصرة': 'Basra', 'basra': 'Basra',
-    'هەڵەبجە': 'Halabja', 'حلبجة': 'Halabja', 'halabja': 'Halabja',
-    'زاخۆ': 'Zakho', 'زاخو': 'Zakho', 'zakho': 'Zakho',
-    'کۆیە': 'Koya', 'كويه': 'Koya', 'ranya': 'Ranya', 'رانیە': 'Ranya', 'رانية': 'Ranya',
-    'مەککە': 'Makkah', 'مكة': 'Makkah', 'مكه': 'Makkah', 'mecca': 'Makkah', 'makkah': 'Makkah',
-    'مەدینە': 'Madinah', 'المدينة': 'Madinah', 'medina': 'Madinah', 'madinah': 'Madinah',
-    'لەندەن': 'London', 'لندن': 'London', 'استانبول': 'Istanbul', 'ئەستەنبوڵ': 'Istanbul'
-  };
+  /* All Iraq governorates + main cities — fixed coordinates */
+  var PROVINCES = [
+    { ku: 'هەولێر', ar: 'أربيل', en: 'Erbil', lat: 36.1911, lng: 44.0094 },
+    { ku: 'سلێمانی', ar: 'السليمانية', en: 'Sulaymaniyah', lat: 35.561, lng: 45.433 },
+    { ku: 'دهۆک', ar: 'دهوك', en: 'Duhok', lat: 36.867, lng: 42.988 },
+    { ku: 'هەڵەبجە', ar: 'حلبجة', en: 'Halabja', lat: 35.177, lng: 45.986 },
+    { ku: 'کەرکوک', ar: 'كركوك', en: 'Kirkuk', lat: 35.468, lng: 44.392 },
+    { ku: 'بەغدا', ar: 'بغداد', en: 'Baghdad', lat: 33.3152, lng: 44.3661 },
+    { ku: 'مووسڵ', ar: 'الموصل', en: 'Mosul', lat: 36.3489, lng: 43.1571 },
+    { ku: 'بەسڕە', ar: 'البصرة', en: 'Basra', lat: 30.5085, lng: 47.7804 },
+    { ku: 'نەجەف', ar: 'النجف', en: 'Najaf', lat: 32.0259, lng: 44.3462 },
+    { ku: 'کەربەلا', ar: 'كربلاء', en: 'Karbala', lat: 32.616, lng: 44.024 },
+    { ku: 'ئەنبار', ar: 'الأنبار', en: 'Anbar', lat: 33.425, lng: 43.3 },
+    { ku: 'دیالە', ar: 'ديالى', en: 'Diyala', lat: 33.773, lng: 45.149 },
+    { ku: 'واست', ar: 'واسط', en: 'Wasit', lat: 32.5, lng: 45.83 },
+    { ku: 'میسان', ar: 'ميسان', en: 'Maysan', lat: 31.836, lng: 47.144 },
+    { ku: 'موسەننا', ar: 'المثنى', en: 'Muthanna', lat: 31.312, lng: 45.28 },
+    { ku: 'قادسیە', ar: 'القادسية', en: 'Qadisiyyah', lat: 31.989, lng: 44.925 },
+    { ku: 'بابل', ar: 'بابل', en: 'Babil', lat: 32.468, lng: 44.55 },
+    { ku: 'زیقار', ar: 'ذي قار', en: 'Dhi Qar', lat: 31.05, lng: 46.26 },
+    { ku: 'سەڵاحەدین', ar: 'صلاح الدين', en: 'Salah ad-Din', lat: 34.6, lng: 43.68 },
+    { ku: 'زاخۆ', ar: 'زاخو', en: 'Zakho', lat: 37.148, lng: 42.685 },
+    { ku: 'سۆران', ar: 'سوران', en: 'Soran', lat: 36.655, lng: 44.548 },
+    { ku: 'کۆیە', ar: 'كويه', en: 'Koya', lat: 36.083, lng: 44.633 },
+    { ku: 'ڕانیە', ar: 'رانية', en: 'Ranya', lat: 36.255, lng: 44.883 },
+    { ku: 'چەمچەماڵ', ar: 'چمچمال', en: 'Chamchamal', lat: 35.533, lng: 44.833 },
+    { ku: 'کەلار', ar: 'كلار', en: 'Kalar', lat: 34.628, lng: 45.32 },
+    { ku: 'مەخموور', ar: 'مخمور', en: 'Makhmur', lat: 35.775, lng: 43.58 },
+    { ku: 'شەقڵاوە', ar: 'شقلاوة', en: 'Shaqlawa', lat: 36.405, lng: 44.32 },
+    { ku: 'ئاکرێ', ar: 'عقرة', en: 'Akre', lat: 36.741, lng: 43.893 },
+    { ku: 'ڕەواندز', ar: 'رواندوز', en: 'Rawanduz', lat: 36.612, lng: 44.531 },
+    { ku: 'پێنجوێن', ar: 'بنجوين', en: 'Penjwen', lat: 35.623, lng: 45.949 },
+    { ku: 'قەڵادزێ', ar: 'قلعة دزة', en: 'Qaladze', lat: 36.183, lng: 45.128 },
+    { ku: 'مەککە', ar: 'مكة', en: 'Makkah', lat: 21.4225, lng: 39.8262 },
+    { ku: 'مەدینە', ar: 'المدينة', en: 'Madinah', lat: 24.467, lng: 39.611 }
+  ];
 
-  var S = { city: 'Erbil', country: 'Iraq', lat: 36.1911, lng: 44.0094, method: 3, tab: 'times' };
+  var S = { city: 'هەولێر', country: 'Iraq', lat: 36.1911, lng: 44.0094, method: 3, tab: 'times' };
   try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
 
   var times = null;
@@ -58,9 +75,16 @@
       '.salah-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}',
       '.salah-tabs button{border:1px solid #dce5e1;background:#fff;border-radius:11px;padding:10px 6px;cursor:pointer;font-size:13px}',
       '.salah-tabs button.on{background:#176b4b;color:#fff;border-color:#176b4b;font-weight:bold}',
-      '.salah-loc{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}',
-      '.salah-loc input{flex:1;min-width:120px;border:1px solid #dce5e1;border-radius:11px;padding:10px;background:#fff}',
+      '.salah-loc{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}',
+      '.salah-loc select,.salah-loc input{flex:1;min-width:140px;border:1px solid #dce5e1;border-radius:11px;padding:10px;background:#fff;font-size:14px}',
       '.salah-loc button{border:0;border-radius:11px;padding:10px 12px;background:#176b4b;color:#fff;cursor:pointer}',
+      '.salah-prov-list{max-height:200px;overflow:auto;border:1px solid #dce5e1;border-radius:12px;background:#fff;margin-bottom:10px;display:none}',
+      '.salah-prov-list.open{display:block}',
+      '.salah-prov-item{padding:11px 12px;border-bottom:1px solid #eef2f1;cursor:pointer;display:flex;justify-content:space-between;gap:8px}',
+      '.salah-prov-item:last-child{border-bottom:0}',
+      '.salah-prov-item:active,.salah-prov-item:hover{background:#e8f3ee}',
+      '.salah-prov-item b{font-size:14px}',
+      '.salah-prov-item span{color:#6d7975;font-size:12px}',
       '.salah-hero{background:#176b4b;color:#fff;border-radius:22px;padding:22px 16px 18px;margin-bottom:14px;text-align:center}',
       '.salah-ring{width:168px;height:168px;margin:0 auto 8px;border-radius:50%;border:6px solid rgba(255,255,255,.35);border-top-color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box}',
       '.salah-hero .now-name{font-size:26px;font-weight:bold;margin:0 0 4px}',
@@ -158,7 +182,7 @@
     var url = 'https://api.aladhan.com/v1/timings?latitude=' +
       encodeURIComponent(S.lat) + '&longitude=' + encodeURIComponent(S.lng) +
       '&method=' + encodeURIComponent(S.method || 3) +
-      '&timezone=auto&_=' + Date.now();
+      '&_=' + Date.now();
     var r = await fetch(url);
     if (!r.ok) throw new Error('net');
     var j = await r.json();
@@ -167,107 +191,103 @@
     return times;
   }
 
-  function buildQueries(q) {
-    var raw = String(q || '').trim();
-    var lower = raw.toLowerCase();
-    var list = [];
-    function add(x) {
-      if (!x) return;
-      x = String(x).trim();
-      if (!x) return;
-      if (list.indexOf(x) < 0) list.push(x);
-    }
-    add(raw);
-    add(CITY_ALIASES[raw]);
-    add(CITY_ALIASES[lower]);
-    // strip spaces
-    add(CITY_ALIASES[raw.replace(/\s+/g, '')]);
-    return list;
-  }
-
-  async function geocodeOne(name) {
-    var url = 'https://geocoding-api.open-meteo.com/v1/search?name=' +
-      encodeURIComponent(name) + '&count=5&language=en&format=json';
-    var r = await fetch(url);
-    if (!r.ok) return null;
-    var j = await r.json();
-    if (!j.results || !j.results.length) return null;
-    // Prefer Iraq / nearby if multiple
-    var preferred = j.results.find(function (x) {
-      return x.country_code === 'IQ' || x.country === 'Iraq';
-    });
-    return preferred || j.results[0];
-  }
-
-  async function searchCity(q) {
-    q = (q || '').trim();
-    if (!q) return null;
-
-    var queries = buildQueries(q);
-    var hit = null;
-    var usedQuery = q;
-
-    for (var i = 0; i < queries.length; i++) {
-      try {
-        hit = await geocodeOne(queries[i]);
-        if (hit) {
-          usedQuery = queries[i];
-          break;
-        }
-      } catch (e) {}
-    }
-
-    // Fallback: Aladhan timingsByCity (works with English city names)
-    if (!hit) {
-      var cityName = CITY_ALIASES[q] || CITY_ALIASES[q.toLowerCase()] || q;
-      var byCity =
-        'https://api.aladhan.com/v1/timingsByCity?city=' +
-        encodeURIComponent(cityName) +
-        '&country=' +
-        encodeURIComponent(S.country || 'Iraq') +
-        '&method=' +
-        encodeURIComponent(S.method || 3) +
-        '&_=' +
-        Date.now();
-      var r2 = await fetch(byCity);
-      if (!r2.ok) throw new Error('city-not-found');
-      var j2 = await r2.json();
-      if (!j2.data || !j2.data.timings) throw new Error('empty');
-      times = j2.data.timings;
-      S.city = cityName;
-      // approximate meta if present
-      try {
-        if (j2.data.meta && j2.data.meta.latitude) {
-          S.lat = +j2.data.meta.latitude;
-          S.lng = +j2.data.meta.longitude;
-        }
-      } catch (e) {}
-      save();
-      return times;
-    }
-
-    // Apply geocode result — ALWAYS overwrite lat/lng
-    S.lat = +hit.latitude;
-    S.lng = +hit.longitude;
-    S.city = hit.name || usedQuery || q;
-    if (hit.country) S.country = hit.country;
-    times = null; // force fresh fetch
+  async function applyProvince(p) {
+    S.lat = p.lat;
+    S.lng = p.lng;
+    S.city = p.ku;
+    S.country = 'Iraq';
+    times = null;
     save();
-    return await fetchTimes();
+    await fetchTimes();
   }
 
-  function useGPS() {
-    return new Promise(function (resolve, reject) {
-      if (!navigator.geolocation) return reject(new Error('no-geo'));
-      navigator.geolocation.getCurrentPosition(function (pos) {
-        S.lat = pos.coords.latitude;
-        S.lng = pos.coords.longitude;
-        S.city = 'شوێنی ئێستا';
-        times = null;
-        save();
-        resolve();
-      }, reject, { enableHighAccuracy: true, timeout: 12000 });
+  function filterProvinces(q) {
+    q = (q || '').trim().toLowerCase();
+    if (!q) return PROVINCES.slice();
+    return PROVINCES.filter(function (p) {
+      return (
+        p.ku.toLowerCase().indexOf(q) >= 0 ||
+        p.ar.toLowerCase().indexOf(q) >= 0 ||
+        p.en.toLowerCase().indexOf(q) >= 0
+      );
     });
+  }
+
+  function renderProvList(q) {
+    var list = document.getElementById('salahProvList');
+    if (!list) return;
+    var items = filterProvinces(q);
+    if (!items.length) {
+      list.innerHTML = '<div class="salah-prov-item"><span>هیچ پارێزگایەک نەدۆزرایەوە</span></div>';
+      list.classList.add('open');
+      return;
+    }
+    list.innerHTML = items
+      .map(function (p, i) {
+        return (
+          '<div class="salah-prov-item" data-i="' +
+          PROVINCES.indexOf(p) +
+          '">' +
+          '<b>' +
+          p.ku +
+          '</b><span>' +
+          p.ar +
+          ' · ' +
+          p.en +
+          '</span></div>'
+        );
+      })
+      .join('');
+    list.classList.add('open');
+    list.querySelectorAll('.salah-prov-item').forEach(function (el) {
+      el.onclick = async function () {
+        var idx = +el.getAttribute('data-i');
+        var p = PROVINCES[idx];
+        if (!p) return;
+        list.classList.remove('open');
+        var input = document.getElementById('salahCity');
+        if (input) input.value = p.ku;
+        var body = document.getElementById('salahBody');
+        if (body) body.innerHTML = '<div class="salah-card">کاتەکانی ' + p.ku + '...</div>';
+        try {
+          await applyProvince(p);
+          setTab('times');
+          startTick();
+        } catch (e) {
+          alert('نەتوانرا کاتەکان بهێنرێن.');
+        }
+      };
+    });
+  }
+
+  async function useGPSAndLoad() {
+    if (!navigator.geolocation) throw new Error('no-geo');
+    var pos = await new Promise(function (resolve, reject) {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 15000
+      });
+    });
+    S.lat = pos.coords.latitude;
+    S.lng = pos.coords.longitude;
+    S.city = 'شوێنی ئێستا';
+    S.country = '';
+    // nearest province label if close
+    var best = null, bestD = 1e9;
+    PROVINCES.forEach(function (p) {
+      var d = Math.abs(p.lat - S.lat) + Math.abs(p.lng - S.lng);
+      if (d < bestD) {
+        bestD = d;
+        best = p;
+      }
+    });
+    if (best && bestD < 0.8) {
+      S.city = best.ku + ' (GPS)';
+      S.country = 'Iraq';
+    }
+    times = null;
+    save();
+    await fetchTimes();
   }
 
   function qiblaBearing(lat, lng) {
@@ -283,7 +303,7 @@
     if (!box) return;
     var tl = getTimeline();
     if (!tl) {
-      box.innerHTML = '<div class="salah-card">کاتەکان بارنەبوون. شارێک بنووسە یان GPS.</div>';
+      box.innerHTML = '<div class="salah-card">کاتەکان بارنەبوون. پارێزگایەک هەڵبژێرە یان GPS.</div>';
       return;
     }
     var cur = tl.current, next = tl.next;
@@ -319,8 +339,7 @@
         '</div></div><div class="tm">' + fmtHM(x.date) + '</div></div>';
     }).join('');
 
-    box.innerHTML = hero + '<div class="salah-list">' + rows + '</div>' +
-      '<div class="muted" style="margin-top:10px;font-size:12px;text-align:center">پەنجە لەسەر کات = وردەکاری · ژمێریەر چرکەبەچرکە</div>';
+    box.innerHTML = hero + '<div class="salah-list">' + rows + '</div>';
 
     box.querySelectorAll('.salah-row').forEach(function (el) {
       el.onclick = function () {
@@ -371,11 +390,10 @@
       { t: 'یەکەم پرسیار لە قیامەت', ar: 'إِنَّ أَوَّلَ مَا يُحَاسَبُ بِهِ الْعَبْدُ يَوْمَ الْقِيَامَةِ مِنْ عَمَلِهِ صَلَاتُهُ', ku: 'یەکەم شت کە لە ڕۆژی قیامەت لێی دەپرسرێتەوە، نوێژە.', src: 'سنن أبي داود · الترمذي' },
       { t: 'پەیمانی نوێژ', ar: 'الْعَهْدُ الَّذِي بَيْنَنَا وَبَيْنَهُمُ الصَّلَاةُ، فَمَنْ تَرَكَهَا فَقَدْ كَفَرَ', ku: 'پەیمانی نێوان ئێمە و ئەوان نوێژە؛ هەر کەس جێی بهێڵێت بێباوەڕی کردووە.', src: 'سنن الترمذي' }
     ];
-    box.innerHTML = '<div class="salah-card"><b>فەزڵی نوێژ و جەماعەت</b></div>' +
-      items.map(function (it) {
-        return '<div class="salah-card"><h3>' + it.t + '</h3><div class="ar">' + it.ar + '</div><div class="ku">' + it.ku +
-          '</div><div class="src">' + it.src + '</div></div>';
-      }).join('');
+    box.innerHTML = items.map(function (it) {
+      return '<div class="salah-card"><h3>' + it.t + '</h3><div class="ar">' + it.ar + '</div><div class="ku">' + it.ku +
+        '</div><div class="src">' + it.src + '</div></div>';
+    }).join('');
   }
 
   function stopQibla() {
@@ -390,8 +408,9 @@
     if (!box) return;
     stopQibla();
     var bearing = qiblaBearing(S.lat, S.lng);
-    box.innerHTML = '<div class="salah-card qibla-box"><b>قیبلەنما</b><div class="qibla-hint">ئاڕاستەی کەعبە: <b dir="ltr">' +
-      bearing.toFixed(1) + '°</b><br>📍 ' + (S.city || '') + '</div><div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div>' +
+    box.innerHTML = '<div class="salah-card qibla-box"><b>قیبلەنما</b><div class="qibla-hint">📍 ' + (S.city || '') +
+      '<br>ئاڕاستەی کەعبە: <b dir="ltr">' + bearing.toFixed(1) + '°</b></div>' +
+      '<div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div>' +
       '<div class="qibla-deg" id="qiblaDeg">' + bearing.toFixed(0) + '°</div>' +
       '<button class="primary" style="width:100%;margin-top:12px" id="qiblaCalib">چالاککردنی قیبلەنما</button></div>';
     var needle = document.getElementById('qiblaNeedle');
@@ -441,10 +460,13 @@
     v = document.createElement('section');
     v.id = 'salahView';
     v.className = 'view';
-    v.innerHTML = '<div class="salah-head"><button class="tab" type="button" id="salahBack">‹ سەرەتا</button><b>نویژەکانم</b>' +
+    v.innerHTML =
+      '<div class="salah-head"><button class="tab" type="button" id="salahBack">‹ سەرەتا</button><b>نویژەکانم</b>' +
       '<button class="tab" type="button" id="salahRefresh">↻</button></div>' +
-      '<div class="salah-loc"><input id="salahCity" placeholder="سلێمانی، هەولێر، London..." />' +
-      '<button type="button" id="salahSearch">گەڕان</button><button type="button" id="salahGps">📍</button></div>' +
+      '<div class="salah-loc">' +
+      '<input id="salahCity" placeholder="گەڕان یان هەڵبژاردنی پارێزگا..." autocomplete="off" />' +
+      '<button type="button" id="salahGps" title="شوێنی من">📍</button></div>' +
+      '<div id="salahProvList" class="salah-prov-list"></div>' +
       '<div class="salah-tabs"><button type="button" data-tab="times" class="on">کاتەکان</button>' +
       '<button type="button" data-tab="virtues">فەزڵ و حەدیس</button><button type="button" data-tab="qibla">قیبلەنما</button></div>' +
       '<div id="salahBody"><div class="card muted">بارکردن...</div></div>';
@@ -459,37 +481,36 @@
       times = null;
       await loadAndShow();
     };
-    document.getElementById('salahSearch').onclick = async function () {
-      var q = (document.getElementById('salahCity').value || '').trim();
-      if (!q) return;
-      var body = document.getElementById('salahBody');
-      if (body) body.innerHTML = '<div class="salah-card">گەڕان بۆ «' + q + '» و نوێکردنەوەی کاتەکان...</div>';
-      try {
-        await searchCity(q);
-        document.getElementById('salahCity').value = S.city || q;
-        setTab('times');
-        startTick();
-      } catch (e) {
-        alert('نەتوانرا شوێن بدۆزرێتەوە. نموونە: سلێمانی، هەولێر، Sulaymaniyah، London');
-        if (body) body.innerHTML = '<div class="salah-card">گەڕان سەرکەوتوو نەبوو. دووبارە هەوڵ بدە.</div>';
-      }
-    };
-    document.getElementById('salahCity').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') document.getElementById('salahSearch').click();
+
+    var cityInput = document.getElementById('salahCity');
+    cityInput.addEventListener('focus', function () {
+      renderProvList(cityInput.value);
     });
+    cityInput.addEventListener('input', function () {
+      renderProvList(cityInput.value);
+    });
+    // close list when tapping outside
+    document.addEventListener('click', function (e) {
+      var list = document.getElementById('salahProvList');
+      if (!list) return;
+      if (e.target === cityInput || list.contains(e.target)) return;
+      list.classList.remove('open');
+    });
+
     document.getElementById('salahGps').onclick = async function () {
       var body = document.getElementById('salahBody');
-      if (body) body.innerHTML = '<div class="salah-card">GPS...</div>';
+      if (body) body.innerHTML = '<div class="salah-card">📍 چالاککردنی شوێن و هێنانی کاتەکان...</div>';
       try {
-        await useGPS();
-        await fetchTimes();
-        document.getElementById('salahCity').value = S.city;
+        await useGPSAndLoad();
+        cityInput.value = S.city;
         setTab('times');
         startTick();
       } catch (e) {
-        alert('GPS بەردەست نییە.');
+        alert('ڕێگە بە شوێن (Location) بدە لە ڕێکخستنی مۆبایل/وێبگەڕ.');
+        if (body) body.innerHTML = '<div class="salah-card">GPS کارینەکرد. ڕێگە بدە یان پارێزگایەک هەڵبژێرە.</div>';
       }
     };
+
     document.querySelectorAll('.salah-tabs button').forEach(function (b) {
       b.onclick = function () { setTab(b.getAttribute('data-tab')); };
     });
@@ -505,19 +526,29 @@
     } catch (e) {}
     var cityInput = document.getElementById('salahCity');
     if (cityInput) cityInput.value = S.city || '';
+
+    // Auto-try GPS first when opening (non-blocking fallback to saved city)
+    var body = document.getElementById('salahBody');
+    if (body) body.innerHTML = '<div class="salah-card">هەوڵی شوێن (GPS)...</div>';
+
+    var loaded = false;
     try {
-      if (!times) await fetchTimes();
+      await useGPSAndLoad();
+      if (cityInput) cityInput.value = S.city;
+      loaded = true;
     } catch (e) {
+      // GPS denied or unavailable — use saved / default
       try {
-        if (S.city) await searchCity(S.city);
+        if (!times) await fetchTimes();
+        loaded = true;
       } catch (e2) {
-        var body = document.getElementById('salahBody');
-        if (body) body.innerHTML = '<div class="salah-card">شار بنووسە (سلێمانی / هەولێر / London) یان GPS.</div>';
-        return;
+        if (body) body.innerHTML = '<div class="salah-card">پارێزگایەک هەڵبژێرە یان 📍 دابگرە.</div>';
       }
     }
-    setTab(S.tab || 'times');
-    startTick();
+    if (loaded) {
+      setTab(S.tab || 'times');
+      startTick();
+    }
   }
 
   window.enterSalah = function () { loadAndShow(); };
@@ -535,7 +566,7 @@
 
   function patchShowView() {
     var orig = window.showView;
-    if (typeof orig !== 'function' || orig.__salah3) return;
+    if (typeof orig !== 'function' || orig.__salah4) return;
     window.showView = function (id, title) {
       var ret = orig.apply(this, arguments);
       try {
@@ -545,7 +576,7 @@
       if (id !== 'salahView') stopQibla();
       return ret;
     };
-    window.showView.__salah3 = true;
+    window.showView.__salah4 = true;
   }
 
   function boot() {
