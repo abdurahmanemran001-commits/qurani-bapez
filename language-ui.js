@@ -30,6 +30,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s6.async = true;
   document.head.appendChild(s6);
 
+  var s7 = document.createElement('script');
+  s7.src = 'salah.js?v=1';
+  s7.async = true;
+  document.head.appendChild(s7);
+
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
