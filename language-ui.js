@@ -26,7 +26,13 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s5);
 
   var s6 = document.createElement('script');
-  s6.src = 'ruqyah.js?v=1';
+  s6.src = 'ruqyah.js?v=3';
+  s6.onload = function () {
+    var sr = document.createElement('script');
+    sr.src = 'ruqyah-reciters.js?v=1';
+    sr.async = true;
+    document.head.appendChild(sr);
+  };
   s6.async = true;
   document.head.appendChild(s6);
 
