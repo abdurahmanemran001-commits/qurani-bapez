@@ -35,6 +35,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sr.async = true;
   document.head.appendChild(sr);
 
+  var sy = document.createElement('script');
+  sy.src = 'ruqyah-youtube.js?v=1';
+  sy.async = true;
+  document.head.appendChild(sy);
+
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
