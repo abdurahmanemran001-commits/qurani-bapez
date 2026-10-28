@@ -63,7 +63,8 @@
   if (!byId[S.sel]) S.sel = 'sub';
   if (S.vib === undefined) S.vib = true;
   if (!(S.size >= 1 && S.size <= 5)) S.size = 3;
-  if (['ring', 'beads', 'digital', 'minimal'].indexOf(S.style) < 0) S.style = 'ring';
+  var STYLES = [['ring', '⭕ بازنە'], ['beads', '📿 مسبحە'], ['rosary', '🧿 مسبحەی هەڵواسراو'], ['digital', '🔢 دیجیتاڵ'], ['mechanical', '⚙ میکانیکی'], ['minimal', '▭ سادە'], ['wave', '🌊 ئاو'], ['star', '✴ ئەستێرە'], ['flower', '🌸 گوڵ'], ['heart', '❤ دڵ'], ['neon', '✨ نیۆن'], ['ripple', '💧 شەپۆل'], ['grid', '▦ ڕیزی دەنک'], ['moon', '🌙 مانگ'], ['full', '⬛ تەواوی شاشە']];
+  if (!STYLES.some(function (s) { return s[0] === S.style; })) S.style = 'ring';
   if (S.theme !== 'dark') S.theme = 'light';
   var BGS = [['plain', 'ساده'], ['pattern', 'نەخش'], ['green', 'سەوز'], ['night', 'شەو'], ['sand', 'لم']];
   if (!BGS.some(function (b) { return b[0] === S.bg; })) S.bg = 'plain';
@@ -169,7 +170,7 @@
       '#tasbih .tb-chip.on{background:#176b4b;border-color:#176b4b;color:#fff}',
       '#tasbih .tb-ring{position:relative;width:230px;height:230px;margin:6px auto}',
       '#tasbih .tb-ring svg{position:absolute;inset:0;transform:rotate(-90deg)}',
-      '#tasbih .tb-tap{position:absolute;inset:14px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#2a8d65,#176b4b 70%);color:#fff;box-shadow:0 8px 22px #176b4b55;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .06s}',
+      '#tasbih .tb-tap{position:absolute;inset:25px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#2a8d65,#176b4b 70%);color:#fff;box-shadow:0 8px 22px #176b4b55;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .06s}',
       '#tasbih .tb-tap:active{transform:scale(.96)}',
       '#tasbih .tb-tap.done{background:radial-gradient(circle at 35% 30%,#d2a54b,#b48a3c 70%);box-shadow:0 8px 22px #b48a3c55}',
       '#tasbih .tb-num{font-size:54px;font-weight:bold;line-height:1}',
@@ -221,6 +222,46 @@
       '#tasbih .tb-mtap.done{background:linear-gradient(145deg,#d2a54b,#b48a3c)}',
       '#tasbih .tb-mtap .tb-num{font-size:70px}',
       '#tasbih .tb-mtap .tb-bar{max-width:220px}',
+
+      '#tasbih .tb-sm .tb-num{font-size:34px}',
+      '#tasbih .tb-sm .tb-of{font-size:11px;margin-top:2px}',
+      '#tasbih .tb-rosary{width:260px;height:300px}',
+      '#tasbih .tb-rosary .tb-tap{inset:auto;left:75px;top:60px;width:110px;height:110px}',
+      '#tasbih .tb-tap.tb-clear{background:transparent!important;box-shadow:none!important}',
+      '#tasbih .tb-tap.tb-ov{color:#5a0f2a}',
+      '#tasbih .tb-tap.tb-ov .tb-num,#tasbih .tb-tap.tb-ov .tb-of{text-shadow:0 0 6px #fff,0 0 3px #fff}',
+      '#tasbih .tb-tap.tb-ink{color:var(--tb-ink,#18231f)}',
+      '#tasbih .tb-tap.tb-wave{background:#16465f;overflow:hidden}',
+      '#tasbih .tb-tap.tb-wave.done{background:#16465f}',
+      '#tasbih .tb-wf{position:absolute;left:0;right:0;bottom:0;height:0;background:linear-gradient(#5cc0e6,#1f7aa8);transition:height .25s}',
+      '#tasbih .tb-wf:before{content:"";position:absolute;top:-12px;left:-25%;width:150%;height:26px;border-radius:50%;background:#5cc0e6;animation:tbw 3s ease-in-out infinite alternate}',
+      '#tasbih .tb-tap.tb-wave.done .tb-wf,#tasbih .tb-tap.tb-wave.done .tb-wf:before{background:#e9c46a}',
+      '#tasbih .tb-wave .tb-num,#tasbih .tb-wave .tb-of{position:relative;z-index:1;text-shadow:0 1px 5px #0008}',
+      '@keyframes tbw{from{transform:translateX(-8%)}to{transform:translateX(8%)}}',
+      '#tasbih .tb-neonbox{background:#050d0a;border-radius:28px;padding:16px 0;margin:6px 0}',
+      '#tasbih .tb-neonbox .tb-tap{background:#07140f!important;box-shadow:0 0 18px #39ffb0,inset 0 0 14px #39ffb055!important;border:3px solid #39ffb0;color:#b9ffe3}',
+      '#tasbih .tb-neonbox .tb-tap.done{border-color:#ffd166;box-shadow:0 0 18px #ffd166,inset 0 0 14px #ffd16655!important}',
+      '#tasbih .tb-neonbox .tb-num{text-shadow:0 0 10px #39ffb0}',
+      '#tasbih .tb-neonbox #tbArc{stroke:#ff4fd8;filter:drop-shadow(0 0 6px #ff4fd8)}',
+      '#tasbih .tb-neonbox svg circle:first-child{stroke:#12332a}',
+      '#tasbih .tb-mtap.tb-full{min-height:58vh}',
+      '#tasbih .tb-mtap.tb-full .tb-num{font-size:120px}',
+      '#tasbih .tb-mtap.tb-rip{position:relative;overflow:hidden;background:linear-gradient(145deg,#1f8a9c,#14586b)}',
+      '#tasbih .tb-mtap.tb-rip.done{background:linear-gradient(145deg,#d2a54b,#b48a3c)}',
+      '#tasbih .tb-rip>*{position:relative;pointer-events:none}',
+      '#tasbih .tb-rip .rp{position:absolute;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;background:#ffffff59;transform:scale(0);animation:tbrp .6s ease-out forwards}',
+      '@keyframes tbrp{to{transform:scale(4.5);opacity:0}}',
+      '#tasbih .tb-mtap.tb-grid .tb-num{font-size:46px;margin-top:8px}',
+      '#tasbih .tb-dots{display:flex;flex-wrap:wrap;justify-content:center;max-width:250px}',
+      '#tasbih .tb-dots i{display:inline-block;width:12px;height:12px;margin:3px;border-radius:50%;background:#ffffff40}',
+      '#tasbih .tb-dots i.on{background:#e9c46a}',
+      '#tasbih .tb-mech{max-width:300px;margin:8px auto;padding:18px 16px 20px;border-radius:26px;background:linear-gradient(145deg,#a8884a,#6b5427 60%,#8a6f3a);box-shadow:0 10px 24px #0004,inset 0 2px 0 #ffffff55}',
+      '#tasbih .tb-mwin{direction:ltr;text-align:center;background:#0b0b0b;border-radius:10px;padding:8px;box-shadow:inset 0 3px 8px #000}',
+      '#tasbih .tb-mwin i{display:inline-block;width:48px;height:66px;line-height:66px;margin:0 2px;border-radius:6px;background:linear-gradient(#2a2a2a,#050505 50%,#2a2a2a);color:#f5f5f5;font:normal bold 42px "Courier New",monospace;text-align:center}',
+      '#tasbih .tb-mof{text-align:center;color:#2a1f0a;font-size:12px;margin-top:8px}',
+      '#tasbih .tb-mbtn{display:block;width:120px;height:120px;margin:12px auto 0;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#fff,#c9c9c9 55%,#7d7d7d);box-shadow:0 6px 0 #4b4b4b,0 10px 16px #0006;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}',
+      '#tasbih .tb-mbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #4b4b4b}',
+      '#tasbih .tb-mbtn.done{background:radial-gradient(circle at 35% 30%,#fff3c4,#e0b24a 55%,#8a6a24)}',
       '#tasbih.tb-dark{--tb-ink:#eaf2ee}',
       '#tasbih.tb-dark .tb-card,#tasbih.tb-dark .tb-set,#tasbih.tb-dark .tb-item{background:#1b2621;border-color:#2f3f38;color:#eaf2ee}',
       '#tasbih.tb-dark .tb-item.on{background:#173d2f;border-color:#2a8d65}',
@@ -256,18 +297,37 @@
     return v;
   }
 
-  function tapHtml() {
-    if (S.style === 'digital') {
-      return '<div class="tb-dig"><div class="tb-lcd"><span class="n" id="tbNum">0</span><span class="o" id="tbOf"></span><div class="tb-bar"><i id="tbBar"></i></div></div><button type="button" class="tb-dtap" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
-    }
-    if (S.style === 'minimal') {
-      return '<button type="button" class="tb-mtap" id="tbTap" data-act="tap"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span><div class="tb-bar"><i id="tbBar"></i></div></button>';
-    }
-    if (S.style === 'beads') {
-      return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" id="tbBeads"></svg><button type="button" class="tb-tap" id="tbTap" data-act="tap" style="inset:46px"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span></button></div>';
-    }
+  function starD() {
+    var pts = [], i, a, r;
+    for (i = 0; i < 16; i++) { a = i * Math.PI / 8 - Math.PI / 2; r = i % 2 ? 78 : 108; pts.push((115 + r * Math.cos(a)).toFixed(1) + ' ' + (115 + r * Math.sin(a)).toFixed(1)); }
+    return 'M' + pts.join('L') + 'Z';
+  }
+  var NUM = '<span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span>';
+  var BARH = '<div class="tb-bar"><i id="tbBar"></i></div>';
+  function ringHtml() {
     return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230"><circle cx="115" cy="115" r="' + R + '" fill="none" stroke="#dce5e1" stroke-width="9"/><circle id="tbArc" cx="115" cy="115" r="' + R + '" fill="none" stroke="#b48a3c" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + CIRC + '" stroke-dashoffset="' + CIRC + '"/></svg>' +
-      '<button type="button" class="tb-tap" id="tbTap" data-act="tap"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span></button></div>';
+      '<button type="button" class="tb-tap" id="tbTap" data-act="tap">' + NUM + '</button></div>';
+  }
+  function tapHtml() {
+    var st = S.style, nt = 'style="transform:none"';
+    if (st === 'digital') return '<div class="tb-dig"><div class="tb-lcd"><span class="n" id="tbNum">0</span><span class="o" id="tbOf"></span>' + BARH + '</div><button type="button" class="tb-dtap" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
+    if (st === 'minimal') return '<button type="button" class="tb-mtap" id="tbTap" data-act="tap">' + NUM + BARH + '</button>';
+    if (st === 'full') return '<button type="button" class="tb-mtap tb-full" id="tbTap" data-act="tap">' + NUM + BARH + '</button>';
+    if (st === 'ripple') return '<button type="button" class="tb-mtap tb-rip" id="tbTap" data-act="tap">' + NUM + BARH + '</button>';
+    if (st === 'grid') return '<button type="button" class="tb-mtap tb-grid" id="tbTap" data-act="tap"><div class="tb-dots" id="tbDots"></div>' + NUM + '</button>';
+    if (st === 'mechanical') return '<div class="tb-mech"><div class="tb-mwin" id="tbNum"></div><div class="tb-mof" id="tbOf"></div><button type="button" class="tb-mbtn" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
+    if (st === 'beads') return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" id="tbBeads"></svg><button type="button" class="tb-tap" id="tbTap" data-act="tap" style="inset:46px">' + NUM + '</button></div>';
+    if (st === 'rosary') return '<div class="tb-ring tb-rosary"><svg width="260" height="300" viewBox="0 0 260 300" id="tbRos" ' + nt + '></svg><button type="button" class="tb-tap tb-sm" id="tbTap" data-act="tap">' + NUM + '</button></div>';
+    if (st === 'wave') return '<div class="tb-ring"><button type="button" class="tb-tap tb-wave" id="tbTap" data-act="tap" style="inset:0"><i class="tb-wf" id="tbWf"></i>' + NUM + '</button></div>';
+    if (st === 'star') return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" ' + nt + '><path id="tbStarF" d="' + starD() + '" fill="#176b4b"/><path id="tbArc2" d="' + starD() + '" fill="none" stroke="#e9c46a" stroke-width="7" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg><button type="button" class="tb-tap tb-sm tb-clear" id="tbTap" data-act="tap" style="inset:0">' + NUM + '</button></div>';
+    if (st === 'flower') {
+      var pe = ''; for (var i = 0; i < 12; i++) pe += '<ellipse class="tbp" cx="115" cy="48" rx="17" ry="40" transform="rotate(' + (i * 30) + ' 115 115)"/>';
+      return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" ' + nt + '>' + pe + '</svg><button type="button" class="tb-tap tb-sm" id="tbTap" data-act="tap" style="inset:68px">' + NUM + '</button></div>';
+    }
+    if (st === 'heart') return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 24 24" ' + nt + '><defs><linearGradient id="tbHg" x1="0" y1="0" x2="0" y2="1"><stop id="tbH1" offset="1" stop-color="#f3d9de"/><stop id="tbH2" offset="1" stop-color="#e0245e"/></linearGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tbHg)" stroke="#e0245e" stroke-width=".3"/></svg><button type="button" class="tb-tap tb-sm tb-clear tb-ov" id="tbTap" data-act="tap" style="inset:0">' + NUM + '</button></div>';
+    if (st === 'moon') return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" ' + nt + '><path id="tbMoon" d="M150 22A96 96 0 1 0 150 208A74 74 0 1 1 150 22Z" fill="#b48a3c" fill-opacity=".2" stroke="#b48a3c" stroke-width="3"/><text x="170" y="70" font-size="22" fill="#b48a3c">✦</text><text x="195" y="120" font-size="14" fill="#b48a3c">✦</text><text x="168" y="168" font-size="18" fill="#b48a3c">✦</text></svg><button type="button" class="tb-tap tb-sm tb-clear tb-ink" id="tbTap" data-act="tap" style="inset:0">' + NUM + '</button></div>';
+    if (st === 'neon') return '<div class="tb-neonbox">' + ringHtml() + '</div>';
+    return ringHtml();
   }
 
   function chip(attr, val, label, on, extra) {
@@ -275,7 +335,7 @@
   }
   function settingsHtml() {
     if (!panelOpen) return '';
-    var styles = [['ring', 'بازنە'], ['beads', 'مسبحە'], ['digital', 'دیجیتاڵ'], ['minimal', 'سادە']];
+    var styles = STYLES;
     var swatch = { plain: '#f4f7f5', pattern: '#cfe6da', green: '#b9dcc9', night: '#1a2a4a', sand: '#e8d5a8' };
     return '<div class="tb-set">' +
       '<b>قەبارەی نووسین</b><input type="range" min="1" max="5" step="1" value="' + S.size + '" data-range="size">' +
@@ -316,6 +376,48 @@
     paint();
   }
 
+  function nDots(t) { return (t > 0 && t <= 100) ? t : 33; }
+  function filledOf(c, t, n) { return (t > 0 && c >= t) ? n : (c % n); }
+  function unlit() { return S.theme === 'dark' ? '#3a4a43' : '#cfd9d4'; }
+  var PX = {
+    rosary: function (c, t) {
+      var svg = $('tbRos'); if (!svg) return;
+      var n = nDots(t), f = filledOf(c, t, n), r = n > 60 ? 3.2 : (n > 40 ? 4.5 : 6), h = '', i;
+      for (i = 0; i < n; i++) {
+        var a = (i / n) * 2 * Math.PI - Math.PI / 2, x = 130 + 88 * Math.cos(a), y = 115 + 100 * Math.sin(a), on = i < f;
+        h += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="' + (on ? '#b48a3c' : unlit()) + '"' + (on ? ' stroke="#8a6a24" stroke-width=".8"' : '') + '/>';
+      }
+      h += '<circle cx="130" cy="226" r="8" fill="#176b4b"/><path d="M130 234L116 290H144Z" fill="#176b4b"/><path d="M122 262H138M119 276H141" stroke="#e9c46a" stroke-width="2"/>';
+      svg.innerHTML = h;
+    },
+    star: function (c, t, p) {
+      var a = $('tbArc2'), f = $('tbStarF');
+      if (a) a.setAttribute('stroke-dashoffset', String(1 - p));
+      if (f) f.setAttribute('fill', (t > 0 && c >= t) ? '#b48a3c' : '#176b4b');
+    },
+    flower: function (c, t, p) {
+      var ps = document.querySelectorAll('#tasbih .tbp'), lit = p * 12, i, f;
+      for (i = 0; i < ps.length; i++) {
+        f = Math.max(0, Math.min(1, lit - i));
+        ps[i].setAttribute('fill', f >= 1 ? '#e58fb0' : unlit());
+        ps[i].setAttribute('fill-opacity', f > 0 && f < 1 ? String(.35 + f * .65) : '1');
+        if (f > 0 && f < 1) ps[i].setAttribute('fill', '#e58fb0');
+      }
+    },
+    wave: function (c, t, p) { var w = $('tbWf'); if (w) w.style.height = (p * 100) + '%'; },
+    heart: function (c, t, p) {
+      var a = $('tbH1'), b = $('tbH2'); if (!a) return;
+      a.setAttribute('offset', String(1 - p)); b.setAttribute('offset', String(1 - p));
+    },
+    moon: function (c, t, p) { var m = $('tbMoon'); if (m) m.setAttribute('fill-opacity', String(.2 + .8 * p)); },
+    grid: function (c, t) {
+      var d = $('tbDots'); if (!d) return;
+      var n = nDots(t), f = filledOf(c, t, n), h = '', i;
+      for (i = 0; i < n; i++) h += '<i' + (i < f ? ' class="on"' : '') + '></i>';
+      d.innerHTML = h;
+    }
+  };
+
   function paintBeads(c, t, total) {
     var svg = $('tbBeads'); if (!svg) return;
     var n = (t > 0 && t <= 100) ? t : 33;
@@ -348,17 +450,21 @@
     }
     ar.className = 'tb-ar' + (shown.ar.length > 40 ? ' long' : '');
     ar.textContent = shown.ar; ku.textContent = shown.ku;
-    $('tbNum').textContent = S.style === 'digital' ? String(c) : nu(c);
+    if (S.style === 'mechanical') {
+      var ds = String(c); while (ds.length < 4) ds = '0' + ds;
+      $('tbNum').innerHTML = ds.split('').map(function (d) { return '<i>' + d + '</i>'; }).join('');
+    } else $('tbNum').textContent = (S.style === 'digital') ? String(c) : nu(c);
     $('tbOf').textContent = it.seq ? label + ' · کۆ ' + nu(t) : (t ? 'لە ' + nu(t) : 'بێ ئامانج');
     var arc = $('tbArc'); if (arc) arc.setAttribute('stroke-dashoffset', String(CIRC * (1 - Math.min(1, prog))));
     var bar = $('tbBar'); if (bar) bar.style.width = (Math.min(1, prog) * 100) + '%';
     paintBeads(c, t, t);
+    var fx = PX[S.style]; if (fx) fx(c, t, Math.min(1, prog));
     var tp = $('tbTap'); if (tp) tp.classList.toggle('done', !!t && c >= t);
     $('tbToday').textContent = nu(S.days[dayKey()] || 0);
     $('tbTotal').textContent = nu(S.totals[it.id] || 0);
   }
 
-  function tap() {
+  function tap(e) {
     var it = cur(), t = targetOf(it), c = S.counts[it.id] || 0;
     if (t && c >= t) c = 0; // new round
     var prevStep = it.seq && c ? stepOf(it, c).i : -1;
@@ -371,13 +477,20 @@
     else if (it.seq && stepOf(it, c).i !== prevStep && c > 1) { vibrate([40, 30, 40]); }
     else vibrate(12);
     paint();
+    if (S.style === 'ripple' && e && e.clientX !== undefined) {
+      var tp = $('tbTap'); if (tp) {
+        var rc = tp.getBoundingClientRect(), s = document.createElement('span');
+        s.className = 'rp'; s.style.left = (e.clientX - rc.left) + 'px'; s.style.top = (e.clientY - rc.top) + 'px';
+        tp.appendChild(s); setTimeout(function () { if (s.parentNode) s.parentNode.removeChild(s); }, 650);
+      }
+    }
   }
 
   function onClick(e) {
     var el = e.target.closest ? e.target.closest('[data-act],[data-t],[data-id],[data-style],[data-theme],[data-bgset],[data-flag]') : null;
     if (!el) return;
     var act = el.getAttribute('data-act');
-    if (act === 'tap') return tap();
+    if (act === 'tap') return tap(e);
     if (act === 'back') { setWake(false); if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'reset') {
       var it = cur();
