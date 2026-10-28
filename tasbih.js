@@ -62,6 +62,12 @@
   S.counts = S.counts || {}; S.targets = S.targets || {}; S.totals = S.totals || {}; S.days = S.days || {};
   if (!byId[S.sel]) S.sel = 'sub';
   if (S.vib === undefined) S.vib = true;
+  if (!(S.size >= 1 && S.size <= 5)) S.size = 3;
+  if (['ring', 'beads', 'digital', 'minimal'].indexOf(S.style) < 0) S.style = 'ring';
+  if (S.theme !== 'dark') S.theme = 'light';
+  var BGS = [['plain', 'ساده'], ['pattern', 'نەخش'], ['green', 'سەوز'], ['night', 'شەو'], ['sand', 'لم']];
+  if (!BGS.some(function (b) { return b[0] === S.bg; })) S.bg = 'plain';
+  var panelOpen = false, wakeLock = null;
   function save() {
     try {
       var ks = Object.keys(S.days).sort();
@@ -102,6 +108,43 @@
     t.textContent = msg; t.style.display = 'block';
     clearTimeout(toast._t); toast._t = setTimeout(function () { t.style.display = 'none'; }, 2400);
   }
+
+  /* ---------- backgrounds ---------- */
+  var PAT = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23176b4b' stroke-opacity='.14' stroke-width='1'%3E%3Crect x='15' y='15' width='30' height='30'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/svg%3E\")";
+  var BGCSS = {
+    plain: ['#f4f7f5', '#111815'],
+    pattern: [PAT + ' #eef5f1', PAT + ' #0f1a15'],
+    green: ['linear-gradient(160deg,#e3f3ea,#b9dcc9)', 'linear-gradient(160deg,#0f3d2c,#0a2219)'],
+    night: ['linear-gradient(180deg,#e6eefb,#c8d8f2)', 'linear-gradient(180deg,#1a2a4a,#0b1426)'],
+    sand: ['linear-gradient(160deg,#f8efd9,#e8d5a8)', 'linear-gradient(160deg,#3a2f1a,#1f180c)']
+  };
+  function bgCss() {
+    var out = [];
+    Object.keys(BGCSS).forEach(function (k) {
+      ['light', 'dark'].forEach(function (th, i) {
+        out.push('.phone:has(#tasbih.active[data-bg="' + k + '"][data-theme="' + th + '"]) .main{background:' + BGCSS[k][i] + '!important}');
+      });
+    });
+    return out;
+  }
+  var SIZES = [[20, 15, 13], [24, 17, 14], [28, 19, 15], [34, 22, 17], [40, 26, 19]];
+  function applyTheme() {
+    var v = $('tasbih'); if (!v) return;
+    v.setAttribute('data-bg', S.bg); v.setAttribute('data-theme', S.theme);
+    v.classList.toggle('tb-dark', S.theme === 'dark');
+    var z = SIZES[S.size - 1];
+    v.style.setProperty('--tb-ar', z[0] + 'px'); v.style.setProperty('--tb-ha', z[1] + 'px'); v.style.setProperty('--tb-hk', z[2] + 'px');
+  }
+  function setWake(on) {
+    try {
+      if (on && navigator.wakeLock && !wakeLock) {
+        navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; l.addEventListener('release', function () { wakeLock = null; }); }, function () {});
+      } else if (!on && wakeLock) { wakeLock.release(); wakeLock = null; }
+    } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', function () {
+    var v = $('tasbih'); if (document.visibilityState === 'visible' && S.wake && v && v.classList.contains('active')) setWake(true);
+  });
 
   /* ---------- css ---------- */
   function css() {
@@ -147,8 +190,52 @@
       '#tasbih .tb-item .a{font-family:serif;font-size:17px;line-height:1.9}',
       '#tasbih .tb-item .m{display:flex;justify-content:space-between;color:#6d7975;font-size:12px;margin-top:2px}',
       '#tsToast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#173f35;color:#fff;padding:10px 16px;border-radius:20px;font-size:13px;z-index:99999;max-width:85%;text-align:center;display:none}',
-      '.tasbih-choice .choice-icon{font-size:26px}'
-    ].join('');
+      '.tasbih-choice .choice-icon{font-size:26px}',
+      '#tasbih{color:var(--tb-ink,#18231f)}',
+      '#tasbih .tb-ar{font-size:var(--tb-ar,26px)}',
+      '#tasbih .tb-ar.long{font-size:calc(var(--tb-ar,26px)*.78)}',
+      '#tasbih .tb-h .a{font-size:var(--tb-ha,19px)}',
+      '#tasbih .tb-h .k{font-size:var(--tb-hk,14px)}',
+      '#tasbih .tb-item .a{font-size:calc(var(--tb-hk,14px) + 3px)}',
+      '#tasbih .tb-gear{border:1px solid #dce5e1;background:#fff;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;color:#364452}',
+      '#tasbih .tb-head .l{display:flex;align-items:center;gap:8px}',
+      '#tasbih .tb-set{background:#fff;border:1px solid #dce5e1;border-radius:18px;padding:14px;margin-bottom:12px;text-align:right}',
+      '#tasbih .tb-set b{display:block;font-size:13px;margin:10px 0 6px;color:#6d7975}',
+      '#tasbih .tb-set b:first-child{margin-top:0}',
+      '#tasbih .tb-set .row{display:flex;gap:8px;flex-wrap:wrap}',
+      '#tasbih .tb-set input[type=range]{width:100%;accent-color:#176b4b}',
+      '#tasbih .tb-sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-left:6px;vertical-align:middle;border:1px solid #0003}',
+      '#tasbih .tb-bar{height:8px;border-radius:4px;background:#ffffff40;overflow:hidden;margin-top:12px;width:100%}',
+      '#tasbih .tb-bar i{display:block;height:100%;width:0;background:#e9c46a;border-radius:4px;transition:width .12s}',
+      '#tasbih .tb-dig{background:#2c3330;border-radius:30px;padding:18px;margin:8px auto;max-width:300px;box-shadow:0 10px 24px #0004,inset 0 2px 0 #ffffff1f}',
+      '#tasbih .tb-lcd{background:#b9cba3;color:#1d2b16;border-radius:12px;padding:12px 14px;text-align:left;direction:ltr;box-shadow:inset 0 3px 8px #0005;font-family:"Courier New",monospace}',
+      '#tasbih .tb-lcd .n{display:block;font-size:64px;font-weight:bold;line-height:1.1;letter-spacing:3px}',
+      '#tasbih .tb-lcd .o{display:block;font-size:13px;opacity:.75;direction:rtl;text-align:right}',
+      '#tasbih .tb-lcd .tb-bar{background:#1d2b1633}',
+      '#tasbih .tb-lcd .tb-bar i{background:#1d2b16}',
+      '#tasbih .tb-dtap{display:block;width:130px;height:130px;margin:16px auto 4px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#3aa77a,#176b4b 70%);box-shadow:0 6px 0 #0d3d2b,0 10px 18px #0006;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}',
+      '#tasbih .tb-dtap:active{transform:translateY(4px);box-shadow:0 2px 0 #0d3d2b}',
+      '#tasbih .tb-dtap.done{background:radial-gradient(circle at 35% 30%,#d2a54b,#b48a3c 70%);box-shadow:0 6px 0 #6e5217,0 10px 18px #0006}',
+      '#tasbih .tb-mtap{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:190px;border:0;border-radius:28px;background:linear-gradient(145deg,#2a8d65,#176b4b);color:#fff;box-shadow:0 8px 22px #176b4b44;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;padding:18px}',
+      '#tasbih .tb-mtap:active{transform:scale(.985)}',
+      '#tasbih .tb-mtap.done{background:linear-gradient(145deg,#d2a54b,#b48a3c)}',
+      '#tasbih .tb-mtap .tb-num{font-size:70px}',
+      '#tasbih .tb-mtap .tb-bar{max-width:220px}',
+      '#tasbih.tb-dark{--tb-ink:#eaf2ee}',
+      '#tasbih.tb-dark .tb-card,#tasbih.tb-dark .tb-set,#tasbih.tb-dark .tb-item{background:#1b2621;border-color:#2f3f38;color:#eaf2ee}',
+      '#tasbih.tb-dark .tb-item.on{background:#173d2f;border-color:#2a8d65}',
+      '#tasbih.tb-dark .tb-ar{color:#f4f8f6}',
+      '#tasbih.tb-dark .tb-ku,#tasbih.tb-dark .tb-item .m,#tasbih.tb-dark .tb-set b{color:#9db0a7}',
+      '#tasbih.tb-dark .tb-chip,#tasbih.tb-dark .tb-back,#tasbih.tb-dark .tb-gear,#tasbih.tb-dark .tb-tool{background:#1b2621;border-color:#2f3f38;color:#eaf2ee}',
+      '#tasbih.tb-dark .tb-chip.on{background:#2a8d65;border-color:#2a8d65;color:#fff}',
+      '#tasbih.tb-dark .tb-h{background:#2a2412;border-color:#5a4a1d}',
+      '#tasbih.tb-dark .tb-h .a,#tasbih.tb-dark .tb-h .k{color:#f2ead2}',
+      '#tasbih.tb-dark .tb-h .s{color:#d8b45a}',
+      '#tasbih.tb-dark .tb-stat{background:#173d2f;color:#8fe0b9}',
+      '#tasbih.tb-dark .tb-item .a{color:#f4f8f6}',
+      '#tasbih.tb-dark .tb-step{background:#2a2412;color:#d8b45a}',
+      '#tasbih.tb-dark svg circle:first-child{stroke:#2f3f38}'
+    ].concat(bgCss()).join('');
     document.head.appendChild(s);
   }
 
@@ -163,7 +250,40 @@
     v.id = 'tasbih'; v.className = 'view';
     z.parentNode.appendChild(v);
     v.addEventListener('click', onClick);
+    v.addEventListener('input', function (e) {
+      if (e.target && e.target.getAttribute && e.target.getAttribute('data-range') === 'size') { S.size = Number(e.target.value) || 3; save(); applyTheme(); }
+    });
     return v;
+  }
+
+  function tapHtml() {
+    if (S.style === 'digital') {
+      return '<div class="tb-dig"><div class="tb-lcd"><span class="n" id="tbNum">0</span><span class="o" id="tbOf"></span><div class="tb-bar"><i id="tbBar"></i></div></div><button type="button" class="tb-dtap" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
+    }
+    if (S.style === 'minimal') {
+      return '<button type="button" class="tb-mtap" id="tbTap" data-act="tap"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span><div class="tb-bar"><i id="tbBar"></i></div></button>';
+    }
+    if (S.style === 'beads') {
+      return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" id="tbBeads"></svg><button type="button" class="tb-tap" id="tbTap" data-act="tap" style="inset:46px"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span></button></div>';
+    }
+    return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230"><circle cx="115" cy="115" r="' + R + '" fill="none" stroke="#dce5e1" stroke-width="9"/><circle id="tbArc" cx="115" cy="115" r="' + R + '" fill="none" stroke="#b48a3c" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + CIRC + '" stroke-dashoffset="' + CIRC + '"/></svg>' +
+      '<button type="button" class="tb-tap" id="tbTap" data-act="tap"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span></button></div>';
+  }
+
+  function chip(attr, val, label, on, extra) {
+    return '<button type="button" class="tb-chip' + (on ? ' on' : '') + '" ' + attr + '="' + val + '">' + (extra || '') + label + '</button>';
+  }
+  function settingsHtml() {
+    if (!panelOpen) return '';
+    var styles = [['ring', 'بازنە'], ['beads', 'مسبحە'], ['digital', 'دیجیتاڵ'], ['minimal', 'سادە']];
+    var swatch = { plain: '#f4f7f5', pattern: '#cfe6da', green: '#b9dcc9', night: '#1a2a4a', sand: '#e8d5a8' };
+    return '<div class="tb-set">' +
+      '<b>قەبارەی نووسین</b><input type="range" min="1" max="5" step="1" value="' + S.size + '" data-range="size">' +
+      '<b>شێوازی تەسبیح</b><div class="row">' + styles.map(function (s) { return chip('data-style', s[0], s[1], S.style === s[0]); }).join('') + '</div>' +
+      '<b>ڕووکار</b><div class="row">' + chip('data-theme', 'light', '☀ ڕوون', S.theme === 'light') + chip('data-theme', 'dark', '🌙 تاریک', S.theme === 'dark') + '</div>' +
+      '<b>باگراوند</b><div class="row">' + BGS.map(function (b) { return chip('data-bgset', b[0], b[1], S.bg === b[0], '<span class="tb-sw" style="background:' + swatch[b[0]] + '"></span>'); }).join('') + '</div>' +
+      '<b>تر</b><div class="row">' + chip('data-flag', 'vib', '📳 لەرزین', !!S.vib) + chip('data-flag', 'wake', '💡 شاشە نەکوژێتەوە', !!S.wake) + '</div>' +
+      '</div>';
   }
 
   function build() {
@@ -184,16 +304,30 @@
       return '<button type="button" class="tb-item' + (x.id === S.sel ? ' on' : '') + '" data-id="' + x.id + '"><div class="a">' + esc(x.ar) + '</div><div class="m"><span>' + esc(x.ku) + (x.sub ? ' · ' + esc(x.sub) : '') + '</span><span>' + (c ? nu(c) : '') + '</span></div></button>';
     }).join('');
     v.innerHTML =
-      '<div class="tb-head"><h2>📿 تەسبیح</h2><button type="button" class="tb-back" data-act="back">‹ بەشەکان</button></div>' +
-      '<div class="tb-card"><div class="tb-ar' + (it.ar.length > 40 ? ' long' : '') + '" id="tbAr"></div><div class="tb-ku" id="tbKu"></div><div id="tbStep"></div></div>' +
-      chips +
-      '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230"><circle cx="115" cy="115" r="' + R + '" fill="none" stroke="#dce5e1" stroke-width="9"/><circle id="tbArc" cx="115" cy="115" r="' + R + '" fill="none" stroke="#b48a3c" stroke-width="9" stroke-linecap="round" stroke-dasharray="' + CIRC + '" stroke-dashoffset="' + CIRC + '"/></svg>' +
-      '<button type="button" class="tb-tap" id="tbTap" data-act="tap"><span class="tb-num" id="tbNum">٠</span><span class="tb-of" id="tbOf"></span></button></div>' +
-      '<div class="tb-tools"><button type="button" class="tb-tool" data-act="reset" title="سفرکردنەوە">↺</button><button type="button" class="tb-tool' + (S.vib ? '' : ' off') + '" data-act="vib" id="tbVib" title="لەرزین">📳</button></div>' +
+      '<div class="tb-head"><div class="l"><button type="button" class="tb-gear" data-act="panel" title="ڕێکخستن">⚙</button><h2>📿 تەسبیح</h2></div><button type="button" class="tb-back" data-act="back">‹ بەشەکان</button></div>' +
+      settingsHtml() +
+      '<div class="tb-card"><div class="tb-ar" id="tbAr"></div><div class="tb-ku" id="tbKu"></div><div id="tbStep"></div></div>' +
+      chips + tapHtml() +
+      '<div class="tb-tools"><button type="button" class="tb-tool" data-act="reset" title="سفرکردنەوە">↺</button></div>' +
       '<div class="tb-stats"><div class="tb-stat"><b id="tbToday">٠</b>ئەمڕۆ (هەموو تەسبیحەکان)</div><div class="tb-stat"><b id="tbTotal">٠</b>کۆی ئەم تەسبیحە</div></div>' +
       (hs ? '<h3>فەزڵی ئەم تەسبیحە</h3>' + hs : '') +
       '<h3>هەڵبژاردنی تەسبیح</h3>' + list;
+    applyTheme();
     paint();
+  }
+
+  function paintBeads(c, t, total) {
+    var svg = $('tbBeads'); if (!svg) return;
+    var n = (t > 0 && t <= 100) ? t : 33;
+    var filled = (t > 0 && c >= t) ? n : (c % n);
+    var r = n > 60 ? 2.6 : (n > 40 ? 3.6 : 5.2), h = '';
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * 2 * Math.PI - Math.PI / 2;
+      var x = 115 + 100 * Math.cos(a), y = 115 + 100 * Math.sin(a);
+      var on = i < filled;
+      h += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="' + (on ? '#b48a3c' : (S.theme === 'dark' ? '#3a4a43' : '#cfd9d4')) + '"' + (on ? ' stroke="#8a6a24" stroke-width=".8"' : '') + '/>';
+    }
+    svg.innerHTML = h;
   }
 
   function paint() {
@@ -207,18 +341,19 @@
       stp.innerHTML = '<span class="tb-step">هەنگاوی ' + nu(st.i + 1) + ' لە ' + nu(it.seq.length) + '</span>';
       label = nu(c ? st.c : 0) + ' / ' + nu(st.n);
       prog = c / t;
-      ar.className = 'tb-ar' + (shown.ar.length > 40 ? ' long' : '');
     } else {
       stp.innerHTML = '';
       label = t ? nu(c) + ' / ' + nu(t) : nu(c);
       prog = t ? c / t : 0;
-      ar.className = 'tb-ar' + (it.ar.length > 40 ? ' long' : '');
     }
+    ar.className = 'tb-ar' + (shown.ar.length > 40 ? ' long' : '');
     ar.textContent = shown.ar; ku.textContent = shown.ku;
-    $('tbNum').textContent = nu(it.seq ? c : c);
+    $('tbNum').textContent = S.style === 'digital' ? String(c) : nu(c);
     $('tbOf').textContent = it.seq ? label + ' · کۆ ' + nu(t) : (t ? 'لە ' + nu(t) : 'بێ ئامانج');
-    $('tbArc').setAttribute('stroke-dashoffset', String(CIRC * (1 - Math.min(1, prog))));
-    $('tbTap').classList.toggle('done', !!t && c >= t);
+    var arc = $('tbArc'); if (arc) arc.setAttribute('stroke-dashoffset', String(CIRC * (1 - Math.min(1, prog))));
+    var bar = $('tbBar'); if (bar) bar.style.width = (Math.min(1, prog) * 100) + '%';
+    paintBeads(c, t, t);
+    var tp = $('tbTap'); if (tp) tp.classList.toggle('done', !!t && c >= t);
     $('tbToday').textContent = nu(S.days[dayKey()] || 0);
     $('tbTotal').textContent = nu(S.totals[it.id] || 0);
   }
@@ -239,17 +374,25 @@
   }
 
   function onClick(e) {
-    var el = e.target.closest ? e.target.closest('[data-act],[data-t],[data-id]') : null;
+    var el = e.target.closest ? e.target.closest('[data-act],[data-t],[data-id],[data-style],[data-theme],[data-bgset],[data-flag]') : null;
     if (!el) return;
     var act = el.getAttribute('data-act');
     if (act === 'tap') return tap();
-    if (act === 'back') { if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
+    if (act === 'back') { setWake(false); if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'reset') {
       var it = cur();
       if ((S.counts[it.id] || 0) > 0 && !confirm('ژمارەکە سفر بکرێتەوە؟')) return;
       S.counts[it.id] = 0; save(); paint(); return;
     }
-    if (act === 'vib') { S.vib = !S.vib; save(); el.classList.toggle('off', !S.vib); if (S.vib) vibrate(30); return; }
+    if (act === 'panel') { panelOpen = !panelOpen; build(); return; }
+    if (el.hasAttribute('data-style')) { S.style = el.getAttribute('data-style'); save(); build(); return; }
+    if (el.hasAttribute('data-theme')) { S.theme = el.getAttribute('data-theme'); save(); build(); return; }
+    if (el.hasAttribute('data-bgset')) { S.bg = el.getAttribute('data-bgset'); save(); build(); return; }
+    if (el.hasAttribute('data-flag')) {
+      var f = el.getAttribute('data-flag'); S[f] = !S[f]; save();
+      if (f === 'wake') setWake(!!S.wake); else if (S.vib) vibrate(30);
+      build(); return;
+    }
     if (el.hasAttribute('data-t')) {
       S.targets[S.sel] = Number(el.getAttribute('data-t')); S.counts[S.sel] = 0; save(); build(); return;
     }
@@ -265,6 +408,7 @@
     if (typeof showView === 'function') showView('tasbih', 'تەسبیح');
     var b = document.querySelector('.bottom'); if (b) b.classList.add('hidden');
     build();
+    if (S.wake) setWake(true);
     var m = $('tasbih').closest('.main'); if (m) m.scrollTop = 0;
   };
 
