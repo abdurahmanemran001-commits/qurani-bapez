@@ -40,6 +40,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sy.async = true;
   document.head.appendChild(sy);
 
+  var sa = document.createElement('script');
+  sa.src = 'ai-shari.js?v=1';
+  sa.async = true;
+  document.head.appendChild(sa);
+
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
