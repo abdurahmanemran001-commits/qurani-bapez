@@ -35,10 +35,11 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
           for f in index.html language-ui.js madani-ayah.js salah.js; do
             test -f dist/$f || cp $f dist/
           done
+          test -f ruqyah-reciters.js && cp ruqyah-reciters.js dist/
           test -f salah-places.json && cp salah-places.json dist/
           test -f salah-places-data.js && cp salah-places-data.js dist/
           test -f salah-settings.js && cp salah-settings.js dist/
