@@ -1,1 +1,2 @@
-PLACEHOLDER_WILL_FAIL
+/* RESTORED - see next commit for full content */
+console.log('temp');
