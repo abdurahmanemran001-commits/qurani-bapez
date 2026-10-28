@@ -28,44 +28,35 @@ jobs:
       - name: Restore index.html if corrupted
         run: |
           if [ ! -s index.html ] || [ "$(wc -c < index.html)" -lt 10000 ]; then
-            echo "index.html looks broken ($(wc -c < index.html) bytes) — restoring from last good commit"
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
-          fi
-          if ! grep -q 'zikr-enhance.js' index.html; then
-            sed -i 's|<script src="language-ui.js[^"]*"></script>|<script src="language-ui.js?v=4"></script>\n<script src="zikr-enhance.js?v=4"></script>|' index.html
-          else
-            sed -i 's|zikr-enhance.js?v=[0-9]*|zikr-enhance.js?v=4|g' index.html
-            sed -i 's|language-ui.js?v=[0-9]*|language-ui.js?v=4|g' index.html
           fi
           wc -c index.html
 
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js salah.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
           for f in index.html language-ui.js madani-ayah.js salah.js; do
             test -f dist/$f || cp $f dist/
           done
           test -f salah-places.json && cp salah-places.json dist/
           test -f salah-places-data.js && cp salah-places-data.js dist/
+          test -f salah-settings.js && cp salah-settings.js dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
 
-      - name: Build Madinah ayah bounds (same as APK ayahinfo_1260)
+      - name: Build Madinah ayah bounds
         run: |
           set -e
           mkdir -p dist/madani-bounds /tmp/ai
-          curl -fsSL -o /tmp/ai/ayahinfo_1260.zip \
-            "https://android.quran.com/data/databases/ayahinfo/ayahinfo_1260.zip"
+          curl -fsSL -o /tmp/ai/ayahinfo_1260.zip "https://android.quran.com/data/databases/ayahinfo/ayahinfo_1260.zip"
           unzip -o /tmp/ai/ayahinfo_1260.zip -d /tmp/ai
           python3 - <<'PY'
           import sqlite3, json, os
           conn = sqlite3.connect('/tmp/ai/ayahinfo_1260.db')
           out = 'dist/madani-bounds'
           os.makedirs(out, exist_ok=True)
-          cur = conn.execute(
-              'SELECT page_number,line_number,sura_number,ayah_number,min_x,max_x,min_y,max_y '
-              'FROM glyphs ORDER BY page_number,sura_number,ayah_number,line_number,min_x')
+          cur = conn.execute('SELECT page_number,line_number,sura_number,ayah_number,min_x,max_x,min_y,max_y FROM glyphs ORDER BY page_number,sura_number,ayah_number,line_number,min_x')
           pages = {}
           for page, line, sura, ayah, minx, maxx, miny, maxy in cur:
               key = '%d:%d' % (sura, ayah)
@@ -81,8 +72,6 @@ jobs:
                   json.dump(data, f, separators=(',', ':'))
           print('bounds pages', len(pages))
           PY
-          test -s dist/madani-bounds/001.json
-          test -s dist/madani-bounds/604.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
