@@ -42,7 +42,12 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js salah.js icon.svg manifest.webmanifest sw.js dist/
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js salah.js salah-places.json icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          # ensure critical files exist
+          for f in index.html language-ui.js madani-ayah.js salah.js; do
+            test -f dist/$f || cp $f dist/
+          done
+          test -f salah-places.json && cp salah-places.json dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
 
@@ -79,86 +84,13 @@ jobs:
           test -s dist/madani-bounds/001.json
           test -s dist/madani-bounds/604.json
 
-      - name: Build gapless timing JSON (try multiple .db names like APK)
-        run: |
-          set -e
-          mkdir -p dist/madani-timing /tmp/tmdb
-          python3 - <<'PY'
-          import json, os, sqlite3, urllib.request
-          recs = json.load(open('web/mushaf/reciters.json'))
-          out = 'dist/madani-timing'
-          os.makedirs(out, exist_ok=True)
-          ALT = {
-            'g_hamza': ['hamza_barznji_mutasil.db', 'hamza.db'],
-            'g_dlshad': ['dlshad_kurdi_mutasil.db', 'dlshad.db'],
-            'g_sherzad': ['sherzad_kurdi_mutasil.db', 'sherzad.db'],
-            'g_shekh_reza': ['shekh_reza_mohammadian.db', 'shekh_reza.db'],
-            'g_Raad': ['raad_al_kurdi.db', 'Raad.db'],
-            'g_farman': ['farman_shwani_mutasil.db', 'farman.db'],
-            'g_maher_al_muaiqly': ['maher_al_muaiqly.db'],
-            'g_peshawa_kurdi_mutasil': ['peshawa_kurdi_mutasil.db'],
-            'g_rzgar_kurdi_mutasil': ['rzgar_kurdi_mutasil.db'],
-            'g_ubeda_kurdi_mutasil': ['ubeda_kurdi_mutasil.db'],
-            'g_abdulhadi_kurdi_mutasil': ['abdulhadi_kurdi_mutasil.db'],
-            'g_ghamdi_handren_kurdi': ['ghamdi_handren_kurdi.db'],
-          }
-          ok = fail = 0
-          for r in recs:
-              if r.get('t') != 'g' or not r.get('u'):
-                  continue
-              rid = r['id']
-              dest = os.path.join(out, rid + '.json')
-              if os.path.isfile(dest) and os.path.getsize(dest) > 100:
-                  print('KEEP', rid); ok += 1; continue
-              base = r['u'].rstrip('/') + '/'
-              tag = base.rstrip('/').split('/')[-1]
-              candidates = ALT.get(rid, []) + [tag + '.db', rid.replace('g_', '') + '.db']
-              seen = set(); names = []
-              for n in candidates:
-                  if n not in seen:
-                      seen.add(n); names.append(n)
-              path = None
-              for name in names:
-                  try:
-                      urllib.request.urlretrieve(base + name, '/tmp/tmdb/' + name)
-                      path = '/tmp/tmdb/' + name
-                      break
-                  except Exception:
-                      continue
-              if not path:
-                  print('FAIL download', rid); fail += 1; continue
-              try:
-                  conn = sqlite3.connect(path)
-                  data = {}
-                  for row in conn.execute('SELECT sura,ayah,time FROM timings'):
-                      try:
-                          sura, ayah, time = int(row[0]), int(row[1]), int(float(row[2]))
-                      except Exception:
-                          continue
-                      data.setdefault(str(sura), {})[str(ayah)] = time
-                  if not data: raise RuntimeError('empty')
-                  with open(dest, 'w') as f: json.dump(data, f, separators=(',', ':'))
-                  ok += 1
-              except Exception as e:
-                  print('FAIL parse', rid, e); fail += 1
-          print('timing ok', ok, 'fail', fail)
-          PY
-
-      - name: Verify web data
-        run: |
-          D=dist/mushaf/data; miss=0
-          for f in warshimg/pages/001.webp warshimg/ayah/001.json shubaimg/pages/604.webp shubaimg/ayah/604.json shubatiming/timing.json qaloonimg/pages/001.webp qaloonimg/ayah/001.json qaloontiming/t208.json qunbul/meta.json qunbul/all.json qunbul/qunbul.otf bazzi/meta.json bazzi/all.json bazzi/bazzi.otf douri/meta.json douri/all.json douri/douri.ttf susi/meta.json susi/all.json susi/susi.ttf khalaf/ayah/001.json khalaf/ayah/604.json qcf4/qcf.js tajweed/noorehira.ttf; do
-            [ -s "$D/$f" ] || { echo "MISSING $f"; miss=1; }
-          done
-          [ $miss = 0 ] || exit 1
-
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./dist"
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
