@@ -25,6 +25,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s5.async = true;
   document.head.appendChild(s5);
 
+  var s6 = document.createElement('script');
+  s6.src = 'ruqyah.js?v=1';
+  s6.async = true;
+  document.head.appendChild(s6);
+
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
