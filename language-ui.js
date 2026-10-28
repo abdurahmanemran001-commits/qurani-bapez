@@ -21,7 +21,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s4);
 
   var s5 = document.createElement('script');
-  s5.src = 'tasbih.js?v=2';
+  s5.src = 'tasbih.js?v=3';
   s5.async = true;
   document.head.appendChild(s5);
 
