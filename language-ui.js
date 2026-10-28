@@ -30,10 +30,21 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s6.async = true;
   document.head.appendChild(s6);
 
-  var s7 = document.createElement('script');
-  s7.src = 'salah.js?v=5';
-  s7.async = true;
-  document.head.appendChild(s7);
+  var sp = document.createElement('script');
+  sp.src = 'salah-places-data.js?v=1';
+  sp.onload = function () {
+    var s7 = document.createElement('script');
+    s7.src = 'salah.js?v=6';
+    s7.async = true;
+    document.head.appendChild(s7);
+  };
+  sp.onerror = function () {
+    var s7 = document.createElement('script');
+    s7.src = 'salah.js?v=6';
+    s7.async = true;
+    document.head.appendChild(s7);
+  };
+  document.head.appendChild(sp);
 
   var st = document.createElement('style');
   st.textContent = [
