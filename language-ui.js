@@ -26,15 +26,14 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s5);
 
   var s6 = document.createElement('script');
-  s6.src = 'ruqyah.js?v=3';
-  s6.onload = function () {
-    var sr = document.createElement('script');
-    sr.src = 'ruqyah-reciters.js?v=1';
-    sr.async = true;
-    document.head.appendChild(sr);
-  };
+  s6.src = 'ruqyah.js?v=4';
   s6.async = true;
   document.head.appendChild(s6);
+
+  var sr = document.createElement('script');
+  sr.src = 'ruqyah-reciters.js?v=3';
+  sr.async = true;
+  document.head.appendChild(sr);
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
