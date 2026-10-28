@@ -31,7 +31,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s6);
 
   var sr = document.createElement('script');
-  sr.src = 'ruqyah-reciters.js?v=6';
+  sr.src = 'ruqyah-reciters.js?v=7';
   sr.async = true;
   document.head.appendChild(sr);
 
