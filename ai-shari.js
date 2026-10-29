@@ -181,7 +181,7 @@
   function modeLabel(cfg) {
     if (cfg.provider === 'gemini' && cfg.apiKey) return 'Gemini خۆڕایی';
     if (cfg.provider === 'groq' && cfg.apiKey) return 'Groq خۆڕایی';
-    if (window.AiShariRag && window.AiShariRag.enabled()) return 'سێرڤەر (لەوانەیە درەنگ بێت)';
+    if (window.AiShariRag && window.AiShariRag.enabled()) return 'Gemini + سەرچاوەی متمانەپێکراو';
     return 'ناوخۆیی · بێ پارە';
   }
 
@@ -306,6 +306,30 @@
     saveHist();
     renderMsgs();
 
+    if (window.AiShariRag && window.AiShariRag.enabled()) {
+      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
+      renderMsgs();
+      withTimeout(window.AiShariRag.ask(text, function (s) {
+        var last = history[history.length - 1];
+        if (last && last.role === 'bot') { last.text = s; renderMsgs(); }
+      }), 90000, 'سێرڤەر').then(function (r) {
+        history.pop();
+        if (r && r.kind === 'error') {
+          history.push({ role: 'bot', text: (r.text || 'هەڵە') + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
+        } else {
+          history.push({ role: 'bot', text: (r && r.text) || offlineAnswer(text), sources: (r && r.sources) || [] });
+        }
+        saveHist();
+        renderMsgs();
+      }).catch(function (err) {
+        history.pop();
+        history.push({ role: 'bot', text: '⚠️ ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
+        saveHist();
+        renderMsgs();
+      });
+      return;
+    }
+
     var cfg = loadCfg();
 
     if (cfg.provider === 'gemini' && cfg.apiKey) {
@@ -342,30 +366,6 @@
       return;
     }
 
-    if (window.AiShariRag && window.AiShariRag.enabled()) {
-      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
-      renderMsgs();
-      withTimeout(window.AiShariRag.ask(text, function (s) {
-        var last = history[history.length - 1];
-        if (last && last.role === 'bot') { last.text = s; renderMsgs(); }
-      }), 30000, 'سێرڤەر').then(function (r) {
-        history.pop();
-        if (r && r.kind === 'error') {
-          history.push({ role: 'bot', text: (r.text || 'هەڵە') + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
-        } else {
-          history.push({ role: 'bot', text: (r && r.text) || offlineAnswer(text), sources: (r && r.sources) || [] });
-        }
-        saveHist();
-        renderMsgs();
-      }).catch(function (err) {
-        history.pop();
-        history.push({ role: 'bot', text: '⚠️ ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
-        saveHist();
-        renderMsgs();
-      });
-      return;
-    }
-
     history.push({ role: 'bot', text: offlineAnswer(text) });
     saveHist();
     renderMsgs();
@@ -376,6 +376,7 @@
     if (!ensureView()) return;
     if (typeof showView === 'function') showView('aiShari', 'ئەی ئای شەرعی');
     build();
+    try { if (window.AiRag && window.AiShariRag && window.AiShariRag.enabled()) window.AiRag.load().catch(function () {}); } catch (e) {}
   };
 
   function addCard() {
