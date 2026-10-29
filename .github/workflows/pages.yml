@@ -30,6 +30,9 @@ jobs:
           if [ ! -s index.html ] || [ "$(wc -c < index.html)" -lt 10000 ]; then
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
           fi
+          # Force latest language-ui (AI Shar'i scripts)
+          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=5/g' index.html
+          grep -n 'language-ui' index.html || true
           wc -c index.html
 
       - name: Prepare web preview
@@ -51,6 +54,7 @@ jobs:
           test -f salah-settings.js && cp salah-settings.js dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
+          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=5/g' dist/index.html || true
 
       - name: Build Madinah ayah bounds
         run: |
