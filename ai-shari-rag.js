@@ -1,0 +1,77 @@
+/* ai-shari-rag.js v1 — grounded answers: Gemini (via our Worker) + offline Quran/hadith retrieval.
+ * Flow: question -> Worker /expand (safety category + Arabic keywords) -> local BM25 search -> Worker /answer (passages only)
+ *       -> answer + the cited passages rendered from OUR corpus (never from the model). */
+(function () {
+  if (window.AiShariRag) return;
+
+  function endpoint() {
+    var e = '';
+    try { e = localStorage.getItem('ai_endpoint') || ''; } catch (x) {}
+    e = (e || window.AI_SHARI_ENDPOINT || '').trim().replace(/\/+$/, '');
+    return /^https:\/\//.test(e) ? e : '';
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function post(path, body) {
+    return fetch(endpoint() + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j._status = r.status; return j; }); });
+  }
+  var NOT_FOUND = 'نەتوانرا سەرچاوەیەکی متمانەپێکراو بدۆزرێتەوە بۆ ئەم پرسیارە. بۆ دڵنیایی، پرسیار لە زانایەکی متمانەپێکراو بکە.';
+  var NET = 'نەتوانرا پەیوەندی بە سێرڤەری AI بکرێت. ئینتەرنێتەکەت بپشکنە و دووبارە هەوڵ بدەرەوە.';
+
+  function passageText(d) {
+    if (d.kind === 'quran') return d.ar + ' — تفسير الجلالين: ' + String(d.tafsir || '').slice(0, 600);
+    return String(d.ar).slice(0, 1000);
+  }
+
+  /* status(msg) is called with progress text. Resolves to {text, sources:[{id,label,ar,ku}], kind} */
+  function ask(q, status) {
+    status = status || function () {};
+    if (!endpoint()) return Promise.reject(new Error('no endpoint'));
+    status('… شیکردنەوەی پرسیار');
+    return post('/expand', { q: q }).then(function (ex) {
+      if (ex.error) return { text: ex.message || NET, sources: [], kind: 'error' };
+      if (ex.refusal) return { text: ex.refusal, sources: [], kind: 'refusal' };
+      var kws = ex.keywords || [];
+      if (!kws.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
+      status('… بارکردنی سەرچاوەکان (یەکەم جار)');
+      return window.AiRag.load(function (p) { status('… بارکردنی سەرچاوەکان ' + Math.round(p * 100) + '٪'); }).then(function () {
+        var hits = window.AiRag.search(kws, { kQ: 5, kH: 7 });
+        var all = hits.quran.concat(hits.hadith);
+        if (!all.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
+        status('… نووسینی وەڵام');
+        return post('/answer', { q: q, token: ex.token, passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; }) }).then(function (an) {
+          if (an.error) return { text: an.message || NET, sources: [], kind: 'error' };
+          if (!an.answerable || !an.cites || !an.cites.length) return { text: NOT_FOUND, sources: [], kind: 'notfound', shown: all.slice(0, 3) };
+          var srcs = an.cites.map(function (id) { return window.AiRag.get(id); }).filter(Boolean);
+          return Promise.all(srcs.map(function (d) { return d.kind === 'quran' ? window.AiRag.kurdish(d.id) : Promise.resolve(''); })).then(function (kus) {
+            var text = an.answer + (an.scholar ? '\n\nبۆ وردەکاری و حاڵەتی تایبەت، پرسیار لە زانایەکی متمانەپێکراو بکە.' : '');
+            return {
+              text: text, kind: 'answer',
+              sources: srcs.map(function (d, i) { return { id: d.id, label: window.AiRag.label(d), ar: d.ar, ku: kus[i] || '' }; })
+            };
+          });
+        });
+      });
+    }).catch(function (e) {
+      return { text: NET, sources: [], kind: 'error' };
+    });
+  }
+
+  function srcHtml(list) {
+    if (!list || !list.length) return '';
+    return '<div class="ai-srcs"><div class="ai-srcs-t">سەرچاوەکان</div>' + list.map(function (s) {
+      return '<div class="ai-src"><div class="ai-src-l">' + esc(s.label) + '</div><div class="ai-src-ar">' + esc(s.ar) + '</div>' +
+        (s.ku ? '<div class="ai-src-ku">' + esc(s.ku) + '</div>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+
+  var st = document.createElement('style');
+  st.textContent = '.ai-srcs{margin-top:10px;border-top:1px dashed #cfd9d4;padding-top:8px}.ai-srcs-t{font-size:12px;color:#8a6a24;margin-bottom:6px;font-weight:bold}' +
+    '.ai-src{background:#fbf5e7;border:1px solid #e4d5ad;border-radius:12px;padding:8px 10px;margin-bottom:8px;color:#18231f}.ai-src-l{font-size:12px;color:#8a6a24;margin-bottom:4px}' +
+    '.ai-src-ar{font-family:serif;font-size:17px;line-height:2;text-align:right}.ai-src-ku{font-size:13px;line-height:1.8;margin-top:4px;color:#32413a;max-height:7.5em;overflow:auto}';
+  document.head.appendChild(st);
+
+  window.AiShariRag = { enabled: function () { return !!endpoint() && !!window.AiRag; }, ask: ask, srcHtml: srcHtml, endpoint: endpoint };
+})();
