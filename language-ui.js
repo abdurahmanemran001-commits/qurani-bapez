@@ -40,20 +40,22 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sy.async = true;
   document.head.appendChild(sy);
 
-  var skb = document.createElement('script');
-  skb.src = 'ai-shari-kb.js?v=3';
-  skb.onload = function () {
-    var sa = document.createElement('script');
-    sa.src = 'ai-shari.js?v=4';
-    sa.async = true;
-    document.head.appendChild(sa);
-  };
-  skb.onerror = function () {
-    var sa = document.createElement('script');
-    sa.src = 'ai-shari.js?v=4';
-    document.head.appendChild(sa);
-  };
-  document.head.appendChild(skb);
+  function loadScript(src) {
+    return new Promise(function (resolve) {
+      var el = document.createElement('script');
+      el.src = src;
+      el.async = true;
+      el.onload = resolve;
+      el.onerror = resolve;
+      document.head.appendChild(el);
+    });
+  }
+
+  loadScript('ai-shari-kb.js?v=4')
+    .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
+    .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
+    .then(function () { return loadScript('ai-shari-kb-p4.js?v=1'); })
+    .then(function () { return loadScript('ai-shari.js?v=4'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
