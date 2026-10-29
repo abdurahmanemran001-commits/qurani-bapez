@@ -55,7 +55,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p4.js?v=1'); })
-    .then(function () { return loadScript('ai-shari.js?v=6'); });
+    .then(function () { return loadScript('ai-shari.js?v=7'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
@@ -97,22 +97,4 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     '}',
   ].join('\n');
   document.head.appendChild(st);
-
-  var m = document.getElementById('mushaf');
-  if (m) {
-    var sx = 0, sy = 0, t0 = 0;
-    m.addEventListener('touchstart', function (e) {
-      var t = e.touches[0];
-      sx = t.clientX; sy = t.clientY; t0 = Date.now();
-    }, { passive: true, capture: true });
-    m.addEventListener('touchend', function (e) {
-      var t = e.changedTouches[0];
-      var dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy) && Date.now() - t0 < 800) {
-        e.stopPropagation();
-        e.preventDefault();
-        if (typeof changePage === 'function') changePage(dx > 0 ? 1 : -1);
-      }
-    }, { passive: false, capture: true });
-  }
 })();
