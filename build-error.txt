@@ -1,0 +1,60 @@
+Download https://jcenter.bintray.com/com/jakewharton/butterknife-compiler/8.8.1/butterknife-compiler-8.8.1.pom
+Download https://jcenter.bintray.com/com/google/dagger/dagger-compiler/2.13/dagger-compiler-2.13.pom
+Download https://jcenter.bintray.com/com/google/googlejavaformat/google-java-format/1.4/google-java-format-1.4.pom
+Download https://jcenter.bintray.com/com/google/dagger/dagger-producers/2.13/dagger-producers-2.13.pom
+Download https://jcenter.bintray.com/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.pom
+Download https://jcenter.bintray.com/com/google/guava/guava/21.0/guava-21.0.pom
+Download https://jcenter.bintray.com/com/google/googlejavaformat/google-java-format-parent/1.4/google-java-format-parent-1.4.pom
+Download https://jcenter.bintray.com/com/squareup/javapoet/1.8.0/javapoet-1.8.0.pom
+Download https://jcenter.bintray.com/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.pom
+Download https://jcenter.bintray.com/com/google/guava/guava-parent/21.0/guava-parent-21.0.pom
+Download https://jcenter.bintray.com/com/google/auto/auto-common/0.8/auto-common-0.8.pom
+Download https://jcenter.bintray.com/com/google/auto/auto-parent/3/auto-parent-3.pom
+Download https://jcenter.bintray.com/com/google/errorprone/javac-shaded/9-dev-r4023-3/javac-shaded-9-dev-r4023-3.pom
+Download https://jcenter.bintray.com/com/squareup/javapoet/1.9.0/javapoet-1.9.0.pom
+Download https://jcenter.bintray.com/com/google/dagger/dagger-compiler/2.13/dagger-compiler-2.13.jar
+Download https://jcenter.bintray.com/com/jakewharton/butterknife-compiler/8.8.1/butterknife-compiler-8.8.1.jar
+Download https://jcenter.bintray.com/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar
+Download https://jcenter.bintray.com/com/google/googlejavaformat/google-java-format/1.4/google-java-format-1.4.jar
+Download https://jcenter.bintray.com/com/google/dagger/dagger-producers/2.13/dagger-producers-2.13.jar
+Download https://jcenter.bintray.com/com/google/guava/guava/21.0/guava-21.0.jar
+Download https://jcenter.bintray.com/com/google/auto/auto-common/0.8/auto-common-0.8.jar
+Download https://jcenter.bintray.com/com/squareup/javapoet/1.9.0/javapoet-1.9.0.jar
+Download https://jcenter.bintray.com/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar
+Download https://jcenter.bintray.com/com/google/errorprone/javac-shaded/9-dev-r4023-3/javac-shaded-9-dev-r4023-3.jar
+:app:compileMadaniDebugJavaWithJavacNote: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+:app:compileMadaniDebugNdk NO-SOURCE
+:app:compileMadaniDebugSources
+:app:mergeMadaniDebugShaders
+:app:compileMadaniDebugShaders
+:app:generateMadaniDebugAssets
+:app:mergeMadaniDebugAssets
+:app:extractTryWithResourcesSupportJarMadaniDebug
+:app:transformClassesWithStackFramesFixerForMadaniDebug
+:app:transformClassesWithDesugarForMadaniDebug
+:app:transformClassesWithDexBuilderForMadaniDebug
+:app:transformDexArchiveWithExternalLibsDexMergerForMadaniDebug
+:app:transformDexArchiveWithDexMergerForMadaniDebug
+:app:mergeMadaniDebugJniLibFolders
+:app:transformNativeLibsWithMergeJniLibsForMadaniDebug
+:app:processMadaniDebugJavaRes NO-SOURCE
+:app:transformResourcesWithMergeJavaResForMadaniDebug
+:app:validateSigningMadaniDebug
+:app:packageMadaniDebug
+:app:assembleMadaniDebug
+
+BUILD SUCCESSFUL in 1m 11s
+30 actionable tasks: 30 executed
+Exception in thread "Thread-21" java.lang.NoClassDefFoundError: com/android/utils/PathUtils$1
+	at com.android.utils.PathUtils.deleteIfExists(PathUtils.java:47)
+	at com.android.utils.PathUtils.lambda$addRemovePathHook$0(PathUtils.java:125)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: java.lang.ClassNotFoundException: com.android.utils.PathUtils$1
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:387)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:418)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:351)
+	... 3 more
