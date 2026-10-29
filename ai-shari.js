@@ -1,7 +1,7 @@
-/* ai-shari.js v7 — auto-enable Groq when key is set */
+/* ai-shari.js v8 — offline + direct Gemini (AIza) + optional Groq + RAG with timeout */
 (function () {
-  if (window.__aiShariV7) return;
-  window.__aiShariV7 = true;
+  if (window.__aiShariV8) return;
+  window.__aiShariV8 = true;
 
   var KEY = 'ai_shari_v1';
   var CFG_KEY = 'ai_shari_cfg_v1';
@@ -17,10 +17,10 @@
       return {
         provider: c.provider || 'offline',
         apiKey: c.apiKey || '',
-        model: c.model || 'llama-3.1-8b-instant'
+        model: c.model || 'gemini-2.0-flash'
       };
     } catch (e) {
-      return { provider: 'offline', apiKey: '', model: 'llama-3.1-8b-instant' };
+      return { provider: 'offline', apiKey: '', model: 'gemini-2.0-flash' };
     }
   }
   function saveCfg(c) {
@@ -80,7 +80,43 @@
     if (best && bestScore >= 20) {
       return best.a + '\n\n—\n📚 ناوخۆیی (بێ پارە). بۆ فەتوای ورد بۆ زانا بڕۆ.';
     }
-    return 'لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nئەگەر کلیلی خۆڕایی Groqت هەیە: ⚙ ڕێکخستن → Groq.\nیان وشەی سەرەکی بنووسە: جەنازە، ووزو، ڕۆژوو…';
+    return 'لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nلە ⚙ کلیلی Gemini (AIza...) دابنێ بۆ وەڵامی زیرەک.';
+  }
+
+  function withTimeout(promise, ms, label) {
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () {
+        reject(new Error((label || 'AI') + ': کات تەواو بوو (' + (ms / 1000) + ' چرکە)'));
+      }, ms);
+      promise.then(function (v) { clearTimeout(t); resolve(v); }, function (e) { clearTimeout(t); reject(e); });
+    });
+  }
+
+  function geminiAnswer(q, cfg) {
+    var model = cfg.model || 'gemini-2.0-flash';
+    if (model.indexOf('llama') >= 0 || model.indexOf('gpt-oss') >= 0) model = 'gemini-2.0-flash';
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(cfg.apiKey);
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: [{ role: 'user', parts: [{ text: q }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 }
+      })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          var msg = (data && data.error && data.error.message) || ('HTTP ' + res.status);
+          throw new Error(msg);
+        }
+        var parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+        var t = parts && parts.map(function (p) { return p.text || ''; }).join('');
+        if (!t) throw new Error('وەڵام بەتاڵ بوو');
+        return t.trim() + '\n\n—\n⚡ Gemini (خۆڕایی)';
+      });
+    });
   }
 
   function groqAnswer(q, cfg) {
@@ -107,18 +143,18 @@
         }
         var t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
         if (!t) throw new Error('وەڵام بەتاڵ بوو');
-        return t.trim() + '\n\n—\n⚡ Groq (خۆڕایی · سنووردار)';
+        return t.trim() + '\n\n—\n⚡ Groq (خۆڕایی)';
       });
     });
   }
 
   function saveHist() {
-    try { localStorage.setItem(KEY, JSON.stringify(history.slice(-40).map(function (m) { return { role: m.role, text: m.text }; }))); } catch (e) {}
+    try { localStorage.setItem(KEY, JSON.stringify(history.slice(-40))); } catch (e) {}
   }
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[c];
     });
   }
 
@@ -143,8 +179,9 @@
   }
 
   function modeLabel(cfg) {
-    if (window.AiShariRag && window.AiShariRag.enabled()) return 'Gemini + سەرچاوەی متمانەپێکراو';
+    if (cfg.provider === 'gemini' && cfg.apiKey) return 'Gemini خۆڕایی';
     if (cfg.provider === 'groq' && cfg.apiKey) return 'Groq خۆڕایی';
+    if (window.AiShariRag && window.AiShariRag.enabled()) return 'سێرڤەر (لەوانەیە درەنگ بێت)';
     return 'ناوخۆیی · بێ پارە';
   }
 
@@ -157,15 +194,16 @@
       box.innerHTML =
         '<div class="ai-bubble sys">سڵاو! یاریدەدەری شەرعی.\n\n' +
         'ئێستا: <b>' + modeLabel(cfg) + '</b>\n' +
-        (cfg.provider === 'groq' && cfg.apiKey
-          ? 'وەڵامی زیرەک بە کلیلی خۆڕایی Groq.'
-          : 'ناوخۆیی (' + n + ' بابەت). بۆ AIی باشتر: ⚙ → کلیلی خۆڕایی Groq.') +
+        (cfg.provider === 'gemini' && cfg.apiKey
+          ? 'وەڵامی زیرەک بە Gemini.'
+          : 'بۆ AIی زیرەک: ⚙ → کلیلی Gemini (AIza...) لە aistudio.google.com') +
         '\n\n⚠️ جێگەی موفتی ناگرێتەوە.</div>';
       return;
     }
     box.innerHTML = history.map(function (m) {
       var cls = m.role === 'user' ? 'user' : (m.role === 'sys' ? 'sys' : 'bot');
-      return '<div class="ai-bubble ' + cls + '">' + esc(m.text) + (m.sources && window.AiShariRag ? window.AiShariRag.srcHtml(m.sources) : '') + '</div>';
+      return '<div class="ai-bubble ' + cls + '">' + esc(m.text) +
+        (m.sources && window.AiShariRag ? window.AiShariRag.srcHtml(m.sources) : '') + '</div>';
     }).join('');
     box.scrollTop = box.scrollHeight;
   }
@@ -185,18 +223,20 @@
       '<div class="ai-panel" id="aiPanel">' +
       '<label>شێواز</label>' +
       '<select id="aiProv">' +
-      '<option value="offline">ناوخۆیی — وەڵامی ئامادە (بێ AI)</option>' +
-      '<option value="groq">Groq — AIی ڕاستەقینە (کلیلی gsk_ پێویستە)</option>' +
+      '<option value="offline">ناوخۆیی — وەڵامی ئامادە</option>' +
+      '<option value="gemini">Gemini خۆڕایی (کلیلی AIza...)</option>' +
+      '<option value="groq">Groq (کلیلی gsk_ — ئەگەر کار بکات)</option>' +
       '</select>' +
-      '<label>کلیلی Groq (gsk_...)</label>' +
-      '<input id="aiKey" type="password" placeholder="gsk_... لە console.groq.com" autocomplete="off">' +
+      '<label>کلیلی API</label>' +
+      '<input id="aiKey" type="password" placeholder="AIza... یان gsk_..." autocomplete="off">' +
       '<label>مۆدێل</label>' +
       '<select id="aiModel">' +
-      '<option value="llama-3.1-8b-instant">llama-3.1-8b-instant (خێرا)</option>' +
-      '<option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option>' +
-      '<option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>' +
+      '<option value="gemini-2.0-flash">gemini-2.0-flash (پێشنیار)</option>' +
+      '<option value="gemini-1.5-flash">gemini-1.5-flash</option>' +
+      '<option value="gemini-2.5-flash">gemini-2.5-flash</option>' +
+      '<option value="llama-3.1-8b-instant">llama-3.1-8b (Groq)</option>' +
       '</select>' +
-      '<div class="hint">۱) بڕۆ بۆ console.groq.com → Sign up (بێ کارت)<br>۲) API Keys → Create → کۆپی بکە<br>۳) کلیلی دابنێ و پاشەکەوت بکە (خۆکار دەبێتە Groq)<br>سەرەوە دەبێت بنووسێت: Groq خۆڕایی</div>' +
+      '<div class="hint">Gemini: aistudio.google.com → Create API key → کۆپی AIza...<br>دوای پاشەکەوت سەرەوە دەبێت بنووسێت: Gemini خۆڕایی</div>' +
       '<button type="button" class="save" data-act="saveCfg">پاشەکەوت</button>' +
       '</div>' +
       '<div class="ai-msgs" id="aiMsgs"></div>' +
@@ -210,7 +250,7 @@
       '<textarea class="ai-input" id="aiInput" rows="1" placeholder="پرسیاری شەرعی بنووسە..."></textarea>' +
       '<button type="button" class="ai-send" data-act="send">ناردن</button></div>';
 
-    $('aiProv').value = cfg.provider === 'groq' ? 'groq' : 'offline';
+    $('aiProv').value = cfg.provider || 'offline';
     $('aiKey').value = cfg.apiKey || '';
     if (cfg.model) try { $('aiModel').value = cfg.model; } catch (e) {}
     renderMsgs();
@@ -235,27 +275,20 @@
     if (act === 'saveCfg') {
       var key = ($('aiKey').value || '').trim();
       var prov = $('aiProv').value;
+      if (key.indexOf('AIza') === 0) prov = 'gemini';
       if (key.indexOf('gsk_') === 0) prov = 'groq';
-      if (prov === 'groq' && !key) {
-        history.push({ role: 'sys', text: '⚠️ کلیلی Groq دانەنرا. یان کلیلی gsk_ دابنێ یان شێواز بکە بە ناوخۆیی.' });
+      if ((prov === 'gemini' || prov === 'groq') && !key) {
+        history.push({ role: 'sys', text: '⚠️ کلیلی API دانەنرا.' });
         saveHist();
         renderMsgs();
         return;
       }
-      var cfg = {
-        provider: prov,
-        apiKey: key,
-        model: $('aiModel').value
-      };
+      var model = $('aiModel').value;
+      if (prov === 'gemini' && model.indexOf('llama') >= 0) model = 'gemini-2.0-flash';
+      var cfg = { provider: prov, apiKey: key, model: model };
       saveCfg(cfg);
       $('aiPanel').classList.remove('open');
-      var msg = 'پاشەکەوت کرا: ' + modeLabel(cfg);
-      if (cfg.provider === 'groq') {
-        msg += '\nئێستا پرسیار بکە — وەڵام لە Groq دێت (مۆدێل: ' + cfg.model + ').';
-      } else {
-        msg += '\nهێشتا ناوخۆییە. بۆ AIی زیرەک: کلیلی gsk_ دابنێ و پاشەکەوت بکە.';
-      }
-      history.push({ role: 'sys', text: msg });
+      history.push({ role: 'sys', text: 'پاشەکەوت کرا: ' + modeLabel(cfg) + (prov === 'gemini' ? '\nئێستا پرسیار بکە — وەڵام لە Gemini دێت.' : '') });
       saveHist();
       build();
       return;
@@ -273,37 +306,60 @@
     saveHist();
     renderMsgs();
 
-    if (window.AiShariRag && window.AiShariRag.enabled()) {
-      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
-      renderMsgs();
-      window.AiShariRag.ask(text, function (s) {
-        var last = history[history.length - 1];
-        if (last && last.role === 'bot' && last.pending !== false) { last.text = s; renderMsgs(); }
-      }).then(function (r) {
-        history.pop();
-        history.push({ role: 'bot', text: r.text, sources: r.sources || [] });
-        saveHist();
-        renderMsgs();
-      });
-      return;
-    }
-
     var cfg = loadCfg();
-    if (cfg.provider === 'groq' && cfg.apiKey) {
-      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
+
+    if (cfg.provider === 'gemini' && cfg.apiKey) {
+      history.push({ role: 'bot', text: '… چاوەڕێ بە (Gemini)' });
       renderMsgs();
-      groqAnswer(text, cfg).then(function (ans) {
+      withTimeout(geminiAnswer(text, cfg), 25000, 'Gemini').then(function (ans) {
         history.pop();
         history.push({ role: 'bot', text: ans });
         saveHist();
         renderMsgs();
       }).catch(function (err) {
         history.pop();
-        var offline = offlineAnswer(text);
-        history.push({
-          role: 'bot',
-          text: '⚠️ Groq: ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offline
-        });
+        history.push({ role: 'bot', text: '⚠️ Gemini: ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
+        saveHist();
+        renderMsgs();
+      });
+      return;
+    }
+
+    if (cfg.provider === 'groq' && cfg.apiKey) {
+      history.push({ role: 'bot', text: '… چاوەڕێ بە (Groq)' });
+      renderMsgs();
+      withTimeout(groqAnswer(text, cfg), 25000, 'Groq').then(function (ans) {
+        history.pop();
+        history.push({ role: 'bot', text: ans });
+        saveHist();
+        renderMsgs();
+      }).catch(function (err) {
+        history.pop();
+        history.push({ role: 'bot', text: '⚠️ Groq: ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
+        saveHist();
+        renderMsgs();
+      });
+      return;
+    }
+
+    if (window.AiShariRag && window.AiShariRag.enabled()) {
+      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
+      renderMsgs();
+      withTimeout(window.AiShariRag.ask(text, function (s) {
+        var last = history[history.length - 1];
+        if (last && last.role === 'bot') { last.text = s; renderMsgs(); }
+      }), 30000, 'سێرڤەر').then(function (r) {
+        history.pop();
+        if (r && r.kind === 'error') {
+          history.push({ role: 'bot', text: (r.text || 'هەڵە') + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
+        } else {
+          history.push({ role: 'bot', text: (r && r.text) || offlineAnswer(text), sources: (r && r.sources) || [] });
+        }
+        saveHist();
+        renderMsgs();
+      }).catch(function (err) {
+        history.pop();
+        history.push({ role: 'bot', text: '⚠️ ' + (err.message || err) + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
         saveHist();
         renderMsgs();
       });
@@ -328,7 +384,7 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'section-choice ai-shari-choice';
-    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>ئەی ئای شەرعی</b><small>ناوخۆیی یان Groq خۆڕایی</small></span><span class="choice-arrow">‹</span>';
+    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>ئەی ئای شەرعی</b><small>ناوخۆیی یان Gemini خۆڕایی</small></span><span class="choice-arrow">‹</span>';
     b.onclick = function () { window.enterAiShari(); };
     box.appendChild(b);
     return true;
