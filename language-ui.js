@@ -41,7 +41,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(sy);
 
   var skb = document.createElement('script');
-  skb.src = 'ai-shari-kb.js?v=2';
+  skb.src = 'ai-shari-kb.js?v=3';
   skb.onload = function () {
     var sa = document.createElement('script');
     sa.src = 'ai-shari.js?v=4';
