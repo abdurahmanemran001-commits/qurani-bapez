@@ -57,7 +57,7 @@ export default {
       if (!rl.ok) return json({ ok: false, problem: 'daily limit reached for this IP' });
       const t0 = Date.now();
       try {
-        const out = await gemini(env, 'Return ONLY JSON {"ok":true}', '{"ping":1}', 20);
+        const out = await gemini(env, 'Return ONLY JSON {"ok":true}', '{"ping":1}', 20, url.searchParams.get('m') || undefined);
         return json({ ok: true, ms: Date.now() - t0, reply: out });
       } catch (e) { return json({ ok: false, ms: Date.now() - t0, status: e && e.status, detail: e && e.detail }); }
     }
@@ -74,7 +74,7 @@ export default {
       if (url.pathname === '/expand') {
         const rl = await limit(env, ip);
         if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
-        const out = await gemini(env, EXPAND_PROMPT, JSON.stringify({ question: q }), 300);
+        const out = await gemini(env, EXPAND_PROMPT, JSON.stringify({ question: q }), 300, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
         const cat = ['general', 'personal_fatwa', 'not_islamic', 'harmful'].includes(out.category) ? out.category : 'general';
         if (cat !== 'general') return json({ category: cat, refusal: REFUSALS[cat], remaining: rl.remaining });
         const kws = Array.isArray(out.keywords) ? out.keywords.filter(k => typeof k === 'string').slice(0, 10).map(k => k.slice(0, 40)) : [];
@@ -110,12 +110,12 @@ export default {
 };
 
 /* ---------- Gemini ---------- */
-async function gemini(env, system, userText, maxTokens) {
-  const models = (env.MODELS || 'gemini-3.8-flash').split(',').map(s => s.trim()).filter(Boolean);
+async function gemini(env, system, userText, maxTokens, modelList) {
+  const models = (modelList || env.MODELS || 'gemini-3.8-flash').split(',').map(s => s.trim()).filter(Boolean);
   let last = { status: 502, detail: 'no model' };
   for (const m of models) {
     // Thinking models spend output tokens on "thoughts"; keep thinking minimal and leave generous room.
-    for (const thinking of [{ thinkingLevel: 'low' }, null]) {
+    for (const thinking of [{ thinkingLevel: 'minimal' }, { thinkingLevel: 'low' }, null]) {
       const gc = { temperature: 0.1, maxOutputTokens: maxTokens + 2048, responseMimeType: 'application/json' };
       if (thinking) gc.thinkingConfig = thinking;
       let r;
