@@ -1,7 +1,7 @@
-/* ai-shari.js v4 — free offline engine; topics in ai-shari-kb.js */
+/* ai-shari.js v5 — better matching + offline only */
 (function () {
-  if (window.__aiShariV4) return;
-  window.__aiShariV4 = true;
+  if (window.__aiShariV5) return;
+  window.__aiShariV5 = true;
 
   var KEY = 'ai_shari_v1';
   var history = [];
@@ -17,10 +17,15 @@
   }
 
   function norm(s) {
-    return String(s || '').toLowerCase()
+    return String(s || '')
+      .toLowerCase()
       .replace(/[ًٌٍَُِْـ]/g, '')
+      .replace(/ە/g, 'ه')
+      .replace(/ێ/g, 'ي')
+      .replace(/ۆ/g, 'و')
       .replace(/[؟?!.،,;:\n\r\t]/g, ' ')
-      .replace(/\s+/g, ' ').trim();
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   function offlineAnswer(q) {
@@ -30,28 +35,48 @@
     if (!KB.length) {
       return 'زانیارییەکان هێشتا بار نەبوون. تاب دابخە و دووبارە بیکەرەوە.';
     }
+
     var best = null, bestScore = 0;
     for (var i = 0; i < KB.length; i++) {
       var item = KB[i], score = 0;
       var keys = item.keys || [];
       for (var j = 0; j < keys.length; j++) {
         var k = norm(keys[j]);
-        if (!k) continue;
-        if (nq.indexOf(k) >= 0) score += k.length + 8;
-        else {
-          var parts = k.split(' '), hit = 0;
-          for (var p = 0; p < parts.length; p++) {
-            if (parts[p].length > 2 && nq.indexOf(parts[p]) >= 0) hit++;
-          }
-          if (hit && hit >= Math.ceil(parts.length * 0.5)) score += hit * 4;
+        if (!k || k.length < 2) continue;
+        if (nq.indexOf(k) >= 0) {
+          score += 50 + k.length * 3;
+          continue;
+        }
+        var parts = k.split(' ').filter(function (p) { return p.length > 1; });
+        if (!parts.length) continue;
+        var hit = 0;
+        for (var p = 0; p < parts.length; p++) {
+          if (nq.indexOf(parts[p]) >= 0) hit++;
+        }
+        if (hit === parts.length && parts.length > 1) {
+          score += 40 + hit * 8;
+        } else if (hit >= Math.ceil(parts.length * 0.7) && parts.length > 1) {
+          score += 15 + hit * 5;
+        } else if (hit === 1 && parts.length === 1 && parts[0].length >= 4) {
+          score += 10 + parts[0].length;
         }
       }
-      if (score > bestScore) { bestScore = score; best = item; }
+      if (score > bestScore) {
+        bestScore = score;
+        best = item;
+      }
     }
-    if (best && bestScore >= 4) {
+
+    if (best && bestScore >= 20) {
       return best.a + '\n\n—\n📚 زانیاری ناو ئەپ (بێ پارە). بۆ فەتوای ورد بۆ زانا بڕۆ.';
     }
-    return 'لە ' + KB.length + ' بابەتدا وەڵامی گونجاو نەدۆزرایەوە.\n\nبپرسە دەربارەی: نوێژ، ووزو، تەوبە، ڕوقیە، ڕۆژوو، غەیبەت، سەبر، پایەکانی ئیسلام…\n\n⚠️ جێگەی موفتی ناگرێتەوە.';
+
+    return (
+      'وەڵامی گونجاوم بۆ ئەم پرسیارە نەدۆزیەوە لە ' + KB.length + ' بابەتدا.\n\n' +
+      'هەوڵبدە وشەی سەرەکی بنووسیت، بۆ نموونە:\n' +
+      '• نوێژی جەنازە\n• ووزو\n• ڕۆژوو\n• سورەتی یوسف\n• تەوبە\n\n' +
+      '⚠️ ئەمە مۆدێلی گەورەی AI نییە — کۆمەڵە وەڵامی ئامادەیە. بۆ فەتوا بۆ زانا بڕۆ.'
+    );
   }
 
   function saveHist() {
@@ -89,7 +114,7 @@
     if (!box) return;
     var n = getKB().length;
     if (!history.length) {
-      box.innerHTML = '<div class="ai-bubble sys">سڵاو! من یاریدەدەری شەرعیم — <b>بەبێ پارە</b>.\n\nئێستا ' + n + ' بابەتم تێدایە.\n\n⚠️ جێگەی موفتی ناگرێتەوە.</div>';
+      box.innerHTML = '<div class="ai-bubble sys">سڵاو! من یاریدەدەری شەرعیم — <b>بەبێ پارە</b>.\n\nئێستا ' + n + ' بابەتم تێدایە.\nوشەی سەرەکی بەکاربهێنە (وەک: جەنازە، ووزو، ڕۆژوو).\n\n⚠️ مۆدێلی گەورەی AI نییە — جێگەی موفتی ناگرێتەوە.</div>';
       return;
     }
     box.innerHTML = history.map(function (m) {
@@ -110,11 +135,11 @@
       '<button type="button" class="ai-back" data-act="back">‹ بەشەکان</button></div></div>' +
       '<div class="ai-msgs" id="aiMsgs"></div>' +
       '<div class="ai-chips">' +
-      '<button type="button" class="ai-chip" data-q="نوێژی بەیانی چەند ڕکاتە؟">نوێژی بەیانی</button>' +
+      '<button type="button" class="ai-chip" data-q="نوێژی جەنازە چۆنە؟">جەنازە</button>' +
       '<button type="button" class="ai-chip" data-q="ووزو چۆن دەکرێت؟">ووزو</button>' +
       '<button type="button" class="ai-chip" data-q="چۆن تەوبە دەکرێت؟">تەوبە</button>' +
       '<button type="button" class="ai-chip" data-q="پێنج پایەی ئیسلام چین؟">پایەکانی ئیسلام</button>' +
-      '<button type="button" class="ai-chip" data-q="غەیبەت چییە؟">غەیبەت</button>' +
+      '<button type="button" class="ai-chip" data-q="نوێژی بەیانی چەند ڕکاتە؟">نوێژی بەیانی</button>' +
       '</div>' +
       '<div class="ai-foot"><textarea class="ai-input" id="aiInput" rows="1" placeholder="پرسیاری شەرعی بنووسە..."></textarea>' +
       '<button type="button" class="ai-send" data-act="send">ناردن</button></div>';
