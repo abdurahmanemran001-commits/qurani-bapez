@@ -1,7 +1,7 @@
-/* ai-shari.js v6 — offline KB + optional free Groq API */
+/* ai-shari.js v7 — auto-enable Groq when key is set */
 (function () {
-  if (window.__aiShariV6) return;
-  window.__aiShariV6 = true;
+  if (window.__aiShariV7) return;
+  window.__aiShariV7 = true;
 
   var KEY = 'ai_shari_v1';
   var CFG_KEY = 'ai_shari_cfg_v1';
@@ -184,8 +184,8 @@
       '<div class="ai-panel" id="aiPanel">' +
       '<label>شێواز</label>' +
       '<select id="aiProv">' +
-      '<option value="offline">تەنها ناوخۆیی (بێ پارە · بێ کلیلی)</option>' +
-      '<option value="groq">Groq خۆڕایی (کلیلی خۆڕایی)</option>' +
+      '<option value="offline">ناوخۆیی — وەڵامی ئامادە (بێ AI)</option>' +
+      '<option value="groq">Groq — AIی ڕاستەقینە (کلیلی gsk_ پێویستە)</option>' +
       '</select>' +
       '<label>کلیلی Groq (gsk_...)</label>' +
       '<input id="aiKey" type="password" placeholder="gsk_... لە console.groq.com" autocomplete="off">' +
@@ -195,7 +195,7 @@
       '<option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option>' +
       '<option value="openai/gpt-oss-20b">openai/gpt-oss-20b</option>' +
       '</select>' +
-      '<div class="hint">۱) بڕۆ بۆ console.groq.com → Sign up (بێ کارت)<br>۲) API Keys → Create → کۆپی بکە<br>۳) لێرە دایبنێ و پاشەکەوت بکە<br>سنوور: ~۱۰۰۰ پرسیار/ڕۆژ (خۆڕایی)</div>' +
+      '<div class="hint">۱) بڕۆ بۆ console.groq.com → Sign up (بێ کارت)<br>۲) API Keys → Create → کۆپی بکە<br>۳) کلیلی دابنێ و پاشەکەوت بکە (خۆکار دەبێتە Groq)<br>سەرەوە دەبێت بنووسێت: Groq خۆڕایی</div>' +
       '<button type="button" class="save" data-act="saveCfg">پاشەکەوت</button>' +
       '</div>' +
       '<div class="ai-msgs" id="aiMsgs"></div>' +
@@ -232,14 +232,29 @@
       return;
     }
     if (act === 'saveCfg') {
+      var key = ($('aiKey').value || '').trim();
+      var prov = $('aiProv').value;
+      if (key.indexOf('gsk_') === 0) prov = 'groq';
+      if (prov === 'groq' && !key) {
+        history.push({ role: 'sys', text: '⚠️ کلیلی Groq دانەنرا. یان کلیلی gsk_ دابنێ یان شێواز بکە بە ناوخۆیی.' });
+        saveHist();
+        renderMsgs();
+        return;
+      }
       var cfg = {
-        provider: $('aiProv').value,
-        apiKey: ($('aiKey').value || '').trim(),
+        provider: prov,
+        apiKey: key,
         model: $('aiModel').value
       };
       saveCfg(cfg);
       $('aiPanel').classList.remove('open');
-      history.push({ role: 'sys', text: 'پاشەکەوت کرا: ' + modeLabel(cfg) });
+      var msg = 'پاشەکەوت کرا: ' + modeLabel(cfg);
+      if (cfg.provider === 'groq') {
+        msg += '\nئێستا پرسیار بکە — وەڵام لە Groq دێت (مۆدێل: ' + cfg.model + ').';
+      } else {
+        msg += '\nهێشتا ناوخۆییە. بۆ AIی زیرەک: کلیلی gsk_ دابنێ و پاشەکەوت بکە.';
+      }
+      history.push({ role: 'sys', text: msg });
       saveHist();
       build();
       return;
