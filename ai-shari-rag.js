@@ -35,7 +35,7 @@
 
   function passageText(d) {
     if (d.kind === 'quran') return d.ar + ' — تفسير الجلالين: ' + String(d.tafsir || '').slice(0, 600);
-    return String(d.ar).slice(0, 1000);
+    return '[' + window.AiRag.label(d) + '] ' + String(d.ar).slice(0, 1000);
   }
 
   function ask(q, status) {
@@ -52,7 +52,7 @@
       return window.AiRag.load(function (p) {
         status('… بارکردنی سەرچاوەکان ' + Math.round(p * 100) + '٪');
       }).then(function () {
-        var hits = window.AiRag.search(kws, { kQ: 5, kH: 7 });
+        var hits = window.AiRag.search(kws, { kQ: 6, kH: 11 });
         var all = hits.quran.concat(hits.hadith);
         if (!all.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
         status('… نووسینی وەڵام');
@@ -60,16 +60,16 @@
           q: q,
           token: ex.token,
           passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; })
-        }, 25000).then(function (an) {
+        }, 45000).then(function (an) {
           if (an.error) return { text: (an.message || NET) + (an.detail ? '\n\n[' + an.detail + ']' : ''), sources: [], kind: 'error' };
-          if (!an.answerable || !an.cites || !an.cites.length) {
+          if (!an.answerable || ((!an.cites || !an.cites.length) && !an.general)) {
             return { text: NOT_FOUND, sources: [], kind: 'notfound' };
           }
-          var srcs = an.cites.map(function (id) { return window.AiRag.get(id); }).filter(Boolean);
+          var srcs = (an.cites || []).map(function (id) { return window.AiRag.get(id); }).filter(Boolean);
           return Promise.all(srcs.map(function (d) {
             return d.kind === 'quran' ? window.AiRag.kurdish(d.id) : Promise.resolve('');
           })).then(function (kus) {
-            var text = an.answer + (an.scholar ? '\n\nبۆ وردەکاری، پرسیار لە زانایەکی متمانەپێکراو بکە.' : '');
+            var text = (an.general ? '⚠️ بەشێک لەم وەڵامە ڕوونکردنەوەی گشتییە و دەقی ڕاستەوخۆی نییە لەناو سەرچاوەکان.\n\n' : '') + an.answer + (an.scholar ? '\n\nبۆ وردەکاری، پرسیار لە زانایەکی متمانەپێکراو بکە.' : '');
             return {
               text: text,
               kind: 'answer',

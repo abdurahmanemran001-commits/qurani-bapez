@@ -25,6 +25,22 @@ def dump(path, obj):
         json.dump(obj, f, ensure_ascii=False, separators=(',', ':'))
     print('%-16s %8.1f KB' % (os.path.basename(path), os.path.getsize(path) / 1024))
 
+def grade_of(grades):
+    """'صحيح' or 'حسن' if the preferred grader accepts the hadith, else ''."""
+    for who, tag in (('Al-Albani', 'الألباني'), ('Shuaib Al Arnaut', 'الأرناؤوط')):
+        for g in grades:
+            if g.get('name') == who:
+                s = g.get('grade') or ''
+                if 'Daif' in s or 'Munkar' in s or 'Mawdu' in s or 'Shadh' in s:
+                    return ''
+                if 'Hasan' in s and 'Sahih' not in s:
+                    return 'حسن (%s)' % tag
+                if 'Sahih' in s or 'Hasan' in s:
+                    return 'صحيح (%s)' % tag
+                return ''
+    return ''
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--quran-api', required=True)
@@ -52,6 +68,23 @@ def main():
             t = clean(h.get('text'))
             if t and h.get('hadithnumber'):
                 hs.append([h['hadithnumber'], t])
+        dump(os.path.join(a.out, name + '.json'), {'n': label, 'h': hs})
+    # The four Sunan: keep only hadiths graded Sahih/Hasan by al-Albani (else Shu'ayb al-Arna'ut). Grade stored as 3rd item.
+    for name, label in [('abudawud', 'سنن أبي داود'), ('tirmidhi', 'جامع الترمذي'), ('nasai', 'سنن النسائي'), ('ibnmajah', 'سنن ابن ماجه')]:
+        p = os.path.join(he, 'ara-%s.json' % name)
+        if not os.path.exists(p):
+            print('skip', name); continue
+        d = load(p)
+        hs, drop = [], 0
+        for h in d['hadiths']:
+            t = clean(h.get('text'))
+            if not t or not h.get('hadithnumber'):
+                continue
+            g = grade_of(h.get('grades') or [])
+            if not g:
+                drop += 1; continue
+            hs.append([h['hadithnumber'], t, g])
+        print('%s kept %d dropped %d' % (name, len(hs), drop))
         dump(os.path.join(a.out, name + '.json'), {'n': label, 'h': hs})
 
 if __name__ == '__main__':
