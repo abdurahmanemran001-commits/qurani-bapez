@@ -55,7 +55,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p4.js?v=1'); })
-    .then(function () { return loadScript('ai-shari.js?v=5'); });
+    .then(function () { return loadScript('ai-shari.js?v=6'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
