@@ -60,7 +60,7 @@
           q: q,
           token: ex.token,
           passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; })
-        }, 45000).then(function (an) {
+        }, 70000).then(function (an) {
           if (an.error) return { text: (an.message || NET) + (an.detail ? '\n\n[' + an.detail + ']' : ''), sources: [], kind: 'error' };
           if (!an.answerable || ((!an.cites || !an.cites.length) && !an.general)) {
             return { text: NOT_FOUND, sources: [], kind: 'notfound' };

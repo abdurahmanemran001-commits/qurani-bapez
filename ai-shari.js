@@ -312,7 +312,7 @@
       withTimeout(window.AiShariRag.ask(text, function (s) {
         var last = history[history.length - 1];
         if (last && last.role === 'bot') { last.text = s; renderMsgs(); }
-      }), 90000, 'سێرڤەر').then(function (r) {
+      }), 120000, 'سێرڤەر').then(function (r) {
         history.pop();
         if (r && r.kind === 'error') {
           history.push({ role: 'bot', text: (r.text || 'هەڵە') + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
