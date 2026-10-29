@@ -113,12 +113,12 @@
   }
 
   function saveHist() {
-    try { localStorage.setItem(KEY, JSON.stringify(history.slice(-40))); } catch (e) {}
+    try { localStorage.setItem(KEY, JSON.stringify(history.slice(-40).map(function (m) { return { role: m.role, text: m.text }; }))); } catch (e) {}
   }
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[c];
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
     });
   }
 
@@ -143,6 +143,7 @@
   }
 
   function modeLabel(cfg) {
+    if (window.AiShariRag && window.AiShariRag.enabled()) return 'Gemini + سەرچاوەی متمانەپێکراو';
     if (cfg.provider === 'groq' && cfg.apiKey) return 'Groq خۆڕایی';
     return 'ناوخۆیی · بێ پارە';
   }
@@ -164,7 +165,7 @@
     }
     box.innerHTML = history.map(function (m) {
       var cls = m.role === 'user' ? 'user' : (m.role === 'sys' ? 'sys' : 'bot');
-      return '<div class="ai-bubble ' + cls + '">' + esc(m.text) + '</div>';
+      return '<div class="ai-bubble ' + cls + '">' + esc(m.text) + (m.sources && window.AiShariRag ? window.AiShariRag.srcHtml(m.sources) : '') + '</div>';
     }).join('');
     box.scrollTop = box.scrollHeight;
   }
@@ -271,6 +272,21 @@
     history.push({ role: 'user', text: text });
     saveHist();
     renderMsgs();
+
+    if (window.AiShariRag && window.AiShariRag.enabled()) {
+      history.push({ role: 'bot', text: '… چاوەڕێ بە' });
+      renderMsgs();
+      window.AiShariRag.ask(text, function (s) {
+        var last = history[history.length - 1];
+        if (last && last.role === 'bot' && last.pending !== false) { last.text = s; renderMsgs(); }
+      }).then(function (r) {
+        history.pop();
+        history.push({ role: 'bot', text: r.text, sources: r.sources || [] });
+        saveHist();
+        renderMsgs();
+      });
+      return;
+    }
 
     var cfg = loadCfg();
     if (cfg.provider === 'groq' && cfg.apiKey) {

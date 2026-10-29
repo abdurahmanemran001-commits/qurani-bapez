@@ -1,0 +1,14 @@
+name = "qurani-ai-shari"
+main = "index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Comma-separated origins allowed to call the API (GitHub Pages site, local dev, Capacitor app).
+ALLOWED_ORIGINS = "https://abdurahmanemran001-commits.github.io,http://localhost,https://localhost,capacitor://localhost,http://127.0.0.1:8000"
+DAILY_LIMIT = "25"
+MODELS = "gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash-lite"
+
+# KV namespace id is filled in by the deploy workflow (.github/workflows/ai-worker.yml).
+[[kv_namespaces]]
+binding = "RL"
+id = "REPLACE_WITH_KV_ID"

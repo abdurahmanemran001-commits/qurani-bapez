@@ -56,6 +56,21 @@ jobs:
           bash tools/assemble_web.sh dist
           sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=5/g' dist/index.html || true
 
+      - name: Build AI Shar'i knowledge packs
+        continue-on-error: true
+        env:
+          AI_WORKER_URL: ${{ vars.AI_WORKER_URL }}
+        run: |
+          cp ai-config.js ai-rag.js ai-shari-rag.js dist/
+          if [ -n "$AI_WORKER_URL" ]; then echo "window.AI_SHARI_ENDPOINT = '$AI_WORKER_URL';" > dist/ai-config.js; fi
+          mkdir -p /tmp/aisrc && cd /tmp/aisrc
+          GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --filter=blob:none --sparse https://github.com/fawazahmed0/quran-api
+          git -C quran-api sparse-checkout set --no-cone /editions/ara-quranuthmanihaf.json /editions/kur-muhammadsalehba.json /editions/ara-jalaladdinalmah.json
+          GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 --filter=blob:none --sparse https://github.com/fawazahmed0/hadith-api
+          git -C hadith-api sparse-checkout set --no-cone /editions/ara-bukhari.json /editions/ara-muslim.json /editions/ara-nawawi.json /editions/ara-qudsi.json
+          cd "$GITHUB_WORKSPACE"
+          python3 tools/build_ai_corpus.py --quran-api /tmp/aisrc/quran-api --hadith-api /tmp/aisrc/hadith-api --out dist/ai
+
       - name: Build Madinah ayah bounds
         run: |
           set -e
