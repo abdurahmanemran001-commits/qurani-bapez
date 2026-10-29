@@ -41,7 +41,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(sy);
 
   var sa = document.createElement('script');
-  sa.src = 'ai-shari.js?v=2';
+  sa.src = 'ai-shari.js?v=3';
   sa.async = true;
   document.head.appendChild(sa);
 
