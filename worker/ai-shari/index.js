@@ -29,11 +29,14 @@ GOAL: give a helpful, well-explained answer that covers the topic properly, not 
 RULES:
 1. Evidence: base the answer on the passages. Select only passages that really support it and list their ids in "cites". Never invent verses, hadiths, narrators, hadith numbers or quotations. Never attribute to a passage something it does not say.
 2. Explain, do not just quote: say what the texts mean, use the tafsir for context, connect the texts to the question, and mention practical implications.
-3. Structure (plain text, no markdown symbols, Central Kurdish Sorani, Arabic script, 150-350 words):
-   "وەڵامی کورت:" one or two sentences.
-   "ڕوونکردنەوە:" the explanation from the texts (several sentences, mention source names naturally, e.g. "لە فەرموودەی صەحیحی بوخاری دا"; mention the hadith grade if given).
-   "خاڵە گرنگەکان:" up to 5 short lines starting with "-".
-   Add "جیاوازی زانایان:" only when scholars truly differ (describe both sides, do not choose). Add "ئامۆژگاری:" one short line when useful.
+3. Structure (plain text, no markdown symbols, Central Kurdish Sorani, Arabic script). Be thorough: 350-650 words for a normal question (shorter only for very simple ones). Use these labelled sections as fit the question:
+   "وەڵامی کورت:" two or three sentences giving the direct answer.
+   "ڕوونکردنەوەی ورد:" the main explanation, several paragraphs: define the topic, explain what each cited Quran verse says (use the tafsir for meaning and context), what each cited hadith teaches (mention the book and the grade when given, e.g. "لە فەرموودەیەکی صەحیحی بوخاری دا"), and how they fit together.
+   "بەڵگەکان:" a short line for each cited source saying what it proves (do not copy the Arabic text).
+   "خاڵە گرنگەکان:" up to 7 short lines starting with "-".
+   "لە ژیانی ڕۆژانەدا:" practical guidance and etiquette, where relevant.
+   "جیاوازی زانایان:" only when scholars truly differ (describe each view fairly, do not choose).
+   "ئامۆژگاری:" one or two warm closing lines.
 4. If the passages only partly cover the question, you MAY add a short section "ڕوونکردنەوەی گشتی:" with well-established, widely agreed basics of Islam (definitions, pillars, general seerah/history, general etiquette). Keep it brief and safe; never use it for contested rulings, detailed fiqh, numbers or quotations. If you use it set "general": true.
 5. If you cannot answer even from widely agreed basics, return "answerable": false.
 6. Do not issue personal fatwas and do not choose between scholarly opinions; for detailed fiqh set "scholar": true.
@@ -100,10 +103,10 @@ export default {
           clean.push({ id: p.id, text: t });
         }
         if (!clean.length) return json({ answerable: false, answer: '', cites: [], scholar: true, general: false });
-        const out = await gemini(env, ANSWER_PROMPT, JSON.stringify({ question: q, passages: clean }), 1500);
+        const out = await gemini(env, ANSWER_PROMPT, JSON.stringify({ question: q, passages: clean }), 3500);
         const ids = new Set(clean.map(p => p.id));
         const cites = (Array.isArray(out.cites) ? out.cites : []).filter(c => ids.has(c)).slice(0, 6);
-        const answer = typeof out.answer === 'string' ? out.answer.trim().slice(0, 1500) : '';
+        const answer = typeof out.answer === 'string' ? out.answer.trim().slice(0, 6000) : '';
         const general = out.general === true;
         const answerable = out.answerable === true && answer.length > 0 && (cites.length > 0 || general);
         return json({ answerable, answer: answerable ? answer : '', cites: answerable ? cites : [], scholar: out.scholar === true || !answerable, general: answerable && general });
