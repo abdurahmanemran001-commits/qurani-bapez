@@ -50,7 +50,17 @@ export default {
     const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8' } });
     if (!okOrigin) return json({ error: 'origin' }, 403);
     const url = new URL(req.url);
-    if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, key: !!env.GEMINI_API_KEY });
+    if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, key: !!env.GEMINI_API_KEY, kv: !!env.RL, models: env.MODELS || null });
+    if (req.method === 'GET' && url.pathname === '/diag') {
+      if (!env.GEMINI_API_KEY) return json({ ok: false, problem: 'GEMINI_API_KEY secret is not set' });
+      const rl = await limit(env, req.headers.get('CF-Connecting-IP') || 'anon');
+      if (!rl.ok) return json({ ok: false, problem: 'daily limit reached for this IP' });
+      const t0 = Date.now();
+      try {
+        const out = await gemini(env, 'Return ONLY JSON {"ok":true}', '{"ping":1}', 20);
+        return json({ ok: true, ms: Date.now() - t0, reply: out });
+      } catch (e) { return json({ ok: false, ms: Date.now() - t0, status: e && e.status, detail: e && e.detail }); }
+    }
     if (req.method !== 'POST') return json({ error: 'method' }, 405);
     if (!env.GEMINI_API_KEY) return json({ error: 'config', message: 'GEMINI_API_KEY نییە' }, 500);
 
@@ -92,8 +102,9 @@ export default {
       }
       return json({ error: 'notfound' }, 404);
     } catch (e) {
-      if (e && e.status === 429) return json({ error: 'busy', message: MSG_BUSY }, 503);
-      return json({ error: 'upstream', message: MSG_BUSY }, 502);
+      const detail = e && e.detail ? String(e.detail) : String(e && e.message || e).slice(0, 120);
+      if (e && e.status === 429) return json({ error: 'busy', message: MSG_BUSY, detail }, 503);
+      return json({ error: 'upstream', message: MSG_BUSY, detail }, 502);
     }
   }
 };
@@ -101,27 +112,41 @@ export default {
 /* ---------- Gemini ---------- */
 async function gemini(env, system, userText, maxTokens) {
   const models = (env.MODELS || 'gemini-3.8-flash').split(',').map(s => s.trim()).filter(Boolean);
-  let last = null;
+  let last = { status: 502, detail: 'no model' };
   for (const m of models) {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: 'user', parts: [{ text: userText }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens, responseMimeType: 'application/json' }
-      })
-    });
-    if (r.ok) {
-      const d = await r.json();
-      const text = d && d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts
-        ? d.candidates[0].content.parts.map(p => p.text || '').join('') : '';
-      return parseJson(text);
+    // Thinking models spend output tokens on "thoughts"; keep thinking minimal and leave generous room.
+    for (const thinking of [{ thinkingLevel: 'low' }, null]) {
+      const gc = { temperature: 0.1, maxOutputTokens: maxTokens + 2048, responseMimeType: 'application/json' };
+      if (thinking) gc.thinkingConfig = thinking;
+      let r;
+      try {
+        r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: 'user', parts: [{ text: userText }] }],
+            generationConfig: gc
+          })
+        });
+      } catch (e) { last = { status: 502, detail: m + ': network ' + String(e && e.message || e).slice(0, 80) }; break; }
+      if (r.ok) {
+        const d = await r.json();
+        const cand = d && d.candidates && d.candidates[0];
+        const text = cand && cand.content && cand.content.parts ? cand.content.parts.map(p => p.text || '').join('') : '';
+        const out = parseJson(text);
+        if (out && Object.keys(out).length) return out;
+        last = { status: 502, detail: m + ': empty answer (finish=' + (cand && cand.finishReason) + ')' };
+        break; // try next model
+      }
+      let body = '';
+      try { body = (await r.text()).replace(/\s+/g, ' ').slice(0, 160); } catch (e) {}
+      last = { status: r.status, detail: m + ': HTTP ' + r.status + ' ' + body };
+      if (r.status === 400 && thinking) continue; // maybe thinkingConfig unsupported: retry without it
+      break; // next model (404 wrong name, 429 quota, 5xx)
     }
-    last = { status: r.status };
-    if (r.status !== 429 && r.status < 500 && r.status !== 404) break; // bad request: other models won't help
   }
-  throw last || { status: 502 };
+  throw last;
 }
 function parseJson(t) {
   t = String(t || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
