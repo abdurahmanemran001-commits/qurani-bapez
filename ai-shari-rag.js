@@ -43,7 +43,7 @@
     if (!endpoint()) return Promise.reject(new Error('no endpoint'));
     status('… شیکردنەوەی پرسیار');
     return post('/expand', { q: q }, 20000).then(function (ex) {
-      if (ex.error) return { text: ex.message || NET, sources: [], kind: 'error' };
+      if (ex.error) return { text: (ex.message || NET) + (ex.detail ? '\n\n[' + ex.detail + ']' : ''), sources: [], kind: 'error' };
       if (ex.refusal) return { text: ex.refusal, sources: [], kind: 'refusal' };
       var kws = ex.keywords || [];
       if (!kws.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
@@ -61,7 +61,7 @@
           token: ex.token,
           passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; })
         }, 25000).then(function (an) {
-          if (an.error) return { text: an.message || NET, sources: [], kind: 'error' };
+          if (an.error) return { text: (an.message || NET) + (an.detail ? '\n\n[' + an.detail + ']' : ''), sources: [], kind: 'error' };
           if (!an.answerable || !an.cites || !an.cites.length) {
             return { text: NOT_FOUND, sources: [], kind: 'notfound' };
           }
