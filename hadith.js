@@ -384,32 +384,20 @@
     render();
   };
 
+  // Do not inject the Hadith card into the main home screen.
   function dedupeCards(box) {
+    if (!box) return false;
     var all = box.querySelectorAll('.hadith-choice');
-    for (var i = 1; i < all.length; i++) {
+    for (var i = 0; i < all.length; i++) {
       try { all[i].parentNode.removeChild(all[i]); } catch (e) {}
     }
-    return all.length > 0;
+    return false;
   }
 
   function addCard() {
     var box = document.querySelector('#startScreen .section-choices');
-    if (!box) return false;
-    if (dedupeCards(box)) return true;
-
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'section-choice hadith-choice';
-    b.setAttribute('data-hadith-card', '1');
-    b.innerHTML = '<span class="choice-icon">📖</span><span class="choice-copy"><b>حەدیسی پەیامبەر ﷺ</b><small>بخاری · مسلم · نەوەوی · گەڕان</small></span><span class="choice-arrow">‹</span>';
-    b.onclick = function () { window.enterHadith(); };
-
-    var ai = box.querySelector('.ai-shari-choice');
-    if (ai && ai.nextSibling) box.insertBefore(b, ai.nextSibling);
-    else box.appendChild(b);
-
-    dedupeCards(box);
-    return true;
+    if (box) dedupeCards(box);
+    return false;
   }
 
   function start() {
