@@ -69,7 +69,7 @@
           return Promise.all(srcs.map(function (d) {
             return d.kind === 'quran' ? window.AiRag.kurdish(d.id) : Promise.resolve('');
           })).then(function (kus) {
-            var text = (an.general ? '⚠️ بەشێک لەم وەڵامە ڕوونکردنەوەی گشتییە و دەقی ڕاستەوخۆی نییە لەناو سەرچاوەکان.\n\n' : '') + an.answer + (an.scholar ? '\n\nبۆ وردەکاری، پرسیار لە زانایەکی متمانەپێکراو بکە.' : '');
+            var text = '⚠️ ئەم وەڵامە تەنها بەڵگە و ڕای زانایانە و فەتوا نییە؛ پێویستە پرس بە زانایەکی ئاینی بکەیت.\n\n' + (an.general ? 'بەشێک لەم وەڵامە ڕوونکردنەوەی گشتییە و دەقی ڕاستەوخۆی نییە لەناو سەرچاوەکان.\n\n' : '') + an.answer + '\n\n⚠️ بۆ بڕیاری کۆتایی و دۆخی تایبەتی خۆت، پرس بە زانایەکی ئاینی متمانەپێکراو بکە.';
             return {
               text: text,
               kind: 'answer',
