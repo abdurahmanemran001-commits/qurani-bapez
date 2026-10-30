@@ -1,7 +1,7 @@
-/* hadith.js v1 — حەدیسی پەیامبەر ﷺ: کتێبەکان، گەڕان، بابەت، نیشانە */
+/* hadith.js v2 — حەدیسی پەیامبەر ﷺ: کتێبەکان، گەڕان، بابەت، نیشانە */
 (function () {
-  if (window.__hadithV1) return;
-  window.__hadithV1 = true;
+  if (window.__hadithV2) return;
+  window.__hadithV2 = true;
 
   var BM_KEY = 'hadith_bm_v1';
   var books = [
@@ -68,7 +68,7 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s || '').replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      return ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' })[c];
     });
   }
 
@@ -384,26 +384,54 @@
     render();
   };
 
+  function dedupeCards(box) {
+    var all = box.querySelectorAll('.hadith-choice');
+    for (var i = 1; i < all.length; i++) {
+      try { all[i].parentNode.removeChild(all[i]); } catch (e) {}
+    }
+    return all.length > 0;
+  }
+
   function addCard() {
     var box = document.querySelector('#startScreen .section-choices');
-    if (!box || box.querySelector('.hadith-choice')) return !!box;
+    if (!box) return false;
+    if (dedupeCards(box)) return true;
+
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'section-choice hadith-choice';
+    b.setAttribute('data-hadith-card', '1');
     b.innerHTML = '<span class="choice-icon">📖</span><span class="choice-copy"><b>حەدیسی پەیامبەر ﷺ</b><small>بخاری · مسلم · نەوەوی · گەڕان</small></span><span class="choice-arrow">‹</span>';
     b.onclick = function () { window.enterHadith(); };
+
     var ai = box.querySelector('.ai-shari-choice');
     if (ai && ai.nextSibling) box.insertBefore(b, ai.nextSibling);
     else box.appendChild(b);
+
+    dedupeCards(box);
     return true;
   }
 
   function start() {
     injectCss();
-    document.addEventListener('click', onClick);
-    var n = 0, iv = setInterval(function () { addCard(); if (++n > 30) clearInterval(iv); }, 400);
-    var box = document.querySelector('#startScreen .section-choices');
-    if (box) { try { new MutationObserver(function () { addCard(); }).observe(box, { childList: true }); } catch (e) {} }
+    if (!window.__hadithClickBound) {
+      window.__hadithClickBound = true;
+      document.addEventListener('click', onClick);
+    }
+    var n = 0;
+    var iv = setInterval(function () {
+      addCard();
+      if (++n > 20) clearInterval(iv);
+    }, 300);
+    if (!window.__hadithDedupeBound) {
+      window.__hadithDedupeBound = true;
+      document.addEventListener('click', function () {
+        setTimeout(function () {
+          var box = document.querySelector('#startScreen .section-choices');
+          if (box) dedupeCards(box);
+        }, 80);
+      }, true);
+    }
   }
 
   if (document.body) start();
