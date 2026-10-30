@@ -103,7 +103,9 @@ export default {
           clean.push({ id: p.id, text: t });
         }
         if (!clean.length) return json({ answerable: false, answer: '', cites: [], scholar: true, general: false });
-        const out = await gemini(env, ANSWER_PROMPT, JSON.stringify({ question: q, passages: clean }), 3500);
+        const full = body.detail === 'full';
+        const sys = ANSWER_PROMPT + (full ? '' : '\nOVERRIDE LENGTH: be concise and fast. 200-300 words total. Sections only: "وەڵامی کورت:", "ڕوونکردنەوە:" (one or two short paragraphs), "ڕای چوار مەزهەب:" (only for fiqh topics, one line per school), "خاڵە گرنگەکان:" (max 4 lines). Skip the other sections.');
+        const out = await gemini(env, sys, JSON.stringify({ question: q, passages: clean }), full ? 3500 : 1600, full ? null : (env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash'));
         const ids = new Set(clean.map(p => p.id));
         const cites = (Array.isArray(out.cites) ? out.cites : []).filter(c => ids.has(c)).slice(0, 6);
         const answer = typeof out.answer === 'string' ? out.answer.trim().slice(0, 6000) : '';

@@ -38,7 +38,8 @@
     return '[' + window.AiRag.label(d) + '] ' + String(d.ar).slice(0, 1000);
   }
 
-  function ask(q, status) {
+  function ask(q, status, opts) {
+    var full = !!(opts && opts.full);
     status = status || function () {};
     if (!endpoint()) return Promise.reject(new Error('no endpoint'));
     status('… شیکردنەوەی پرسیار');
@@ -59,6 +60,7 @@
         return post('/answer', {
           q: q,
           token: ex.token,
+          detail: full ? 'full' : 'short',
           passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; })
         }, 70000).then(function (an) {
           if (an.error) return { text: (an.message || NET) + (an.detail ? '\n\n[' + an.detail + ']' : ''), sources: [], kind: 'error' };
@@ -73,6 +75,7 @@
             return {
               text: text,
               kind: 'answer',
+              more: !full,
               sources: srcs.map(function (d, i) {
                 return { id: d.id, label: window.AiRag.label(d), ar: d.ar, ku: kus[i] || '' };
               })

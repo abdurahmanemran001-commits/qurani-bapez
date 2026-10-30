@@ -189,10 +189,11 @@
         '\n\n⚠️ جێگەی موفتی ناگرێتەوە.</div>';
       return;
     }
-    box.innerHTML = history.map(function (m) {
+    box.innerHTML = history.map(function (m, i) {
       var cls = m.role === 'user' ? 'user' : (m.role === 'sys' ? 'sys' : 'bot');
       return '<div class="ai-bubble ' + cls + '">' + esc(m.text) +
-        (m.sources && window.AiShariRag ? window.AiShariRag.srcHtml(m.sources) : '') + '</div>';
+        (m.sources && window.AiShariRag ? window.AiShariRag.srcHtml(m.sources) : '') +
+        (m.more ? '<div><button type="button" class="ai-chip" data-act="more" data-i="' + i + '">＋ وەڵامی فراوانتر</button></div>' : '') + '</div>';
     }).join('');
     box.scrollTop = box.scrollHeight;
   }
@@ -238,13 +239,18 @@
     if (q) { $('aiInput').value = q; send(); return; }
     if (act === 'back') { if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'clear') { history = []; saveHist(); renderMsgs(); return; }
+    if (act === 'more') {
+      var mi = Number(el.getAttribute('data-i')), mm = history[mi];
+      if (mm && mm.q) { mm.more = false; saveHist(); send(mm.q, true); }
+      return;
+    }
     if (act === 'send') send();
   }
 
-  function send() {
+  function send(forceText, full) {
     var input = $('aiInput');
     if (!input) return;
-    var text = (input.value || '').trim();
+    var text = (forceText || input.value || '').trim();
     if (!text) return;
     input.value = '';
     history.push({ role: 'user', text: text });
@@ -257,12 +263,12 @@
       withTimeout(window.AiShariRag.ask(text, function (s) {
         var last = history[history.length - 1];
         if (last && last.role === 'bot') { last.text = s; renderMsgs(); }
-      }), 120000, 'سێرڤەر').then(function (r) {
+      }, { full: !!full }), 120000, 'سێرڤەر').then(function (r) {
         history.pop();
         if (r && r.kind === 'error') {
           history.push({ role: 'bot', text: (r.text || 'هەڵە') + '\n\n—— ناوخۆیی ——\n' + offlineAnswer(text) });
         } else {
-          history.push({ role: 'bot', text: (r && r.text) || offlineAnswer(text), sources: (r && r.sources) || [] });
+          history.push({ role: 'bot', text: (r && r.text) || offlineAnswer(text), sources: (r && r.sources) || [], more: !!(r && r.more), q: text });
         }
         saveHist();
         renderMsgs();
