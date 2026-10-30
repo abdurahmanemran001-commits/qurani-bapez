@@ -30,21 +30,21 @@ jobs:
           if [ ! -s index.html ] || [ "$(wc -c < index.html)" -lt 10000 ]; then
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
           fi
-          # Force latest language-ui (AI Shar'i scripts)
-          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=5/g' index.html
+          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=6/g' index.html
           grep -n 'language-ui' index.html || true
           wc -c index.html
 
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js hadith.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
           for f in index.html language-ui.js madani-ayah.js salah.js; do
             test -f dist/$f || cp $f dist/
           done
           test -f ruqyah-reciters.js && cp ruqyah-reciters.js dist/
           test -f ruqyah-youtube.js && cp ruqyah-youtube.js dist/
           test -f ai-shari.js && cp ai-shari.js dist/
+          test -f hadith.js && cp hadith.js dist/
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
           test -f ai-shari-kb-p3.js && cp ai-shari-kb-p3.js dist/
@@ -54,7 +54,7 @@ jobs:
           test -f salah-settings.js && cp salah-settings.js dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
-          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=5/g' dist/index.html || true
+          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=6/g' dist/index.html || true
 
       - name: Build AI Shar'i knowledge packs
         continue-on-error: true
