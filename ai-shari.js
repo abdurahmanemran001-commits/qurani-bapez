@@ -12,16 +12,7 @@
   } catch (e) { history = []; }
 
   function loadCfg() {
-    try {
-      var c = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
-      return {
-        provider: c.provider || 'offline',
-        apiKey: c.apiKey || '',
-        model: c.model || 'gemini-2.0-flash'
-      };
-    } catch (e) {
-      return { provider: 'offline', apiKey: '', model: 'gemini-2.0-flash' };
-    }
+    return { provider: 'offline', apiKey: '', model: '' }; // direct keys removed: AI runs through the secure worker
   }
   function saveCfg(c) {
     try { localStorage.setItem(CFG_KEY, JSON.stringify(c)); } catch (e) {}
@@ -80,7 +71,7 @@
     if (best && bestScore >= 20) {
       return best.a + '\n\n—\n📚 ناوخۆیی (بێ پارە). بۆ فەتوای ورد بۆ زانا بڕۆ.';
     }
-    return 'لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nلە ⚙ کلیلی Gemini (AIza...) دابنێ بۆ وەڵامی زیرەک.';
+    return 'لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nتکایە پرسیارەکە بە شێوەیەکی تر بنووسە، یان ئینتەرنێتەکەت بپشکنە بۆ وەڵامی زیرەک.';
   }
 
   function withTimeout(promise, ms, label) {
@@ -194,9 +185,7 @@
       box.innerHTML =
         '<div class="ai-bubble sys">سڵاو! یاریدەدەری شەرعی.\n\n' +
         'ئێستا: <b>' + modeLabel(cfg) + '</b>\n' +
-        (cfg.provider === 'gemini' && cfg.apiKey
-          ? 'وەڵامی زیرەک بە Gemini.'
-          : 'بۆ AIی زیرەک: ⚙ → کلیلی Gemini (AIza...) لە aistudio.google.com') +
+        'هەر پرسیارێکی ئیسلامیت هەبێت بیپرسە — وەڵام بە قورئان و حەدیسی سەرچاوەدار دەدرێتەوە.' +
         '\n\n⚠️ جێگەی موفتی ناگرێتەوە.</div>';
       return;
     }
@@ -217,42 +206,23 @@
     v.innerHTML =
       '<div class="ai-head"><div><h2>☪ ئەی ئای شەرعی</h2><div class="ai-sub">' + modeLabel(cfg) + ' · ' + n + ' بابەت ناوخۆ</div></div>' +
       '<div style="display:flex;gap:6px">' +
-      '<button type="button" class="ai-set" data-act="settings">⚙</button>' +
       '<button type="button" class="ai-clear" data-act="clear">پاککردنەوە</button>' +
       '<button type="button" class="ai-back" data-act="back">‹ بەشەکان</button></div></div>' +
-      '<div class="ai-panel" id="aiPanel">' +
-      '<label>شێواز</label>' +
-      '<select id="aiProv">' +
-      '<option value="offline">ناوخۆیی — وەڵامی ئامادە</option>' +
-      '<option value="gemini">Gemini خۆڕایی (کلیلی AIza...)</option>' +
-      '<option value="groq">Groq (کلیلی gsk_ — ئەگەر کار بکات)</option>' +
-      '</select>' +
-      '<label>کلیلی API</label>' +
-      '<input id="aiKey" type="password" placeholder="AIza... یان gsk_..." autocomplete="off">' +
-      '<label>مۆدێل</label>' +
-      '<select id="aiModel">' +
-      '<option value="gemini-2.0-flash">gemini-2.0-flash (پێشنیار)</option>' +
-      '<option value="gemini-1.5-flash">gemini-1.5-flash</option>' +
-      '<option value="gemini-2.5-flash">gemini-2.5-flash</option>' +
-      '<option value="llama-3.1-8b-instant">llama-3.1-8b (Groq)</option>' +
-      '</select>' +
-      '<div class="hint">Gemini: aistudio.google.com → Create API key → کۆپی AIza...<br>دوای پاشەکەوت سەرەوە دەبێت بنووسێت: Gemini خۆڕایی</div>' +
-      '<button type="button" class="save" data-act="saveCfg">پاشەکەوت</button>' +
-      '</div>' +
       '<div class="ai-msgs" id="aiMsgs"></div>' +
       '<div class="ai-chips">' +
-      '<button type="button" class="ai-chip" data-q="نوێژی جەنازە چۆنە؟">جەنازە</button>' +
-      '<button type="button" class="ai-chip" data-q="ووزو چۆن دەکرێت؟">ووزو</button>' +
+      '<button type="button" class="ai-chip" data-q="چۆن نوێژ دەکرێت و مەرجەکانی چین؟">نوێژ</button>' +
+      '<button type="button" class="ai-chip" data-q="ڕۆژوو چ شتێک دەشکێنێت و حوکمەکانی چین؟">ڕۆژوو</button>' +
+      '<button type="button" class="ai-chip" data-q="زەکات لەسەر کێ پێویستە و چۆن دەدرێت؟">زەکات</button>' +
+      '<button type="button" class="ai-chip" data-q="حەج و عومرە چۆن ئەنجام دەدرێت؟">حەج</button>' +
+      '<button type="button" class="ai-chip" data-q="مافی دایک و باوک و ژن و میرد چییە لە ئیسلامدا؟">خێزان</button>' +
+      '<button type="button" class="ai-chip" data-q="حوکمی کار و بازرگانی و سوود (ڕیبا) چییە؟">حەڵاڵ و حەرام</button>' +
       '<button type="button" class="ai-chip" data-q="چۆن تەوبە دەکرێت؟">تەوبە</button>' +
-      '<button type="button" class="ai-chip" data-q="پێنج پایەی ئیسلام چین؟">پایەکانی ئیسلام</button>' +
+      '<button type="button" class="ai-chip" data-q="شەش پایەی ئیمان و پێنج پایەی ئیسلام چین؟">ئیمان</button>' +
       '</div>' +
       '<div class="ai-foot">' +
       '<textarea class="ai-input" id="aiInput" rows="1" placeholder="پرسیاری شەرعی بنووسە..."></textarea>' +
       '<button type="button" class="ai-send" data-act="send">ناردن</button></div>';
 
-    $('aiProv').value = cfg.provider || 'offline';
-    $('aiKey').value = cfg.apiKey || '';
-    if (cfg.model) try { $('aiModel').value = cfg.model; } catch (e) {}
     renderMsgs();
     var input = $('aiInput');
     if (input) input.onkeydown = function (e) {
@@ -267,32 +237,6 @@
     if (q) { $('aiInput').value = q; send(); return; }
     if (act === 'back') { if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'clear') { history = []; saveHist(); renderMsgs(); return; }
-    if (act === 'settings') {
-      var p = $('aiPanel');
-      if (p) p.classList.toggle('open');
-      return;
-    }
-    if (act === 'saveCfg') {
-      var key = ($('aiKey').value || '').trim();
-      var prov = $('aiProv').value;
-      if (key.indexOf('AIza') === 0) prov = 'gemini';
-      if (key.indexOf('gsk_') === 0) prov = 'groq';
-      if ((prov === 'gemini' || prov === 'groq') && !key) {
-        history.push({ role: 'sys', text: '⚠️ کلیلی API دانەنرا.' });
-        saveHist();
-        renderMsgs();
-        return;
-      }
-      var model = $('aiModel').value;
-      if (prov === 'gemini' && model.indexOf('llama') >= 0) model = 'gemini-2.0-flash';
-      var cfg = { provider: prov, apiKey: key, model: model };
-      saveCfg(cfg);
-      $('aiPanel').classList.remove('open');
-      history.push({ role: 'sys', text: 'پاشەکەوت کرا: ' + modeLabel(cfg) + (prov === 'gemini' ? '\nئێستا پرسیار بکە — وەڵام لە Gemini دێت.' : '') });
-      saveHist();
-      build();
-      return;
-    }
     if (act === 'send') send();
   }
 
