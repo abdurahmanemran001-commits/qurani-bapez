@@ -213,6 +213,7 @@
       '<button type="button" class="ai-chip" data-q="چۆن نوێژ دەکرێت و مەرجەکانی چین؟">نوێژ</button>' +
       '<button type="button" class="ai-chip" data-q="ڕۆژوو چ شتێک دەشکێنێت و حوکمەکانی چین؟">ڕۆژوو</button>' +
       '<button type="button" class="ai-chip" data-q="زەکات لەسەر کێ پێویستە و چۆن دەدرێت؟">زەکات</button>' +
+      '<button type="button" class="ai-chip" data-q="میرات چۆن دابەش دەکرێت لە ئیسلامدا؟">میرات</button>' +
       '<button type="button" class="ai-chip" data-q="حەج و عومرە چۆن ئەنجام دەدرێت؟">حەج</button>' +
       '<button type="button" class="ai-chip" data-q="مافی دایک و باوک و ژن و میرد چییە لە ئیسلامدا؟">خێزان</button>' +
       '<button type="button" class="ai-chip" data-q="حوکمی کار و بازرگانی و سوود (ڕیبا) چییە؟">حەڵاڵ و حەرام</button>' +
