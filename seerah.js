@@ -1,13 +1,17 @@
-/* seerah.js v4 — سیرەی گەورە: ٤٣ بەشی ورد دوو زمانە + کتێبە کلاسیکییەکان */
+/* seerah.js v5 — سیرەی گەورە: ٤٠+ بەشی ورد دوو زمانە + کتێبە کلاسیکییەکان */
 (function () {
-  if (window.__seerahV4) return;
-  window.__seerahV4 = true;
+  if (window.__seerahV5) return;
+  window.__seerahV5 = true;
 
   var BM_KEY = 'seerah_bm_v2';
   var state = { view: 'home', chapter: null, period: 'all', query: '' };
 
   function data() {
-    return window.__SEERAH_DATA || { periods: [], chapters: [] };
+    var d = window.__SEERAH_DATA || { periods: [], chapters: [] };
+    if (window.__SEERAH_DATA_P2 && window.__SEERAH_DATA_P2.chapters) {
+      d.chapters = (d.chapters || []).concat(window.__SEERAH_DATA_P2.chapters);
+    }
+    return d;
   }
   function bookmarks() {
     try { var a = JSON.parse(localStorage.getItem(BM_KEY) || '[]'); return Array.isArray(a) ? a : []; }
@@ -125,7 +129,7 @@
       body += '<div class="sr-actions">';
       body += '<button type="button" data-act="toggleBm">' + (isBm(c.id) ? '★ لابردنی نیشانە' : '☆ نیشانەکردن') + '</button>';
       body += '</div></div>';
-      body += '<div class="sr-note">سەرچاوە: سیرەتی کلاسیکی (ئیبن هشام، ئیبن کەسیر...) · بۆ وردەکاری زیاتر بڕوانە بەشی کتێبە کلاسیکییەکان</div>';
+      body += '<div class="sr-note">سەرچاوە: سیرەتی کلاسیکی · بۆ وردەکاری زیاتر بڕوانە بەشی کتێبە کلاسیکییەکان و PDFی ئۆفلاین</div>';
     } else if (state.view === 'bookmarks') {
       var bms = bookmarks();
       var chs = (d.chapters || []).filter(function (c) { return bms.indexOf(c.id) >= 0; });
@@ -145,7 +149,7 @@
       body += '<div class="sr-stat">' + list.length + ' بەش</div>';
       if (!list.length) body += '<div class="sr-empty">هیچ بەشێک نەدۆزرایەوە</div>';
       list.forEach(function (c) {
-        var preview = (c.ku_body || '').slice(0, 80);
+        var preview = (c.ku_body || '').slice(0, 90);
         body += '<div class="sr-card" data-ch="' + esc(c.id) + '"><b>' + esc(c.ku) + '</b><small>' + esc(c.ar) + '</small>';
         if (preview) body += '<div style="font-size:12px;color:#5a6a8a;margin-top:6px;line-height:1.5">' + esc(preview) + '…</div>';
         body += '</div>';
@@ -202,7 +206,7 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'section-choice seerah-choice';
-    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>سیرەی پێغەمبەر ﷺ</b><small>٤٣+ بەشی ورد + کتێبە کلاسیکییەکان · کوردی و عەرەبی · ئۆفلاین</small></span><span class="choice-arrow">‹</span>';
+    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>سیرەی پێغەمبەر ﷺ</b><small>٤٠+ بەشی ورد + کتێبە کلاسیکییەکان · کوردی و عەرەبی · ئۆفلاین</small></span><span class="choice-arrow">‹</span>';
     b.onclick = function () { window.enterSeerah(); };
     var hadith = box.querySelector('.hadith-choice');
     if (hadith && hadith.nextSibling) box.insertBefore(b, hadith.nextSibling);
