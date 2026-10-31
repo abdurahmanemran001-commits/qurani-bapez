@@ -1,96 +1,21 @@
-/* seerah.js v6 — سیرە + کتێبخانەی کلاسیکی (داگرتن / نیشانە / سڕینەوە) */
+/* seerah.js v7 — سیرە + کتێبخانەی کلاسیکی (داگرتن / نیشانە / سڕینەوە) */
 (function () {
-  if (window.__seerahV6) return;
-  window.__seerahV6 = true;
+  if (window.__seerahV7) return;
+  window.__seerahV7 = true;
 
   var BM_KEY = 'seerah_bm_v2';
   var LIB_KEY = 'seerah_lib_saved_v1';
   var state = { view: 'home', chapter: null, period: 'all', query: '', bookId: null };
 
-  /* کتێبە کلاسیکییەکان — لینکی archive.org بۆ داگرتنی خۆڕایی */
   var BOOKS = [
-    {
-      id: 'ibn_hisham',
-      ku: 'سیرەتی ئیبن هشام',
-      ar: 'السيرة النبوية لابن هشام',
-      author: 'ئیبن هشام',
-      size: '~٣٠–١٨٠ مێگابایت (بەپێی وەشان)',
-      desc: 'گرنگترین و کۆنترین سەرچاوەی تەواوی سیرەت. کورتکراوەی سیرەتی ئیبن ئیسحاق. بنەمای زۆربەی سیرەتەکانی دواتر.',
-      descAr: 'أهم وأقدم مصدر كامل للسيرة. اختصار سيرة ابن إسحاق.',
-      url: 'https://archive.org/details/asseirah',
-      url2: 'https://archive.org/details/nasai_yopmail_02_201802'
-    },
-    {
-      id: 'rahiq',
-      ku: 'الڕەحیقولمەختوم',
-      ar: 'الرحيق المختوم',
-      author: 'سەفییوڕەحمان موبارکپوری',
-      size: '~٨–١٥ مێگابایت',
-      desc: 'باشترین سیرەتی نوێی ڕێکخراو. خوڵاتی یەکەمی پێشبڕکێی جیهانی ١٩٧٦. گونجاو بۆ گەنجان. وەرگێڕانی کوردی هەیە.',
-      descAr: 'من أفضل السير المعاصرة. فاز بالمركز الأول ١٩٧٦. مناسب للشباب.',
-      url: 'https://archive.org/details/rahiq_makhtoum',
-      url2: 'https://archive.org/details/sealed_nectar'
-    },
-    {
-      id: 'shamail',
-      ku: 'شەمائلی ترمذی',
-      ar: 'الشمائل المحمدية للترمذي',
-      author: 'ئیمام ترمذی',
-      size: '~٢–٥ مێگابایت',
-      desc: 'فەرموودەکانی سیفات و ڕەفتار و ڕوخساری پێغەمبەر ﷺ. کورت و جوان. باشترین بۆ ناسینی کەسایەتی پێغەمبەر.',
-      descAr: 'أحاديث في شمائل النبي ﷺ. مختصر جميل لمعرفة شخصيته.',
-      url: 'https://archive.org/search?query=%D8%A7%D9%84%D8%B4%D9%85%D8%A7%D8%A6%D9%84%20%D8%A7%D9%84%D9%85%D8%AD%D9%85%D8%AF%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AA%D8%B1%D9%85%D8%B0%D9%8A%20pdf'
-    },
-    {
-      id: 'ibn_kathir',
-      ku: 'البدایة والنهایة (بەشی سیرەت)',
-      ar: 'البداية والنهاية — السيرة',
-      author: 'ئیبن کەسیر',
-      size: '~٥٠+ مێگابایت (چەند بەرگ)',
-      desc: 'سیرەتی درێژ و ورد. پشت بە ئیبن ئیسحاق و ئیبن هشام و فەرموودە. گونجاو بۆ خوێنەری پێشکەوتوو.',
-      descAr: 'سيرة مفصلة تعتمد على ابن إسحاق وابن هشام والحديث.',
-      url: 'https://archive.org/search?query=%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9%20%D9%88%D8%A7%D9%84%D9%86%D9%87%D8%A7%D9%8A%D8%A9%20%D8%A7%D8%A8%D9%86%20%D9%83%D8%AB%D9%8A%D8%B1%20pdf'
-    },
-    {
-      id: 'zad',
-      ku: 'زاد المعاد',
-      ar: 'زاد المعاد في هدي خير العباد',
-      author: 'ئیبن قەییم جەوزیە',
-      size: '~٢٠–٤٠ مێگابایت',
-      desc: 'هیدایەت و سوننەتی پێغەمبەر لە عبادەت، مامەڵە، پزیشکی، سیاسەت و غەزەوات. قووڵ و بەسوود.',
-      descAr: 'هدي النبي وسنته في العبادة والمعاملة والطب والسياسة.',
-      url: 'https://archive.org/search?query=%D8%B2%D8%A7%D8%AF%20%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF%20%D8%A7%D8%A8%D9%86%20%D8%A7%D9%84%D9%82%D9%8A%D9%85%20pdf'
-    },
-    {
-      id: 'fiqh_sira',
-      ku: 'فقهی سیرەت (غەزالی)',
-      ar: 'فقه السيرة للغزالي',
-      author: 'محەمەد غەزالی',
-      size: '~٥–١٠ مێگابایت',
-      desc: 'سیرەت بە شێوازی فیقھی و وانەیی. ئاسان و بەسوود بۆ تێگەیشتنی ڕووداوەکان.',
-      descAr: 'سيرة بأسلوب فقهي وتربوي سهل ومفيد.',
-      url: 'https://archive.org/search?query=%D9%81%D9%82%D9%87%20%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9%20%D8%A7%D9%84%D8%BA%D8%B2%D8%A7%D9%84%D9%8A%20pdf'
-    },
-    {
-      id: 'nur_yaqin',
-      ku: 'نوورول یەقین',
-      ar: 'نور اليقين في سيرة سيد المرسلين',
-      author: 'خەزرەجی / محەمەد خەزرەجی',
-      size: '~٥–٨ مێگابایت',
-      desc: 'سیرەتی کورت و ڕێکخراو. زۆر بەکارهاتوو لە خوێندنگاکان.',
-      descAr: 'سيرة مختصرة منظمة شائعة في المدارس.',
-      url: 'https://archive.org/search?query=%D9%86%D9%88%D8%B1%20%D8%A7%D9%84%D9%8A%D9%82%D9%8A%D9%86%20%D8%B3%D9%8A%D8%B1%D8%A9%20pdf'
-    },
-    {
-      id: 'mukhtasar_rahiq',
-      ku: 'کورتکراوەی الرحیق المختوم',
-      ar: 'مختصر الرحيق المختوم',
-      author: 'موبارکپوری (کورتکراوە)',
-      size: '~١–٣ مێگابایت',
-      desc: 'وەشانی کورتکراوەی الرحیق — گونجاو بۆ خوێندنەوەی خێرا.',
-      descAr: 'مختصر الرحيق — مناسب للقراءة السريعة.',
-      url: 'https://archive.org/details/20221011_20221011_1915'
-    }
+    { id: 'ibn_hisham', ku: 'سیرەتی ئیبن هشام', ar: 'السيرة النبوية لابن هشام', author: 'ئیبن هشام', size: '~٣٠–١٨٠ مێگابایت', desc: 'گرنگترین و کۆنترین سەرچاوەی تەواوی سیرەت.', descAr: 'أهم وأقدم مصدر كامل للسيرة.', url: 'https://archive.org/details/asseirah', url2: 'https://archive.org/details/nasai_yopmail_02_201802' },
+    { id: 'rahiq', ku: 'الڕەحیقولمەختوم', ar: 'الرحيق المختوم', author: 'موبارکپوری', size: '~٨–١٥ مێگابایت', desc: 'باشترین سیرەتی نوێی ڕێکخراو. خوڵاتی ١٩٧٦.', descAr: 'من أفضل السير المعاصرة.', url: 'https://archive.org/details/rahiq_makhtoum', url2: 'https://archive.org/details/sealed_nectar' },
+    { id: 'shamail', ku: 'شەمائلی ترمذی', ar: 'الشمائل المحمدية', author: 'ترمذی', size: '~٢–٥ مێگابایت', desc: 'سیفات و ڕەفتاری پێغەمبەر ﷺ.', descAr: 'شمائل النبي ﷺ.', url: 'https://archive.org/search?query=%D8%A7%D9%84%D8%B4%D9%85%D8%A7%D8%A6%D9%84%20%D8%A7%D9%84%D9%85%D8%AD%D9%85%D8%AF%D9%8A%D8%A9%20pdf' },
+    { id: 'ibn_kathir', ku: 'البدایة والنهایة (سیرەت)', ar: 'البداية والنهاية', author: 'ئیبن کەسیر', size: '~٥٠+ مێگابایت', desc: 'سیرەتی درێژ و ورد.', descAr: 'سيرة مفصلة.', url: 'https://archive.org/search?query=%D8%A7%D9%84%D8%A8%D8%AF%D8%A7%D9%8A%D8%A9%20%D9%88%D8%A7%D9%84%D9%86%D9%87%D8%A7%D9%8A%D8%A9%20pdf' },
+    { id: 'zad', ku: 'زاد المعاد', ar: 'زاد المعاد', author: 'ئیبن قەییم', size: '~٢٠–٤٠ مێگابایت', desc: 'هیدایەت و سوننەتی پێغەمبەر.', descAr: 'هدي النبي وسنته.', url: 'https://archive.org/search?query=%D8%B2%D8%A7%D8%AF%20%D8%A7%D9%84%D9%85%D8%B9%D8%A7%D8%AF%20pdf' },
+    { id: 'fiqh_sira', ku: 'فقهی سیرەت', ar: 'فقه السيرة', author: 'غەزالی', size: '~٥–١٠ مێگابایت', desc: 'سیرەت بە شێوازی فیقھی.', descAr: 'سيرة فقهية تربوية.', url: 'https://archive.org/search?query=%D9%81%D9%82%D9%87%20%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D8%A9%20%D8%A7%D9%84%D8%BA%D8%B2%D8%A7%D9%84%D9%8A%20pdf' },
+    { id: 'nur_yaqin', ku: 'نوورول یەقین', ar: 'نور اليقين', author: 'خەزرەجی', size: '~٥–٨ مێگابایت', desc: 'سیرەتی کورت و ڕێکخراو.', descAr: 'سيرة مختصرة منظمة.', url: 'https://archive.org/search?query=%D9%86%D9%88%D8%B1%20%D8%A7%D9%84%D9%8A%D9%82%D9%8A%D9%86%20pdf' },
+    { id: 'mukhtasar_rahiq', ku: 'کورتکراوەی الرحیق', ar: 'مختصر الرحيق', author: 'موبارکپوری', size: '~١–٣ مێگابایت', desc: 'وەشانی کورتکراوە.', descAr: 'مختصر للرحيق.', url: 'https://archive.org/details/20221011_20221011_1915' }
   ];
 
   function data() {
@@ -98,22 +23,22 @@
     if (window.__SEERAH_DATA_P2 && window.__SEERAH_DATA_P2.chapters) {
       d.chapters = (d.chapters || []).concat(window.__SEERAH_DATA_P2.chapters);
     }
+    if (window.__SEERAH_DATA_P3 && window.__SEERAH_DATA_P3.chapters) {
+      d.chapters = (d.chapters || []).concat(window.__SEERAH_DATA_P3.chapters);
+    }
     return d;
   }
   function bookmarks() {
     try { var a = JSON.parse(localStorage.getItem(BM_KEY) || '[]'); return Array.isArray(a) ? a : []; }
     catch (e) { return []; }
   }
-  function saveBm(arr) {
-    try { localStorage.setItem(BM_KEY, JSON.stringify(arr.slice(0, 80))); } catch (e) {}
-  }
+  function saveBm(arr) { try { localStorage.setItem(BM_KEY, JSON.stringify(arr.slice(0, 80))); } catch (e) {} }
   function isBm(id) { return bookmarks().indexOf(id) >= 0; }
   function toggleBm(id) {
     var a = bookmarks(); var i = a.indexOf(id);
     if (i >= 0) a.splice(i, 1); else a.unshift(id);
     saveBm(a);
   }
-
   function libSaved() {
     try { var o = JSON.parse(localStorage.getItem(LIB_KEY) || '{}'); return o && typeof o === 'object' ? o : {}; }
     catch (e) { return {}; }
@@ -124,7 +49,6 @@
     try { localStorage.setItem(LIB_KEY, JSON.stringify(o)); } catch (e) {}
   }
   function isLibSaved(id) { return !!libSaved()[id]; }
-
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s || '').replace(/[&<>"']/g, function (c) {
@@ -195,9 +119,7 @@
   function filtered() {
     var d = data();
     var list = (d.chapters || []).filter(function (c) { return c.period !== 'books'; });
-    if (state.period && state.period !== 'all') {
-      list = list.filter(function (c) { return c.period === state.period; });
-    }
+    if (state.period && state.period !== 'all') list = list.filter(function (c) { return c.period === state.period; });
     var q = (state.query || '').trim().toLowerCase();
     if (q) {
       list = list.filter(function (c) {
@@ -224,18 +146,15 @@
   }
 
   function renderLib() {
-    var saved = libSaved();
-    var nSaved = Object.keys(saved).length;
+    var nSaved = Object.keys(libSaved()).length;
     var html = '<div class="sr-stat">' + BOOKS.length + ' کتێب · ' + nSaved + ' نیشانەکراو وەک داگیراو</div>';
-    html += '<div class="sr-note" style="margin-bottom:12px">کرتە لە «داگرتن» بکە → پەڕەی archive.org دەکرێتەوە → PDF داگرە. پاشان «نیشانەی داگیراو» بۆ یادگاری. دەتوانیت نیشانەکە بسڕیتەوە.</div>';
+    html += '<div class="sr-note" style="margin-bottom:12px">کرتە لە «داگرتن» → archive.org → PDF داگرە. پاشان «نیشانەی داگیراو». دەتوانیت نیشانە بسڕیتەوە.</div>';
     BOOKS.forEach(function (b) {
       var on = isLibSaved(b.id);
-      html += '<div class="sr-card" data-book="' + esc(b.id) + '">';
-      html += '<b>' + esc(b.ku) + '</b><small>' + esc(b.ar) + '</small>';
+      html += '<div class="sr-card" data-book="' + esc(b.id) + '"><b>' + esc(b.ku) + '</b><small>' + esc(b.ar) + '</small>';
       html += '<div style="font-size:12px;color:#5a6a8a;margin-top:6px">' + esc(b.author) + ' · ' + esc(b.size) + '</div>';
       html += '<div style="font-size:12px;color:#3a4a6a;margin-top:6px;line-height:1.5">' + esc(b.desc) + '</div>';
-      html += '<span class="sr-badge' + (on ? '' : ' off') + '">' + (on ? '✓ نیشانەکراو وەک داگیراو' : 'هێشتا داونەگیراوە') + '</span>';
-      html += '</div>';
+      html += '<span class="sr-badge' + (on ? '' : ' off') + '">' + (on ? '✓ نیشانەکراو وەک داگیراو' : 'هێشتا داونەگیراوە') + '</span></div>';
     });
     return html;
   }
@@ -244,8 +163,7 @@
     var b = BOOKS.find(function (x) { return x.id === state.bookId; });
     if (!b) return '<div class="sr-empty">کتێب نەدۆزرایەوە</div>';
     var on = isLibSaved(b.id);
-    var html = '<div class="sr-card" style="cursor:default">';
-    html += '<b>' + esc(b.ku) + '</b><small>' + esc(b.ar) + '</small>';
+    var html = '<div class="sr-card" style="cursor:default"><b>' + esc(b.ku) + '</b><small>' + esc(b.ar) + '</small>';
     html += '<div class="sr-label" style="margin-top:10px">نووسەر</div><div class="sr-ku">' + esc(b.author) + '</div>';
     html += '<div class="sr-label">قەبارە</div><div class="sr-ku">' + esc(b.size) + '</div>';
     html += '<div class="sr-label">وەسف</div><div class="sr-ku">' + esc(b.desc) + '</div>';
@@ -257,7 +175,7 @@
     if (on) html += '<button type="button" class="danger" data-act="unmarkBook" data-book="' + esc(b.id) + '">سڕینەوەی نیشانە</button>';
     else html += '<button type="button" data-act="markBook" data-book="' + esc(b.id) + '">✓ نیشانەی داگیراو</button>';
     html += '</div></div>';
-    html += '<div class="sr-note">دوای کرتە لە داگرتن، لە پەڕەی archive.org دوگمەی PDF هەڵبژێرە و فایلەکە لە مۆبایل/کۆمپیوتەرەکەت هەڵبگرە. خوێندنەوەی ئۆفلاین لە بەرنامەی PDF دەبێت. نیشانەکە تەنها یادگارییە لەناو ئەپ — فایلەکە خۆت دەیسڕیتەوە لە مۆبایل.</div>';
+    html += '<div class="sr-note">دوای داگرتن PDF لە مۆبایل هەڵبگرە. نیشانەکە یادگارییە لەناو ئەپ.</div>';
     return html;
   }
 
@@ -267,28 +185,20 @@
     if (!v) return;
     var d = data();
     var chCount = (d.chapters || []).filter(function (c) { return c.period !== 'books'; }).length;
-    var head =
-      '<div class="sr-head"><div><h2>☪ ' + esc(title()) + '</h2><div class="sr-sub">' +
-      (state.view === 'lib' || state.view === 'book'
-        ? (BOOKS.length + ' کتێب · داگرتنی ئۆفلاین')
-        : ('ژیاننامە · ' + chCount + ' بەش · کوردی و عەرەبی')) +
-      '</div></div>' +
-      '<div style="display:flex;gap:6px">' +
+    var head = '<div class="sr-head"><div><h2>☪ ' + esc(title()) + '</h2><div class="sr-sub">' +
+      (state.view === 'lib' || state.view === 'book' ? (BOOKS.length + ' کتێب · داگرتنی ئۆفلاین') : ('ژیاننامە · ' + chCount + ' بەش · کوردی و عەرەبی')) +
+      '</div></div><div style="display:flex;gap:6px">' +
       (state.view !== 'home' ? '<button type="button" class="sr-btn" data-act="back">‹ گەڕانەوە</button>' : '') +
       '<button type="button" class="sr-btn" data-act="bm">★</button>' +
       '<button type="button" class="sr-btn" data-act="home">بەشەکان</button></div></div>';
 
     var body = '<div class="sr-body">';
-
     if (state.view === 'detail' && state.chapter) {
       var c = state.chapter;
-      body += '<div class="sr-card" style="cursor:default">';
-      body += '<b>' + esc(c.ku) + '</b><small>' + esc(c.ar) + '</small>';
+      body += '<div class="sr-card" style="cursor:default"><b>' + esc(c.ku) + '</b><small>' + esc(c.ar) + '</small>';
       body += '<div style="margin-top:12px"><div class="sr-label">کوردی</div><div class="sr-ku">' + esc(c.ku_body) + '</div></div>';
       body += '<div class="sr-ar"><div class="sr-label">العربية</div>' + esc(c.ar_body) + '</div>';
-      body += '<div class="sr-actions">';
-      body += '<button type="button" data-act="toggleBm">' + (isBm(c.id) ? '★ لابردنی نیشانە' : '☆ نیشانەکردن') + '</button>';
-      body += '</div></div>';
+      body += '<div class="sr-actions"><button type="button" data-act="toggleBm">' + (isBm(c.id) ? '★ لابردنی نیشانە' : '☆ نیشانەکردن') + '</button></div></div>';
     } else if (state.view === 'bookmarks') {
       var bms = bookmarks();
       var chs = (d.chapters || []).filter(function (c) { return bms.indexOf(c.id) >= 0; });
@@ -301,14 +211,12 @@
     } else if (state.view === 'book') {
       body += renderBookDetail();
     } else {
-      /* home */
       body += '<div class="sr-home-grid">';
       body += '<div class="sr-home-tile" data-act="gotoChapters"><span>📖</span><b>بەشەکان</b><small>' + chCount + ' بەشی ورد</small></div>';
       body += '<div class="sr-home-tile" data-act="gotoLib"><span>📚</span><b>کتێبە کلاسیکییەکان</b><small>' + BOOKS.length + ' کتێب · داگرتن</small></div>';
       body += '</div>';
       body += '<div class="sr-search"><input id="srQ" type="search" placeholder="گەڕان لە بەشەکان..." value="' + esc(state.query) + '"><button type="button" data-act="searchGo">گەڕان</button></div>';
-      body += '<div class="sr-chips">';
-      body += '<button type="button" class="sr-chip' + (state.period === 'all' ? ' on' : '') + '" data-period="all">هەموو</button>';
+      body += '<div class="sr-chips"><button type="button" class="sr-chip' + (state.period === 'all' ? ' on' : '') + '" data-period="all">هەموو</button>';
       periodsNoBooks().forEach(function (p) {
         body += '<button type="button" class="sr-chip' + (state.period === p.id ? ' on' : '') + '" data-period="' + esc(p.id) + '">' + esc(p.ku) + '</button>';
       });
@@ -345,19 +253,12 @@
     }
     if (act === 'back') {
       if (state.view === 'book') { state.view = 'lib'; state.bookId = null; }
-      else if (state.view === 'detail') { state.view = 'home'; state.chapter = null; }
       else { state.view = 'home'; state.chapter = null; state.bookId = null; }
       render(); return;
     }
     if (act === 'bm') { state.view = 'bookmarks'; render(); return; }
     if (act === 'gotoLib') { state.view = 'lib'; render(); return; }
-    if (act === 'gotoChapters') {
-      state.view = 'home';
-      state.period = 'all';
-      var bodyEl = $('seerahView') && $('seerahView').querySelector('.sr-body');
-      render();
-      return;
-    }
+    if (act === 'gotoChapters') { state.view = 'home'; state.period = 'all'; render(); return; }
     if (act === 'searchGo') {
       var inp = $('srQ');
       state.query = inp ? inp.value.trim() : '';
@@ -370,20 +271,12 @@
       if (book) openBookUrl(book, act === 'dlBook2');
       return;
     }
-    if (act === 'markBook') {
-      var mid = el.getAttribute('data-book') || state.bookId;
-      setLibSaved(mid, true); render(); return;
-    }
-    if (act === 'unmarkBook') {
-      var uid = el.getAttribute('data-book') || state.bookId;
-      setLibSaved(uid, false); render(); return;
-    }
+    if (act === 'markBook') { setLibSaved(el.getAttribute('data-book') || state.bookId, true); render(); return; }
+    if (act === 'unmarkBook') { setLibSaved(el.getAttribute('data-book') || state.bookId, false); render(); return; }
     var per = el.getAttribute('data-period');
     if (per) { state.period = per; render(); return; }
     var bookAttr = el.getAttribute('data-book');
-    if (bookAttr && !act) {
-      state.bookId = bookAttr; state.view = 'book'; render(); return;
-    }
+    if (bookAttr && !act) { state.bookId = bookAttr; state.view = 'book'; render(); return; }
     var cid = el.getAttribute('data-ch');
     if (cid) {
       var ch = (data().chapters || []).find(function (x) { return x.id === cid; });
@@ -411,7 +304,7 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'section-choice seerah-choice';
-    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>سیرەی پێغەمبەر ﷺ</b><small>بەشەکان + کتێبخانەی کلاسیکی · داگرتن · ئۆفلاین</small></span><span class="choice-arrow">‹</span>';
+    b.innerHTML = '<span class="choice-icon">☪</span><span class="choice-copy"><b>سیرەی پێغەمبەر ﷺ</b><small>بەشەکان + کتێبخانە · داگرتن · ئۆفلاین</small></span><span class="choice-arrow">‹</span>';
     b.onclick = function () { window.enterSeerah(); };
     var hadith = box.querySelector('.hadith-choice');
     if (hadith && hadith.nextSibling) box.insertBefore(b, hadith.nextSibling);
