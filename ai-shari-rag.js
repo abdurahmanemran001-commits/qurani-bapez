@@ -47,20 +47,19 @@
       if (ex.error) return { text: (ex.message || NET) + (ex.detail ? '\n\n[' + ex.detail + ']' : ''), sources: [], kind: 'error' };
       if (ex.refusal) return { text: ex.refusal, sources: [], kind: 'refusal' };
       var kws = ex.keywords || [];
-      if (!kws.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
       if (!window.AiRag) return { text: NET, sources: [], kind: 'error' };
       status('… بارکردنی سەرچاوەکان');
       return window.AiRag.load(function (p) {
         status('… بارکردنی سەرچاوەکان ' + Math.round(p * 100) + '٪');
       }).then(function () {
-        var hits = window.AiRag.search(kws, { kQ: 6, kH: 11 });
+        var hits = kws.length ? window.AiRag.search(kws, { kQ: 6, kH: 11 }) : { quran: [], hadith: [] };
         var all = hits.quran.concat(hits.hadith);
-        if (!all.length) return { text: NOT_FOUND, sources: [], kind: 'notfound' };
         status('… نووسینی وەڵام');
         return post('/answer', {
           q: q,
           token: ex.token,
           detail: full ? 'full' : 'short',
+          personal: !!ex.personal,
           passages: all.map(function (d) { return { id: d.id, text: passageText(d) }; })
         }, 70000).then(function (an) {
           if (an.error) return { text: (an.message || NET) + (an.detail ? '\n\n[' + an.detail + ']' : ''), sources: [], kind: 'error' };
