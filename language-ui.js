@@ -64,7 +64,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('seerah-data.js?v=5'); })
     .then(function () { return loadScript('seerah-data-p2.js?v=2'); })
     .then(function () { return loadScript('seerah-data-p3.js?v=1'); })
-    .then(function () { return loadScript('seerah.js?v=7'); });
+    .then(function () { return loadScript('seerah.js?v=7'); })
+    .then(function () { return loadScript('sira-library.js?v=1'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
