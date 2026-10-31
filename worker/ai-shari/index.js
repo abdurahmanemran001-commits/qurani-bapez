@@ -13,7 +13,7 @@ const REFUSALS = {
 const MSG_RATE = 'سنووری ڕۆژانەی پرسیارەکانت تەواو بوو. سبەینێ دووبارە هەوڵ بدەرەوە.';
 const MSG_BUSY = 'سێرڤەری AI ئێستا قەرەباڵغە. تکایە کەمێکی تر هەوڵ بدەرەوە.';
 
-const EXPAND_PROMPT = `You are a query analyzer for an Islamic Q&A assistant. The user writes in Central Kurdish (Sorani), Arabic or English.
+const EXPAND_PROMPT = `You are a query analyzer for an Islamic Q&A assistant. The user writes in Central Kurdish (Sorani), Badini Kurdish, Arabic, English, Turkish, Persian, Urdu, French, German, Indonesian or any other language; understand it and always output ARABIC keywords.
 Return ONLY JSON: {"category": "...", "keywords": ["..."]}.
 category is exactly one of:
 - "general": any question about Islam in general terms, including the rulings and rules of zakat, inheritance (mirath), prayer, fasting, hajj, marriage, divorce, trade, food, etc. when asked as a topic ("how is inheritance divided", "what is the nisab of zakat", "what breaks the fast"). Topic-level fiqh questions are "general".
@@ -88,10 +88,13 @@ export default {
         const rl = await limit(env, ipT, 't', Number(env.TRANSLATE_LIMIT || 60));
         if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
         const en = typeof body.en === 'string' ? body.en.slice(0, 2500) : '';
-        const out = await gemini(env, TRANSLATE_PROMPT, JSON.stringify({ arabic: ar, english_hint: en }), 1400, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
+        const LANGS = { en: 'English', tr: 'Turkish', fa: 'Persian (Farsi)', ur: 'Urdu', fr: 'French', de: 'German', id: 'Indonesian', ru: 'Russian', es: 'Spanish', ar: 'simple Modern Standard Arabic' };
+        const lang = typeof body.lang === 'string' && LANGS[body.lang] ? body.lang : 'ku';
+        const sys = lang === 'ku' ? TRANSLATE_PROMPT : 'You translate hadith (sayings of Prophet Muhammad, peace be upon him) from Arabic into ' + LANGS[lang] + '. Input JSON: {"arabic": "...", "english_hint": "..."}. Translate faithfully and clearly, keep the exact meaning, add nothing, explain nothing, use the customary honorifics. Return ONLY JSON: {"ku": "the translation"}';
+        const out = await gemini(env, sys, JSON.stringify({ arabic: ar, english_hint: en }), 1400, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
         const ku = typeof out.ku === 'string' ? out.ku.trim().slice(0, 5000) : '';
         if (!ku) return json({ error: 'upstream', message: MSG_BUSY }, 502);
-        return json({ ku });
+        return json({ ku, text: ku });
       } catch (e) {
         return json({ error: (e && e.status === 429) ? 'busy' : 'upstream', message: MSG_BUSY, detail: e && e.detail ? String(e.detail) : '' }, 502);
       }

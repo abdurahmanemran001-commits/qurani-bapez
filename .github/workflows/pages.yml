@@ -45,6 +45,7 @@ jobs:
           test -f ruqyah-youtube.js && cp ruqyah-youtube.js dist/
           test -f ai-shari.js && cp ai-shari.js dist/
           test -f hadith.js && cp hadith.js dist/
+          cp hadith-ai.js dist/
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
           test -f ai-shari-kb-p3.js && cp ai-shari-kb-p3.js dist/
