@@ -1,7 +1,7 @@
-/* hadith.js v2 — حەدیسی پەیامبەر ﷺ: کتێبەکان، گەڕان، بابەت، نیشانە */
+/* hadith.js v3 — حەدیسی پەیامبەر ﷺ: کتێبەکان، گەڕان، بابەت، نیشانە */
 (function () {
-  if (window.__hadithV2) return;
-  window.__hadithV2 = true;
+  if (window.__hadithV3) return;
+  window.__hadithV3 = true;
 
   var BM_KEY = 'hadith_bm_v1';
   var books = [
@@ -80,7 +80,8 @@
       'body:has(#hadithView.active) .top{display:none!important}',
       '.phone:has(#hadithView.active) .status,.phone:has(#hadithView.active) .appbar,.phone:has(#hadithView.active) .bottom{display:none!important}',
       '.phone:has(#hadithView.active) .main{height:100%!important;padding:0!important;background:#f7f4ef}',
-      '#hadithView{display:flex;flex-direction:column;height:100%;max-height:100%;padding:0;box-sizing:border-box}',
+      '#hadithView{display:none!important}',
+      '#hadithView.active{display:flex!important;flex-direction:column;height:100%;max-height:100%;padding:0;box-sizing:border-box}',
       '#hadithView .hd-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));background:linear-gradient(145deg,#3d2a14,#8a6a24);color:#fff;flex-shrink:0}',
       '#hadithView .hd-head h2{margin:0;font-size:17px;font-weight:800}',
       '#hadithView .hd-head .hd-sub{font-size:11px;opacity:.9;margin-top:2px}',
@@ -302,7 +303,10 @@
 
     var act = el.getAttribute('data-act');
     if (act === 'home') {
+      var hv = $('hadithView');
+      if (hv) hv.classList.remove('active');
       if (typeof showView === 'function') showView('startScreen', 'بەشەکان');
+      else if (typeof goSections === 'function') goSections();
       return;
     }
     if (act === 'back') {
