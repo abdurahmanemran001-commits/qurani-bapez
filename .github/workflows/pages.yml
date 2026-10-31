@@ -48,7 +48,8 @@ jobs:
           test -f seerah.js && cp seerah.js dist/
           test -f seerah-data.js && cp seerah-data.js dist/
           test -f seerah-data-p2.js && cp seerah-data-p2.js dist/
-          cp hadith-ai.js dist/ 2>/dev/null || true
+          cp hadith-ai.js sira-library.js dist/
+          mkdir -p dist/sira && cp sira/ibn-hisham.json dist/sira/ 2>/dev/null || true
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
           test -f ai-shari-kb-p3.js && cp ai-shari-kb-p3.js dist/

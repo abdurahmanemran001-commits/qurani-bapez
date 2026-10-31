@@ -27,6 +27,8 @@ const TRANSLATE_PROMPT = `You translate hadith (sayings of Prophet Muhammad, pea
 Rules: translate faithfully and clearly, keep the exact meaning, add nothing, explain nothing. Use natural Sorani: «خوا» for Allah, «پێغەمبەر ﷺ» for the Prophet, «ڕەزای خوای لێ بێت» after companions' names when the Arabic has it. Keep the chain of narrators short (e.g. "ئەبو هورەیرە ڕەزای خوای لێ بێت دەفەرموێت: ..."). Use the English only to resolve ambiguity. If the text is not a hadith or you are unsure of a word, translate what is clear.
 Return ONLY JSON: {"ku": "the Kurdish translation"}`;
 
+const SIRA_PROMPT = (lang) => `You translate one page of Ibn Hisham's al-Sira al-Nabawiyya (classical Arabic biography of Prophet Muhammad, peace be upon him) into ${lang === 'ku' ? 'Central Kurdish (Sorani, Arabic script). Use «خوا» for Allah, «پێغەمبەر ﷺ» for the Prophet, «ڕەزای خوای لێ بێت» after companions' : ({ en: 'English', tr: 'Turkish', fa: 'Persian', ur: 'Urdu', fr: 'French', de: 'German', id: 'Indonesian', ru: 'Russian', es: 'Spanish', ar: 'simple Modern Standard Arabic' })[lang] || 'English'}. Input JSON: {"arabic": "...", "english_hint": ""}. The page may start or end mid-sentence: translate what is there. Translate faithfully and completely, keep names and places, keep the narrator chains but compact them ("ئیبن ئیسحاق دەڵێت..."), render poetry as plain meaning lines. Add nothing, explain nothing. Return ONLY JSON: {"ku": "the translation"}`;
+
 const ANSWER_PROMPT = `You are the answer writer of an Islamic Q&A assistant for Kurdish Muslims.
 You receive a QUESTION and PASSAGES (Quran verses with Tafsir al-Jalalayn; hadiths from Bukhari, Muslim, Nawawi's 40, Qudsi, and Sahih/Hasan-graded hadiths from Abu Dawud, Tirmidhi, Nasai, Ibn Majah). Each passage has an id.
 GOAL: give a helpful, well-explained answer that covers the topic properly, not just a one-line reply.
@@ -85,13 +87,14 @@ export default {
       if (!ar) return json({ error: 'bad' }, 400);
       const ipT = req.headers.get('CF-Connecting-IP') || 'anon';
       try {
-        const rl = await limit(env, ipT, 't', Number(env.TRANSLATE_LIMIT || 60));
+        const sira = body.kind === 'sira';
+        const rl = await limit(env, ipT, sira ? 's' : 't', sira ? Number(env.SIRA_LIMIT || 80) : Number(env.TRANSLATE_LIMIT || 60));
         if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
         const en = typeof body.en === 'string' ? body.en.slice(0, 2500) : '';
         const LANGS = { en: 'English', tr: 'Turkish', fa: 'Persian (Farsi)', ur: 'Urdu', fr: 'French', de: 'German', id: 'Indonesian', ru: 'Russian', es: 'Spanish', ar: 'simple Modern Standard Arabic' };
         const lang = typeof body.lang === 'string' && LANGS[body.lang] ? body.lang : 'ku';
-        const sys = lang === 'ku' ? TRANSLATE_PROMPT : 'You translate hadith (sayings of Prophet Muhammad, peace be upon him) from Arabic into ' + LANGS[lang] + '. Input JSON: {"arabic": "...", "english_hint": "..."}. Translate faithfully and clearly, keep the exact meaning, add nothing, explain nothing, use the customary honorifics. Return ONLY JSON: {"ku": "the translation"}';
-        const out = await gemini(env, sys, JSON.stringify({ arabic: ar, english_hint: en }), 1400, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
+        const sys = sira ? SIRA_PROMPT(lang) : lang === 'ku' ? TRANSLATE_PROMPT : 'You translate hadith (sayings of Prophet Muhammad, peace be upon him) from Arabic into ' + LANGS[lang] + '. Input JSON: {"arabic": "...", "english_hint": "..."}. Translate faithfully and clearly, keep the exact meaning, add nothing, explain nothing, use the customary honorifics. Return ONLY JSON: {"ku": "the translation"}';
+        const out = await gemini(env, sys, JSON.stringify({ arabic: ar, english_hint: en }), Math.min(3800, 700 + Math.round(ar.length * 1.8)), env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
         const ku = typeof out.ku === 'string' ? out.ku.trim().slice(0, 5000) : '';
         if (!ku) return json({ error: 'upstream', message: MSG_BUSY }, 502);
         return json({ ku, text: ku });
@@ -199,9 +202,9 @@ async function limit(env, ip, pre, maxOverride) {
   if (!env.RL) return { ok: true, remaining: max };
   const day = new Date().toISOString().slice(0, 10);
   const key = (pre || 'd') + ':' + day + ':' + (await sha(ip)).slice(0, 24);
-  const n = Number(await env.RL.get(key)) || 0;
+  let n = 0; try { n = Number(await env.RL.get(key)) || 0; } catch (e) { return { ok: true, remaining: max }; }
   if (n >= max) return { ok: false, remaining: 0 };
-  await env.RL.put(key, String(n + 1), { expirationTtl: 172800 });
+  try { await env.RL.put(key, String(n + 1), { expirationTtl: 172800 }); } catch (e) { /* KV write quota: fail open */ }
   return { ok: true, remaining: max - n - 1 };
 }
 async function sha(s) {
