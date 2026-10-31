@@ -53,7 +53,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
   loadScript('ai-config.js?v=2')
     .then(function () { return loadScript('ai-rag.js?v=2'); })
-    .then(function () { return loadScript('ai-shari-rag.js?v=7'); })
+    .then(function () { return loadScript('ai-shari-rag.js?v=8'); })
     .then(function () { return loadScript('ai-shari-kb.js?v=5'); })
     .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
