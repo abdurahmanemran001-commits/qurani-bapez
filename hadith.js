@@ -1,10 +1,10 @@
-/* hadith.js v4 — Arabic + English + on-demand Kurdish translation */
+/* hadith.js v5 — Arabic + English + Gemini Kurdish translation */
 (function () {
-  if (window.__hadithV4) return;
-  window.__hadithV4 = true;
+  if (window.__hadithV5) return;
+  window.__hadithV5 = true;
 
   var BM_KEY = 'hadith_bm_v1';
-  var TR_KEY = 'hadith_ku_tr_v1';
+  var TR_KEY = 'hadith_ku_tr_v2';
   var books = [
     { id: 'nawawi', name: 'الأربعون النووية', nameKu: 'چل حەدیسی نەوەوی', size: 'بچووک', eng: 'eng-nawawi' },
     { id: 'qudsi', name: 'الأحاديث القدسية', nameKu: 'حەدیسی قودسی', size: 'بچووک', eng: null },
@@ -179,30 +179,63 @@
     });
   }
 
+  function getGeminiKey() {
+    try {
+      var h = (localStorage.getItem('hadith_gemini_key') || '').trim();
+      if (h.indexOf('AIza') === 0) return h;
+      var c = JSON.parse(localStorage.getItem('ai_shari_cfg_v1') || '{}');
+      if (c && c.apiKey && String(c.apiKey).indexOf('AIza') === 0) return String(c.apiKey).trim();
+    } catch (e) {}
+    return '';
+  }
+
   function translateToKu(item) {
     if (!item || !item.ar) return Promise.reject(new Error('دەق نییە'));
     if (item.ku) return Promise.resolve(item.ku);
     var cached = trCache()[item.id];
     if (cached) { item.ku = cached; return Promise.resolve(cached); }
 
-    var pairs = ['en|ckb', 'en|ku', 'ar|ckb', 'ar|ku'];
+    var key = getGeminiKey();
+    if (!key) {
+      return Promise.reject(new Error('کلیلی Gemini پێویستە. لە سەرەوەی بەشی حەدیس کلیلی AIza... دابنێ'));
+    }
 
-    function tryPair(i) {
-      if (i >= pairs.length) return Promise.reject(new Error('وەرگێڕان بەردەست نییە'));
-      var p = pairs[i];
-      var src = (p.indexOf('en|') === 0 && item.en) ? item.en : item.ar;
-      if (!src) return tryPair(i + 1);
-      var text = src.slice(0, 450);
-      var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + encodeURIComponent(p);
-      return fetch(url).then(function (r) { return r.json(); }).then(function (data) {
-        var t = data && data.responseData && data.responseData.translatedText;
-        if (!t || t === text || /INVALID|QUERY LENGTH/i.test(t)) return tryPair(i + 1);
+    var model = 'gemini-2.0-flash';
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' +
+      encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(key);
+
+    var prompt =
+      'ئەرکت: تەنها وەرگێڕانی کوردی سۆرانی بۆ ئەم حەدیسە عەرەبییە.\n' +
+      'ڕێساکان:\n' +
+      '1) تەنها وەرگێڕان بنووسە، هیچ ڕوونکردنەوە و پێشەکییەک مەنووسە.\n' +
+      '2) مانای حەدیسەکە وەک خۆی بپارێزە؛ شتێکی تر مەهێنە.\n' +
+      '3) ناوە پیرۆزەکان وەک «خوا» / «پێغەمبەر ﷺ» بەکاربهێنە.\n' +
+      '4) ئەگەر زنجیرەی گێڕانەوە هەیە، کورت و ڕوونی بکەرەوە.\n\n' +
+      'حەدیسی عەرەبی:\n' + item.ar +
+      (item.en ? '\n\nEnglish (for clarity):\n' + item.en : '');
+
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 1024 }
+      })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          var msg = (data && data.error && data.error.message) || ('HTTP ' + res.status);
+          throw new Error(msg);
+        }
+        var parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+        var t = parts && parts.map(function (p) { return p.text || ''; }).join('');
+        if (!t || !t.trim()) throw new Error('وەرگێڕان بەتاڵ بوو');
+        t = t.trim();
         item.ku = t;
         saveTr(item.id, t);
         return t;
-      }).catch(function () { return tryPair(i + 1); });
-    }
-    return tryPair(0);
+      });
+    });
   }
 
   function filterTopic(list, topic) {
@@ -241,7 +274,7 @@
     var v = ensureView();
     if (!v) return;
     var head =
-      '<div class="hd-head"><div><h2>📖 ' + esc(title()) + '</h2><div class="hd-sub">عەرەبی · ئینگلیزی · وەرگێڕانی کوردی</div></div>' +
+      '<div class="hd-head"><div><h2>📖 ' + esc(title()) + '</h2><div class="hd-sub">عەرەبی · ئینگلیزی · وەرگێڕان بە Gemini</div></div>' +
       '<div style="display:flex;gap:6px">' +
       (state.view !== 'home' ? '<button type="button" class="hd-btn" data-act="back">‹ گەڕانەوە</button>' : '') +
       '<button type="button" class="hd-btn" data-act="bm">★</button>' +
@@ -257,6 +290,13 @@
 
     if (state.view === 'home') {
       body += '<div class="hd-search"><input id="hdQ" placeholder="گەڕان..." value="' + esc(state.query) + '"><button type="button" data-act="searchGo">گەڕان</button></div>';
+      body += '<div class="hd-card" style="cursor:default;margin-bottom:12px">' +
+        '<div class="hd-label">وەرگێڕانی کوردی (Gemini)</div>' +
+        (getGeminiKey()
+          ? '<small style="color:#2a6b45">✓ کلیلی Gemini ئامادەیە — لەناو حەدیس دوگمەی وەرگێڕان بەکاربهێنە</small>'
+          : '<small style="color:#8a6a24">کلیلی AIza... لە aistudio.google.com دابنێ</small>') +
+        '<input id="hdGeminiKey" type="password" placeholder="AIza..." value="" style="width:100%;box-sizing:border-box;margin-top:8px;padding:10px;border:1px solid #e4d5ad;border-radius:10px;font-size:14px">' +
+        '<div class="hd-actions" style="margin-top:8px"><button type="button" class="primary" data-act="saveKey">پاشەکەوتکردنی کلیلی</button></div></div>';
       body += '<div style="font-size:13px;color:#8a6a24;margin-bottom:8px;font-weight:700">بابەتەکان</div><div class="hd-chips">';
       topics.forEach(function (t) {
         body += '<button type="button" class="hd-chip" data-topic="' + t.id + '">' + esc(t.ku) + '</button>';
@@ -272,17 +312,17 @@
       body += '<div class="hd-card" style="cursor:default">';
       body += '<div class="hd-label">عەرەبی</div><div class="hd-ar">' + esc(d.ar) + '</div>';
       if (d.en) body += '<div class="hd-en"><div class="hd-label">English</div>' + esc(d.en) + '</div>';
-      if (d.ku) body += '<div class="hd-ku"><div class="hd-label">کوردی</div>' + esc(d.ku) + '</div>';
-      else if (state.translating) body += '<div class="hd-ku"><div class="hd-label">کوردی</div>… وەرگێڕان</div>';
+      if (d.ku) body += '<div class="hd-ku"><div class="hd-label">کوردی (Gemini)</div>' + esc(d.ku) + '</div>';
+      else if (state.translating) body += '<div class="hd-ku"><div class="hd-label">کوردی</div>… وەرگێڕان بە Gemini</div>';
       body += '<div class="hd-meta"><span>' + esc(d.label) + ' · ژمارە ' + esc(String(d.n)) + '</span>';
       if (d.grade) body += '<span>' + esc(d.grade) + '</span>';
       body += '</div>';
       body += '<div class="hd-actions">';
-      if (!d.ku) body += '<button type="button" class="primary" data-act="translateKu">وەرگێڕان بۆ کوردی</button>';
+      if (!d.ku) body += '<button type="button" class="primary" data-act="translateKu">وەرگێڕان بۆ کوردی (Gemini)</button>';
       body += '<button type="button" data-act="toggleBm">' + (isBm(d.id) ? '★ لابردنی نیشانە' : '☆ نیشانەکردن') + '</button>';
       body += '<button type="button" data-act="share">هاوبەشکردن</button>';
       body += '</div></div>';
-      body += '<div class="hd-empty" style="font-size:12px">⚠️ وەرگێڕانی ئۆتۆماتیکی جێگەی وەرگێڕانی زانایان ناگرێتەوە.</div>';
+      body += '<div class="hd-empty" style="font-size:12px">⚠️ وەرگێڕانی AI جێگەی وەرگێڕانی زانایان ناگرێتەوە.</div>';
     } else if (state.view === 'bookmarks') {
       var bm = bookmarks();
       if (!bm.length) body += '<div class="hd-empty">هیچ نیشانەیەک نییە</div>';
@@ -370,6 +410,15 @@
       }
       render(); return;
     }
+    if (act === 'saveKey') {
+      var inpK = $('hdGeminiKey');
+      var k = inpK ? (inpK.value || '').trim() : '';
+      if (k && k.indexOf('AIza') !== 0) { alert('کلیل دەبێت بە AIza دەست پێبکات'); return; }
+      try { localStorage.setItem('hadith_gemini_key', k); } catch (err) {}
+      alert(k ? 'کلیل پاشەکەوت کرا ✓' : 'کلیل سڕایەوە');
+      render();
+      return;
+    }
     if (act === 'toggleBm' && state.detail) { toggleBm(state.detail); render(); return; }
     if (act === 'translateKu' && state.detail) {
       state.translating = true; render();
@@ -443,7 +492,7 @@
     b.type = 'button';
     b.className = 'section-choice hadith-choice';
     b.setAttribute('data-hadith-card', '1');
-    b.innerHTML = '<span class="choice-icon">📖</span><span class="choice-copy"><b>حەدیسی پەیامبەر ﷺ</b><small>بخاری · مسلم · وەرگێڕان</small></span><span class="choice-arrow">‹</span>';
+    b.innerHTML = '<span class="choice-icon">📖</span><span class="choice-copy"><b>حەدیسی پەیامبەر ﷺ</b><small>بخاری · مسلم · وەرگێڕانی Gemini</small></span><span class="choice-arrow">‹</span>';
     b.onclick = function () { window.enterHadith(); };
     var ai = box.querySelector('.ai-shari-choice');
     if (ai && ai.nextSibling) box.insertBefore(b, ai.nextSibling);
