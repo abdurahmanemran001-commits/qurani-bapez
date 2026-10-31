@@ -63,7 +63,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('hadith-ai.js?v=1'); })
     .then(function () { return loadScript('seerah-data.js?v=5'); })
     .then(function () { return loadScript('seerah-data-p2.js?v=2'); })
-    .then(function () { return loadScript('seerah.js?v=5'); });
+    .then(function () { return loadScript('seerah.js?v=6'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
