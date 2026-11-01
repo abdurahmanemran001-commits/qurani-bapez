@@ -37,7 +37,7 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js hadith.js seerah.js seerah-data.js seerah-data-p2.js seerah-data-p3.js companions.js companions-data.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          cp index.html language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js hadith.js seerah.js seerah-data.js seerah-data-p2.js seerah-data-p3.js companions.js companions-data.js scholars.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
           for f in index.html language-ui.js madani-ayah.js salah.js; do
             test -f dist/$f || cp $f dist/
           done
@@ -51,6 +51,7 @@ jobs:
           test -f seerah-data-p3.js && cp seerah-data-p3.js dist/
           test -f companions.js && cp companions.js dist/
           test -f companions-data.js && cp companions-data.js dist/
+          test -f scholars.js && cp scholars.js dist/
           cp hadith-ai.js sira-library.js sira-story.js sira-story-p*.js dist/
           mkdir -p dist/sira && cp sira/ibn-hisham.json dist/sira/ 2>/dev/null || true
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
