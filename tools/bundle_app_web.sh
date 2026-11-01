@@ -6,6 +6,8 @@ SRC="${1:?assembled dir (output of assemble_web.sh)}"; OUT="${2:?out dir}"
 mkdir -p "$OUT"
 # root site files (language picker, home page, helpers) - same list as pages.yml
 cp index.html language.js language-ui.js madani-ayah.js icon.svg manifest.webmanifest "$OUT/"
+# the section scripts that language-ui.js loads (tasbih, hadith, seerah, notify ...)
+cp *.js "$OUT/" 2>/dev/null || true; rm -f "$OUT/sw.js"
 if [ -d madani-timing ]; then cp -r madani-timing "$OUT/"; fi
 # mushaf/, azkar*.json ... produced by assemble_web.sh
 cp -r "$SRC/." "$OUT/"
