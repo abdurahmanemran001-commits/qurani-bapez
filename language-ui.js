@@ -70,6 +70,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('sira-story-p2.js?v=1'); })
     .then(function () { return loadScript('sira-story-p3.js?v=2'); })
     .then(function () { return loadScript('sira-story-p4.js?v=1'); })
+    .then(function () { return loadScript('sira-story-p5.js?v=1'); })
+    .then(function () { return loadScript('sira-story-p6.js?v=1'); })
     .then(function () { return loadScript('sira-story.js?v=1'); });
 
   var sp = document.createElement('script');
