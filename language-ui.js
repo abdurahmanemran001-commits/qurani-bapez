@@ -67,6 +67,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('seerah.js?v=7'); })
     .then(function () { return loadScript('companions-data.js?v=3'); })
     .then(function () { return loadScript('companions.js?v=1'); })
+    .then(function () { return loadScript('scholars.js?v=1'); })
     .then(function () { return loadScript('sira-library.js?v=1'); })
     .then(function () { return loadScript('sira-story-p1.js?v=1'); })
     .then(function () { return loadScript('sira-story-p2.js?v=1'); })
