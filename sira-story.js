@@ -25,7 +25,7 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function jget(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
   function jset(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
-  function parts() { return window.__SIRA_STORY || []; }
+  function parts() { var seen = {}; return (window.__SIRA_STORY || []).filter(function (p) { if (seen[p.id]) return false; seen[p.id] = 1; return true; }); }
   function getPart(id) { return parts().filter(function (p) { return p.id === id; })[0]; }
   function words(s) { return String(s || '').split(/\s+/).length; }
 
