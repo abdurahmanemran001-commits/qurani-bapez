@@ -32,6 +32,13 @@ jobs:
           set -o pipefail
           (npm install --no-audit --no-fund && node make-icon.mjs && npx cap add android \
             && npx capacitor-assets generate --android --assetPath assets && npx cap sync android) 2>&1 | tee -a /tmp/log.txt
+      - name: Android notification permission
+        run: |
+          M=mobile/android/app/src/main/AndroidManifest.xml
+          for P in POST_NOTIFICATIONS RECEIVE_BOOT_COMPLETED; do
+            grep -q "android.permission.$P" "$M" || sed -i "s#<application#<uses-permission android:name=\"android.permission.$P\" />\n    <application#" "$M"
+          done
+          grep -n "uses-permission" "$M"
       - name: Build APK
         working-directory: mobile/android
         run: |

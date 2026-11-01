@@ -52,7 +52,7 @@ jobs:
           test -f companions.js && cp companions.js dist/
           test -f companions-data.js && cp companions-data.js dist/
           test -f scholars.js && cp scholars.js dist/
-          cp hadith-ai.js sira-library.js sira-story.js sira-story-p*.js dist/
+          cp hadith-ai.js sira-library.js sira-story.js sira-story-p*.js notify.js notify-content.js notify-content2.js dist/
           mkdir -p dist/sira && cp sira/ibn-hisham.json dist/sira/ 2>/dev/null || true
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
