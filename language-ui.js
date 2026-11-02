@@ -82,6 +82,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('sira-story-p10.js?v=1'); })
     .then(function () { return loadScript('sira-story-p11.js?v=1'); })
     .then(function () { return loadScript('sira-story-p12.js?v=1'); })
+    .then(function () { return loadScript('sira-story-p13.js?v=1'); })
     .then(function () { return loadScript('sira-story.js?v=2'); })
     .then(function () { return loadScript('notify-content.js?v=1'); })
     .then(function () { return loadScript('notify-content2.js?v=1'); })
