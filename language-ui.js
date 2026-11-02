@@ -40,9 +40,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sy.async = true;
   document.head.appendChild(sy);
 
+  var BUILD = '__BUILD__'; // replaced with the commit id by the Pages workflow so every deploy bypasses cached scripts
   function loadScript(src) {
     return new Promise(function (resolve) {
       var el = document.createElement('script');
+      if (BUILD.indexOf('__') < 0) src += (src.indexOf('?') < 0 ? '?' : '&') + 'b=' + BUILD;
       el.src = src;
       el.async = true;
       el.onload = resolve;

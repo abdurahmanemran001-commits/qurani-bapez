@@ -30,7 +30,7 @@ jobs:
           if [ ! -s index.html ] || [ "$(wc -c < index.html)" -lt 10000 ]; then
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
           fi
-          sed -i 's/language-ui\.js?v=[0-9]*/language-ui.js?v=9/g' index.html
+          sed -i "s/language-ui\.js?v=[0-9a-f]*/language-ui.js?v=${GITHUB_SHA::8}/g" index.html
           grep -n 'language-ui' index.html || true
           wc -c index.html
 
@@ -54,6 +54,7 @@ jobs:
           test -f scholars.js && cp scholars.js dist/
           cp hadith-ai.js sira-library.js sira-story.js sira-story-p*.js notify.js notify-content.js notify-content2.js sira-ai.js dist/
           mkdir -p dist/sira && cp sira/ibn-hisham.json dist/sira/ 2>/dev/null || true
+          sed -i "s/__BUILD__/${GITHUB_SHA::8}/" dist/language-ui.js
           test -f ai-shari-kb.js && cp ai-shari-kb.js dist/
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
           test -f ai-shari-kb-p3.js && cp ai-shari-kb-p3.js dist/
