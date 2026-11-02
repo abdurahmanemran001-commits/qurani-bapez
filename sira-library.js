@@ -64,7 +64,7 @@
       '#siraLib .sl-nav .pri{background:#176b4b;color:#fff;border-color:#176b4b}',
       '#siraLib .sl-msg{padding:16px;text-align:center;color:#6b5a2a;font-size:13px;line-height:1.9}',
       '#siraLib mark{background:#ffe9a8;padding:0 1px}',
-      '#siraEntry{grid-column:1/-1;background:linear-gradient(135deg,#6b3f1d,#4a2a12)!important;color:#fff!important;border:0!important}#siraEntry b,#siraEntry small{color:#fff!important}'
+      '#siraEntry{background:linear-gradient(135deg,#6b3f1d,#4a2a12)!important;color:#fff!important;border:0!important}#siraEntry b,#siraEntry small{color:#fff!important}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -217,7 +217,7 @@
     var g = document.querySelector('#seerahView .sr-home-grid');
     if (!g || g.querySelector('#siraEntry')) return;
     var d = document.createElement('div'); d.className = 'sr-home-tile'; d.id = 'siraEntry';
-    d.innerHTML = '<span>📜</span><b>سیرەی تەواو (ئیبن هیشام)</b><small>١٥٩٨ لاپەڕە · وەرگێڕان</small>';
+    d.innerHTML = '<span>📜</span><b>سیرەی ئیبن هیشام</b><small>١٥٩٨ لاپەڕە</small>';
     d.onclick = enter; g.insertBefore(d, g.firstChild);
   }
   document.addEventListener('click', onClick);
