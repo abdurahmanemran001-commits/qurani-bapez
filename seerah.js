@@ -93,7 +93,10 @@
       '#seerahView .sr-stat{font-size:12px;color:#5a6a8a;margin-bottom:8px}',
       '#seerahView .sr-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#e8f0e8;color:#2a5a2a;margin-top:6px}',
       '#seerahView .sr-badge.off{background:#f0e8e8;color:#8a4a4a}',
-      '#seerahView .sr-home-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}',
+      '#seerahView .sr-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}',
+      '#seerahView .sr-home-grid .sr-home-tile{padding:12px 6px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-width:0}',
+      '#seerahView .sr-home-grid .sr-home-tile b{font-size:12.5px;line-height:1.5}',
+      '#seerahView .sr-home-grid .sr-home-tile small{font-size:10.5px}',
       '#seerahView .sr-home-tile{background:#fff;border:1px solid #d0d8e8;border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer}',
       '#seerahView .sr-home-tile b{display:block;font-size:14px;color:#1a2744;margin-top:6px}',
       '#seerahView .sr-home-tile span{font-size:22px}',
@@ -212,8 +215,7 @@
       body += renderBookDetail();
     } else {
       body += '<div class="sr-home-grid">';
-      body += '<div class="sr-home-tile" data-act="gotoChapters"><span>📖</span><b>بەشەکان</b><small>' + chCount + ' بەشی ورد</small></div>';
-      body += '<div class="sr-home-tile" data-act="gotoLib"><span>📚</span><b>کتێبە کلاسیکییەکان</b><small>' + BOOKS.length + ' کتێب · داگرتن</small></div>';
+      body += '<div class="sr-home-tile" data-act="gotoLib"><span>📚</span><b>کتێبە کلاسیکییەکان</b><small>' + BOOKS.length + ' کتێب</small></div>';
       body += '</div>';
       body += '<div class="sr-search"><input id="srQ" type="search" placeholder="گەڕان لە بەشەکان..." value="' + esc(state.query) + '"><button type="button" data-act="searchGo">گەڕان</button></div>';
       body += '<div class="sr-chips"><button type="button" class="sr-chip' + (state.period === 'all' ? ' on' : '') + '" data-period="all">هەموو</button>';

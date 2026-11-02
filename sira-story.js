@@ -53,7 +53,7 @@
       '#siraStory .ss-nav button{border:1px solid #d8c68f;background:#fbf5e7;color:#5a4a1c;border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer}',
       '#siraStory .ss-nav .pri{background:#176b4b;color:#fff;border-color:#176b4b}',
       '#siraStory .ss-note{font-size:11px;color:#8a7a4a;text-align:center;line-height:1.8;margin-top:10px}',
-      '#siraStoryEntry{grid-column:1/-1;background:linear-gradient(135deg,#176b4b,#0f4d36)!important;color:#fff!important;border:0!important}#siraStoryEntry b,#siraStoryEntry small{color:#fff!important}'
+      '#siraStoryEntry{background:linear-gradient(135deg,#176b4b,#0f4d36)!important;color:#fff!important;border:0!important}#siraStoryEntry b,#siraStoryEntry small{color:#fff!important}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -130,7 +130,7 @@
     var g = document.querySelector('#seerahView .sr-home-grid');
     if (!g || g.querySelector('#siraStoryEntry')) return;
     var d = document.createElement('div'); d.className = 'sr-home-tile'; d.id = 'siraStoryEntry';
-    d.innerHTML = '<span>📖</span><b>ژیاننامەی تەواوی پێغەمبەر ﷺ</b><small>لە مەککە تا کۆتایی · بە درێژی و بەشبەش</small>';
+    d.innerHTML = '<span>📖</span><b>ژیاننامەی پێغەمبەر ﷺ</b><small>١٣ بەش · بە درێژی</small>';
     d.onclick = enter; g.insertBefore(d, g.firstChild);
   }
   document.addEventListener('click', onClick);
