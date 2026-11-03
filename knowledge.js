@@ -173,7 +173,7 @@
       if(state.picked){
         var good=state.picked===q.ok;
         var choice=q.choices.filter(function(c){return c.id===state.picked;})[0];
-        html+='<div class="kn-note"><h3>'+(good?'ئەمە خوێندنەوەکەیە':'دیسان سەیری ئایەتەکە بکە')+'</h3>';
+        html+='<div class="kn-note"><h3>'+(good?'ئەمە خوێندنەوەکەیە':'کارتی دانایی · هەڵەکردن بەشێکە لە فێربوون')+'</h3>';
         html+='<p>'+esc(q.why)+'</p>';
         if(!good) html+='<p>بە ئارامی فێربە؛ وەڵامی هەڵە کۆتایی نییە. سەرچاوەکە بخوێنەوە و دووبارە هەوڵ بدە.</p>';
         if(!good && q.near) html+='<p>'+esc(q.near)+'</p>';
