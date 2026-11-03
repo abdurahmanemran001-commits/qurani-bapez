@@ -18,6 +18,8 @@
   var STATES = [
     {id:'grief', t:'خەم'},
     {id:'fear', t:'ترس'},
+    {id:'anxious', t:'دڵەڕاوکێ'},
+    {id:'lost', t:'ونبوون و بێ ئارامی'},
     {id:'gratitude', t:'سوپاس'},
     {id:'anger', t:'تووڕەیی'},
     {id:'lonely', t:'تەنیایی'}
@@ -173,6 +175,7 @@
         var choice=q.choices.filter(function(c){return c.id===state.picked;})[0];
         html+='<div class="kn-note"><h3>'+(good?'ئەمە خوێندنەوەکەیە':'دیسان سەیری ئایەتەکە بکە')+'</h3>';
         html+='<p>'+esc(q.why)+'</p>';
+        if(!good) html+='<p>بە ئارامی فێربە؛ وەڵامی هەڵە کۆتایی نییە. سەرچاوەکە بخوێنەوە و دووبارە هەوڵ بدە.</p>';
         if(!good && q.near) html+='<p>'+esc(q.near)+'</p>';
         html+='<div class="kn-src">'+esc(q.src)+'</div></div>';
         html+='<button type="button" class="kn-primary" data-k="next">'+(state.i+1>=state.items.length?'کۆتایی':'دواتر')+'</button>';
@@ -221,7 +224,7 @@
     var root=$('knowledgeView'); if(!root||!root.classList.contains('active')) return;
     var el=e.target.closest('[data-k]'); if(!el||!root.contains(el)) return;
     var k=el.getAttribute('data-k');
-    if(k==='home'){ root.classList.remove('active'); if(typeof showView==='function') showView('startScreen','بەشەکان'); return; }
+    if(k==='home'){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;root.classList.remove('active'); if(typeof showView==='function') showView('startScreen','بەشەکان'); return; }
     if(k==='back'){ state.view='home'; state.picked=null; render(); return; }
     if(k==='start' || k==='path'){
       var path=el.getAttribute('data-path');
