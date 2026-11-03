@@ -174,6 +174,7 @@
     render();
   };
   window.__siraAiSearch = search;
+  window.__siraAiDoc = function (id) { return build().byId[id]; };
   function inject() {
     var g = document.querySelector('#seerahView .sr-home-grid');
     if (!g || g.querySelector('#siraAiEntry')) return;
