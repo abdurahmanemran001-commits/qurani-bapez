@@ -104,9 +104,24 @@
     document.head.appendChild(st);
   }
 
+
+  function generateQuiz(topic, recent) {
+    if (!endpoint() || !window.AiRag) return Promise.reject(new Error(NET));
+    return post('/expand', {q: topic || 'پرسیاری ئیسلامی لە قورئان و حەدیث'}, 20000).then(function(ex) {
+      if (ex.error || ex.refusal || !ex.token) throw new Error(ex.message || ex.refusal || NET);
+      return window.AiRag.load().then(function() {
+        var hits=window.AiRag.search(ex.keywords || [], {kQ:9,kH:9});
+        var all=(hits.quran || []).concat(hits.hadith || []).slice(0,18);
+        if (!all.length) throw new Error(NOT_FOUND);
+        return post('/quiz', {q:topic || 'general',topic:topic || '',token:ex.token,recent:(recent || []).slice(-60),passages:all.map(function(d){return {id:d.id,text:passageText(d)};})}, 70000);
+      });
+    }).then(function(out) { if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
+  }
+
   window.AiShariRag = {
     enabled: function () { return !!endpoint() && !!window.AiRag; },
     ask: ask,
+    generateQuiz: generateQuiz,
     srcHtml: srcHtml,
     endpoint: endpoint
   };
