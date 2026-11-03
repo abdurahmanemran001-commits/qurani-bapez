@@ -8,7 +8,12 @@
     {id:'tadabbur', title:'تەدەببور', sub:'وردبوونەوە لە ئایەت', min:6},
     {id:'narrative', title:'چیرۆکەکان', sub:'یوسف، بە ڕیز', min:5},
     {id:'signs', title:'نیشانەکان', sub:'ئەوەی دەقەکە دەیڵێت', min:4},
-    {id:'comfort', title:'ئارامی', sub:'بەپێی دۆخ', min:3}
+    {id:'comfort', title:'ئایەت بەپێی هەست', sub:'خەم · ترس · سوپاس · تەنیایی', min:3},
+    {id:'quranic', title:'زانستی قورئان', sub:'تەفسیر · محکم و متشابه · ئیعجاز', min:3},
+    {id:'fiqh', title:'فقهی هاوچەرخ', sub:'مامەڵە · ڕۆژوو · پرسیارە نوێکان', min:3},
+    {id:'aqeedah', title:'عەقیدە و گومانەکان', sub:'تەوحید · قەدەر · مانای ژیان', min:3},
+    {id:'jihad', title:'جیهاد و ئەخلاقی شەڕ', sub:'سنوورە شەرعییەکان · ئاشتی', min:3},
+    {id:'seerah', title:'سیرە و ستراتیژی پێغەمبەر', sub:'حودەیبیە · شورا · کۆچکردن', min:3}
   ];
   var STATES = [
     {id:'grief', t:'خەم'},
@@ -17,7 +22,7 @@
     {id:'anger', t:'تووڕەیی'},
     {id:'lonely', t:'تەنیایی'}
   ];
-  var state = {view:'home', path:null, items:[], i:0, picked:null, held:0, revisits:0, comfort:null, askQ:''};
+  var state = {view:'home', path:null, items:[], i:0, picked:null, held:0, revisits:0, wrong:0, total:0, comfort:null, askQ:'', mode:'normal', deadline:0, timerId:null};
 
   function $(id){return document.getElementById(id);}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return '&#'+c.charCodeAt(0)+';';});}
@@ -91,6 +96,13 @@
       +'#knowledgeView .kn-chip.on{background:#C6A15B;color:#071410;border-color:#C6A15B}'
       +'#knowledgeView .kn-ask{width:100%;box-sizing:border-box;border:1px solid rgba(198,161,91,.35);background:#0c1c16;color:#F4EFE4;border-radius:8px;padding:12px;font-size:14px;font-family:inherit}'
       +'#knowledgeView .kn-sheet{border-top:1px solid rgba(198,161,91,.3);padding-top:8px}'
+      +'#knowledgeView .kn-modebar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}'
+      +'#knowledgeView .kn-stat{border:1px solid rgba(198,161,91,.35);border-radius:8px;padding:10px;background:#10231c;color:#F4EFE4;text-align:center;font-size:13px}'
+      +'#knowledgeView .kn-celebrate{position:fixed;inset:0;pointer-events:none;z-index:100000;overflow:hidden}'
+      +'#knowledgeView .kn-confetti{position:absolute;top:-12px;width:8px;height:13px;animation:knfall 1.25s ease-in forwards;opacity:.95}'
+      +'@keyframes knfall{to{transform:translate3d(var(--dx),105vh,0) rotate(760deg);opacity:0}}'
+      +'#knowledgeView .kn-progress{height:5px;background:#263b32;border-radius:8px;overflow:hidden;margin:8px 0 14px}'
+      +'#knowledgeView .kn-progress i{display:block;height:100%;background:#C6A15B}'
       +'.section-choice.knowledge-choice{border-color:#1e3a32;background:linear-gradient(135deg,#fff,#e7f2ec)}'
       +'.section-choice.knowledge-choice .choice-icon{background:#d5ebe3;color:#0f3d32}';
     document.head.appendChild(s);
@@ -119,6 +131,7 @@
         html+='<div class="kn-ar">'+esc(sample.ar)+'</div><div class="kn-ref">'+esc(sample.ref)+'</div>';
       }
       html+='<button type="button" class="kn-primary" data-k="start" data-path="spark">دەستپێکردن · ٣ خولەک</button></div>';
+      html+='<div class="kn-modebar"><button type="button" class="kn-btn" data-k="lightning">⚡ تاقیکردنەوەی ٣ خولەک</button><button type="button" class="kn-btn" data-k="review">📚 گەنجینەی پێداچوونەوە ('+((p.revisit||[]).length)+')</button></div>';
       html+='<div class="kn-grid">';
       PATHS.forEach(function(x){
         html+='<button type="button" class="kn-card" data-k="path" data-path="'+x.id+'"><span class="kn-rule"></span><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></button>';
@@ -145,7 +158,7 @@
       if(!q){ state.view='close'; return render(); }
       var meta=PATHS.filter(function(x){return x.id===state.path;})[0];
       html+=head(meta?meta.title:'دانیشتن', (state.i+1)+' لە '+state.items.length);
-      html+='<div class="kn-body"><div class="kn-ar">'+esc(q.ar)+'</div><div class="kn-ref">'+esc(q.ref)+'</div>';
+      html+='<div class="kn-body"><div class="kn-stat">'+(state.mode==='lightning'?'⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە':'پرسیاری '+(state.i+1)+' لە '+state.items.length)+'</div><div class="kn-progress"><i style="width:'+Math.round((state.i/state.items.length)*100)+'%"></i></div><div class="kn-ar">'+esc(q.ar)+'</div><div class="kn-ref">'+esc(q.ref)+'</div>';
       html+='<div class="kn-q">'+esc(q.q)+'</div>';
       q.choices.forEach(function(c){
         var cls='kn-opt';
@@ -167,8 +180,10 @@
       html+='</div>';
     } else if(state.view==='close'){
       var last=state.items[state.items.length-1]||state.items[0];
-      html+=head('ئەم دانیشتنە','هیچ نمرەیەک نییە');
-      html+='<div class="kn-body kn-sheet"><div class="kn-kicker">'+esc(String(state.held))+' لەگەڵ دەقەکە مانەوە</div>';
+      var pct=state.total?Math.round(state.held/state.total*100):0;
+      var badge=pct>=90?'زێڕینی زانست':pct>=70?'قوتابیی باش':pct>=50?'گەڕان بەدوای زانست': 'دەستپێکی فێربوون';
+      html+=head('ئەنجامی تاقیکردنەوە','ڕاپۆرتی ئەم دانیشتنە');
+      html+='<div class="kn-body kn-sheet"><div class="kn-spark"><div class="kn-kicker">ئەنجامی کۆتایی</div><div style="font-size:28px;font-weight:800;text-align:center;margin:14px 0">'+state.held+' / '+state.total+'</div><div style="text-align:center;font-size:16px">وەڵامی ڕاست: '+state.held+' لە '+state.total+' پرسیار</div><div class="kn-progress"><i style="width:'+pct+'%"></i></div><div style="text-align:center;color:#C6A15B;font-weight:700">'+badge+' · '+pct+'%</div><p style="text-align:center;color:#9AAB9F">«وَقُل رَّبِّ زِدْنِي عِلْمًا» — طه ١١٤</p></div><div class="kn-stat">هەڵەکان بۆ پێداچوونەوە پاشەکەوت کراون: '+state.revisits+'</div>';
       if(state.revisits) html+='<p style="color:#9AAB9F">'+state.revisits+' دانراون بۆ گەڕانەوە. هیچ شتێک ون نەبوو.</p>';
       if(last){
         html+='<div class="kn-ar">'+esc(last.ar)+'</div><div class="kn-ref">'+esc(last.ref)+'</div>';
@@ -176,6 +191,13 @@
       html+='<button type="button" class="kn-primary" data-k="home">گەڕانەوە</button></div>';
     }
     v.innerHTML=html;
+  }
+  function celebrate(){
+    var root=$('knowledgeView'); if(!root)return;
+    var layer=document.createElement('div');layer.className='kn-celebrate';
+    for(var i=0;i<54;i++){var bit=document.createElement('i');bit.className='kn-confetti';bit.style.left=(Math.random()*100)+'%';bit.style.setProperty('--dx',((Math.random()-.5)*180)+'px');bit.style.animationDelay=(Math.random()*.25)+'s';bit.style.background=['#C6A15B','#8FBF9F','#F4EFE4','#7BA7A0'][i%4];layer.appendChild(bit);}
+    root.appendChild(layer);setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);
+    try{var C=window.AudioContext||window.webkitAudioContext;if(C){var ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=660;g.gain.setValueAtTime(.045,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.18);setTimeout(function(){ctx.close();},300);}}catch(e){}
   }
   function searchHits(query){
     var t=String(query||'').trim();
@@ -185,10 +207,14 @@
       return [q.q,q.why,q.ar,q.ref,q.src,(q.state||'')].join(' ').toLowerCase().indexOf(n)>=0;
     }).slice(0,4);
   }
-  function begin(path, comfort){
+  function begin(path, comfort, mode){
     var items=itemsFor(path, comfort);
+    if(mode==='lightning') items=bank().slice().sort(function(){return Math.random()-.5;});
+    if(mode==='review'){ var ids=(loadP().revisit||[]); items=bank().filter(function(q){return ids.indexOf(q.id)>=0;}); }
     if(!items.length){ alert('هێشتا پرسیار نییە بۆ ئەم ڕێگایە'); return; }
-    state.path=path; state.items=items; state.i=0; state.picked=null; state.held=0; state.revisits=0; state.view='session';
+    state.path=path; state.items=items; state.i=0; state.picked=null; state.held=0; state.revisits=0; state.wrong=0; state.total=mode==='lightning'?999:items.length; state.mode=mode||'normal'; state.deadline=mode==='lightning'?Date.now()+180000:0; state.view='session';
+    if(state.timerId) clearInterval(state.timerId);
+    if(mode==='lightning') state.timerId=setInterval(function(){ if(Date.now()>=state.deadline){clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();} else {var t=document.querySelector('#knowledgeView .kn-stat');if(t)t.textContent='⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە';}},1000);
     render();
   }
   function onClick(e){
@@ -203,6 +229,8 @@
       begin(path, null); return;
     }
     if(k==='comfort'){ begin('comfort', el.getAttribute('data-state')); return; }
+    if(k==='lightning'){ begin('all', null, 'lightning'); return; }
+    if(k==='review'){ begin('review', null, 'review'); return; }
     if(k==='pick'){
       if(state.picked) return;
       var id=el.getAttribute('data-id');
@@ -210,12 +238,14 @@
       state.picked=id;
       var p=markDay(loadP());
       p.seen[q.id]={choice:id, ok:id===q.ok, at:Date.now()};
-      if(id===q.ok) state.held++; else { state.revisits++; p.revisit=p.revisit||[]; if(p.revisit.indexOf(q.id)<0) p.revisit.push(q.id); }
+      if(id===q.ok){ state.held++; p.revisit=(p.revisit||[]).filter(function(x){return x!==q.id;}); celebrate(); }
+      else { state.revisits++; state.wrong++; p.revisit=p.revisit||[]; if(p.revisit.indexOf(q.id)<0) p.revisit.push(q.id); }
+      state.total=state.mode==='lightning'?Math.max(state.total,state.i+1):state.items.length;
       saveP(p); render(); return;
     }
     if(k==='next'){
-      if(state.i+1>=state.items.length){ state.view='close'; render(); return; }
-      state.i++; state.picked=null; render(); return;
+      if(state.i+1>=state.items.length){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.items.length;state.view='close'; render(); return; }
+      state.i++; state.picked=null; if(state.mode==='lightning')state.total=state.i; render(); return;
     }
     if(k==='askGo'){
       var inp=$('knAsk'); state.askQ=inp?inp.value.trim():''; render();
