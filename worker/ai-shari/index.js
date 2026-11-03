@@ -145,7 +145,7 @@ export default {
         const rlQuiz = await limit(env, ip, 'quiz', Number(env.QUIZ_LIMIT || 35));
         if (!rlQuiz.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
         const ps = Array.isArray(body.passages) ? body.passages.slice(0, 18) : [];
-        const clean = ps.filter(p => p && typeof p.id === 'string' && /^(q:\\d{1,3}:\\d{1,3}|h:[a-z]+:\\d{1,5})$/.test(p.id) && typeof p.text === 'string').map(p => ({id:p.id,text:p.text.slice(0,1200)}));
+        const clean = ps.filter(p => p && typeof p.id === 'string' && /^(q:\d{1,3}:\d{1,3}|h:[a-z]+:\d{1,5})$/.test(p.id) && typeof p.text === 'string').map(p => ({id:p.id,text:p.text.slice(0,1200)}));
         if (!clean.length) return json({ready:false});
         const recent = Array.isArray(body.recent) ? body.recent.filter(x => typeof x === 'string').slice(-60) : [];
         const out = await gemini(env, QUIZ_PROMPT, JSON.stringify({topic:String(body.topic||'').slice(0,120),passages:clean,recent}), 900, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
