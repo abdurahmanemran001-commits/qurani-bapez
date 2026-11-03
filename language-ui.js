@@ -68,6 +68,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('seerah-data-p3.js?v=1'); })
     .then(function () { return loadScript('seerah.js?v=8'); })
     .then(function () { return loadScript('companions-data.js?v=3'); })
+    .then(function () { return loadScript('companions-data-p2.js?v=1'); })
     .then(function () { return loadScript('companions.js?v=1'); })
     .then(function () { return loadScript('scholars-firebase-config.js?v=1'); })
     .then(function () { return loadScript('scholars.js?v=4'); })

@@ -117,7 +117,7 @@
       body += '<div class="cp-card" style="cursor:default">';
       body += '<b>' + esc(c.ku) + '</b><small>' + esc(c.ar) + '</small>';
       body += '<div style="margin-top:12px"><div class="cp-label">کوردی</div><div class="cp-ku">' + esc(c.ku_body) + '</div></div>';
-      body += '<div class="cp-ar"><div class="cp-label">العربية</div>' + esc(c.ar_body) + '</div>';
+      if (c.ar_body) body += '<div class="cp-ar"><div class="cp-label">العربية</div>' + esc(c.ar_body) + '</div>';
       body += '<div class="cp-actions"><button type="button" data-act="toggleBm">' + (isBm(c.id) ? '★ لابردنی نیشانە' : '☆ نیشانەکردن') + '</button></div></div>';
     } else if (state.view === 'bookmarks') {
       var bms = bookmarks();
