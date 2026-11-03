@@ -24,7 +24,7 @@
     {id:'anger', t:'تووڕەیی'},
     {id:'lonely', t:'تەنیایی'}
   ];
-  var state = {view:'home', path:null, items:[], i:0, picked:null, held:0, revisits:0, wrong:0, total:0, comfort:null, askQ:'', mode:'normal', deadline:0, timerId:null};
+  var state = {view:'home', path:null, items:[], i:0, picked:null, aiTopic:'', aiQuiz:null, held:0, revisits:0, wrong:0, total:0, comfort:null, askQ:'', mode:'normal', deadline:0, timerId:null};
 
   function $(id){return document.getElementById(id);}
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return '&#'+c.charCodeAt(0)+';';});}
@@ -134,6 +134,7 @@
       }
       html+='<button type="button" class="kn-primary" data-k="start" data-path="spark">دەستپێکردن · ٣ خولەک</button></div>';
       html+='<div class="kn-modebar"><button type="button" class="kn-btn" data-k="lightning">⚡ تاقیکردنەوەی ٣ خولەک</button><button type="button" class="kn-btn" data-k="review">📚 گەنجینەی پێداچوونەوە ('+((p.revisit||[]).length)+')</button></div>';
+      html+='<div class="kn-spark"><div class="kn-kicker">پرسیاری نوێی زیرەک · AI</div><p style="font-size:13px;color:#9AAB9F;line-height:1.6">بابەتێک بنووسە یان بەتاڵی بهێڵە بۆ پرسیاری جۆراوجۆر. پرسیارەکە لەسەر سەرچاوەی قورئان و حەدیث دروست دەکرێت.</p><input id="knAiTopic" class="kn-ask" placeholder="بابەت: تەوحید، نوێژ، سیرە، ڕۆژوو..." value="'+esc(state.aiTopic||'')+'"><button type="button" class="kn-primary" data-k="aiGenerate">دروستکردنی پرسیاری نوێ</button></div>';
       html+='<div class="kn-grid">';
       PATHS.forEach(function(x){
         html+='<button type="button" class="kn-card" data-k="path" data-path="'+x.id+'"><span class="kn-rule"></span><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></button>';
@@ -148,6 +149,10 @@
         html+='<div class="kn-note" style="margin-top:10px"><h3>'+esc(q.ref)+'</h3><div class="kn-ar" style="font-size:18px">'+esc(q.ar)+'</div><p>'+esc(q.why)+'</p><div class="kn-src">'+esc(q.src)+' · خوێندنەوەیە، فەتوا نییە</div></div>';
       });
       html+='</div></div>';
+    } else if(state.view==='aiQuiz'){
+      var aq=state.aiQuiz; html+=head('پرسیاری زیرەکی','پرسیارێکی نوێ لەسەر بەڵگە'); html+='<div class="kn-body"><div class="kn-spark"><div class="kn-kicker">'+esc(aq.topic||'بابەتی جۆراوجۆر')+'</div><div class="kn-q">'+esc(aq.question)+'</div>';
+      aq.choices.forEach(function(c){var cls='kn-opt';if(aq.picked){if(c.id===aq.answer)cls+=' ok';else if(c.id===aq.picked)cls+=' miss';}html+='<button type="button" class="'+cls+'" data-k="aiPick" data-id="'+esc(c.id)+'" '+(aq.picked?'disabled':'')+'>'+esc(c.text)+'</button>';});
+      if(aq.picked){html+='<div class="kn-note"><h3>'+(aq.picked===aq.answer?'وەڵامی دروستە':'وەڵامەکە دروست نییە')+'</h3><p>'+esc(aq.explanation)+'</p><div class="kn-src">بەڵگە: '+esc(aq.evidence||'')+'</div></div><button type="button" class="kn-primary" data-k="aiAgain">پرسیارێکی نوێ</button>'; } html+='</div></div>';
     } else if(state.view==='comfortPick'){
       html+=head('ئارامی','دۆخێک هەڵبژێرە');
       html+='<div class="kn-body"><p style="color:#9AAB9F;font-size:14px;line-height:1.6">ئایەتەکان بۆ ئارامین، نەک چارەسەری پزیشکی یان حوکم.</p><div class="kn-chips">';
@@ -202,6 +207,10 @@
     root.appendChild(layer);setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);
     try{var C=window.AudioContext||window.webkitAudioContext;if(C){var ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=660;g.gain.setValueAtTime(.045,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.18);setTimeout(function(){ctx.close();},300);}}catch(e){}
   }
+  function generateAiQuiz(){
+    if(!window.AiShariRag||!window.AiShariRag.generateQuiz){alert('خزمەتگوزاری AI ئامادە نییە؛ پەیوەندیی AI بپشکنە.');return;}
+    var p=loadP();window.AiShariRag.generateQuiz(state.aiTopic||'',p.aiSeen||[]).then(function(q){if(!q||!q.question)throw new Error('پرسیار دروست نەبوو');if((p.aiSeen||[]).indexOf(q.fingerprint)>=0)throw new Error('پرسیارەکە پێشتر هاتووە');state.aiQuiz=q;state.aiQuiz.picked=null;state.view='aiQuiz';render();}).catch(function(e){alert('پرسیاری AI: '+(e.message||e));});
+  }
   function searchHits(query){
     var t=String(query||'').trim();
     if(t.length<2) return [];
@@ -255,6 +264,9 @@
     if(k==='askGo'){
       var inp=$('knAsk'); state.askQ=inp?inp.value.trim():''; render();
     }
+    if(k==='aiGenerate'){var topic=$('knAiTopic');state.aiTopic=topic?topic.value.trim():'';generateAiQuiz();}
+    if(k==='aiPick'){if(!state.aiQuiz||state.aiQuiz.picked)return;state.aiQuiz.picked=el.getAttribute('data-id');var hp=loadP();hp.aiSeen=hp.aiSeen||[];if(state.aiQuiz.fingerprint&&hp.aiSeen.indexOf(state.aiQuiz.fingerprint)<0)hp.aiSeen.push(state.aiQuiz.fingerprint);if(hp.aiSeen.length>1500)hp.aiSeen=hp.aiSeen.slice(-1500);saveP(hp);render();}
+    if(k==='aiAgain'){state.aiQuiz=null;state.view='home';render();}
   }
   window.enterKnowledge=function(){
     injectCss(); if(!ensureView()) return;
