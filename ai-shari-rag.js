@@ -105,17 +105,34 @@
   }
 
 
+  var QK = [['الصلاة','الزكاة','الصيام'],['الصبر','الشكر','التوكل'],['الجنة','النار','الآخرة'],['النبي','الهجرة','الصحابة'],['الأخلاق','الصدق','الأمانة'],['التوحيد','الإيمان','الله'],['الوالدين','الأرحام','الإحسان'],['الحج','العمرة','الطواف'],['الذكر','الدعاء','الاستغفار'],['العلم','التقوى','الحكمة'],['الرحمة','العفو','التوبة'],['الأنبياء','موسى','إبراهيم']];
+  function pickPass(kws) {
+    var hits = window.AiRag.search(kws, {kQ: 5, kH: 5});
+    return (hits.quran || []).concat(hits.hadith || []).slice(0, 8);
+  }
+  function quizPost(tok, topic, recent, all) {
+    return post('/quiz', {q: topic || 'general', topic: topic || '', token: tok, recent: (recent || []).slice(-25), passages: all.map(function (d) { return {id: d.id, text: passageText(d).slice(0, 600)}; })}, 45000);
+  }
   function generateQuiz(topic, recent) {
     if (!endpoint() || !window.AiRag) return Promise.reject(new Error(NET));
-    return post('/expand', {q: topic || 'پرسیاری ئیسلامی لە قورئان و حەدیث'}, 20000).then(function(ex) {
+    var t = String(topic || '').trim();
+    var tokenP = t ? post('/expand', {q: t}, 20000).then(function (ex) {
       if (ex.error || ex.refusal || !ex.token) throw new Error(ex.message || ex.refusal || NET);
-      return window.AiRag.load().then(function() {
-        var hits=window.AiRag.search(ex.keywords || [], {kQ:9,kH:9});
-        var all=(hits.quran || []).concat(hits.hadith || []).slice(0,18);
-        if (!all.length) throw new Error(NOT_FOUND);
-        return post('/quiz', {q:topic || 'general',topic:topic || '',token:ex.token,recent:(recent || []).slice(-60),passages:all.map(function(d){return {id:d.id,text:passageText(d)};})}, 70000);
+      return {token: ex.token, kws: ex.keywords || []};
+    }) : post('/qtoken', {}, 8000).then(function (r) {
+      if (r && r.token) return {token: r.token, kws: QK[Math.floor(Math.random() * QK.length)]};
+      throw new Error('no qtoken');
+    }).catch(function () {   // older worker: fall back to /expand
+      return post('/expand', {q: 'پرسیاری ئیسلامی لە قورئان و حەدیث'}, 20000).then(function (ex) {
+        if (ex.error || ex.refusal || !ex.token) throw new Error(ex.message || ex.refusal || NET);
+        return {token: ex.token, kws: ex.keywords || []};
       });
-    }).then(function(out) { if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
+    });
+    return Promise.all([tokenP, window.AiRag.load()]).then(function (r) {
+      var all = pickPass(r[0].kws);
+      if (!all.length) throw new Error(NOT_FOUND);
+      return quizPost(r[0].token, t, recent, all);
+    }).then(function (out) { if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
   }
 
   window.AiShariRag = {
