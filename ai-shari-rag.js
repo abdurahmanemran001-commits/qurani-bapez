@@ -116,13 +116,16 @@
   function generateQuiz(topic, recent) {
     if (!endpoint() || !window.AiRag) return Promise.reject(new Error(NET));
     var t = String(topic || '').trim();
-    var tokenP = t ? post('/expand', {q: t}, 20000).then(function (ex) {
+    var tokenP = t ? post('/expand', {q: t, quiz: true}, 20000).then(function (ex) {
+      if (ex.error === 'rate') { var er = new Error(ex.message || 'دوای هەشت سەعات نوێ دەبێتەوە.'); er.rate = true; throw er; }
       if (ex.error || ex.refusal || !ex.token) throw new Error(ex.message || ex.refusal || NET);
       return {token: ex.token, kws: ex.keywords || []};
     }) : post('/qtoken', {}, 8000).then(function (r) {
+      if (r && r.error === 'rate') { var er = new Error(r.message || 'سنووری پرسیار تەواو بوو. دوای هەشت سەعات نوێ دەبێتەوە.'); er.rate = true; throw er; }
       if (r && r.token) return {token: r.token, kws: QK[Math.floor(Math.random() * QK.length)]};
       throw new Error('no qtoken');
-    }).catch(function () {   // older worker: fall back to /expand
+    }).catch(function (e) {   // older worker: fall back to /expand
+      if (e && e.rate) throw e;
       return post('/expand', {q: 'پرسیاری ئیسلامی لە قورئان و حەدیث'}, 20000).then(function (ex) {
         if (ex.error || ex.refusal || !ex.token) throw new Error(ex.message || ex.refusal || NET);
         return {token: ex.token, kws: ex.keywords || []};
@@ -132,7 +135,7 @@
       var all = pickPass(r[0].kws);
       if (!all.length) throw new Error(NOT_FOUND);
       return quizPost(r[0].token, t, recent, all);
-    }).then(function (out) { if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
+    }).then(function (out) { if (out && out.error === 'rate') { var er = new Error(out.message || 'سنووری پرسیار تەواو بوو. دوای هەشت سەعات نوێ دەبێتەوە.'); er.rate = true; throw er; } if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
   }
 
   window.AiShariRag = {
