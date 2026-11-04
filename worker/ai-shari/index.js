@@ -10,6 +10,7 @@ const REFUSALS = {
   personal_fatwa: 'ئەمە پرسیارێکی تایبەتە و پێویستی بە فەتوای زانایەکی متمانەپێکراو هەیە کە دۆخەکەت بزانێت. ئەم یاریدەدەرە ناتوانێت فەتوای تایبەت بدات. تکایە پرسیار لە زانایەک یان دامەزراوەیەکی فەتوا بکە.',
   harmful: 'ناتوانم یارمەتی لەم بابەتە بدەم.'
 };
+const MSG_QUIZ = 'پرسیاری AIـەکەت (٥٠ پرسیار) تەواو بوو. دوای هەشت سەعات نوێ دەبێتەوە.';
 const MSG_RATE = 'سنووری ڕۆژانەی پرسیارەکانت تەواو بوو. سبەینێ دووبارە هەوڵ بدەرەوە.';
 const MSG_BUSY = 'سێرڤەری AI ئێستا قەرەباڵغە. تکایە کەمێکی تر هەوڵ بدەرەوە.';
 
@@ -130,8 +131,8 @@ export default {
 
     try {
       if (url.pathname === '/expand') {
-        const rl = await limit(env, ip);
-        if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
+        const rl = body.quiz === true ? await limitWin(env, ip, 'qx8', Number(env.QUIZ_LIMIT || 50) * 3, 28800) : await limit(env, ip);
+        if (!rl.ok) return json({ error: 'rate', message: body.quiz === true ? MSG_QUIZ : MSG_RATE, resetIn: rl.resetIn }, 429);
         const out = await gemini(env, EXPAND_PROMPT, JSON.stringify({ question: q }), 300, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
         const cat = ['general', 'personal_fatwa', 'not_islamic', 'harmful'].includes(out.category) ? out.category : 'general';
         if (cat !== 'general' && cat !== 'personal_fatwa') return json({ category: cat, refusal: REFUSALS[cat], remaining: rl.remaining });
@@ -141,14 +142,14 @@ export default {
       }
 
       if (url.pathname === '/qtoken') {
-        const rlT = await limit(env, ip, 'qt', Number(env.QUIZ_LIMIT || 35) * 2);
-        if (!rlT.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
+        const rlT = await limitWin(env, ip, 'qt8', Number(env.QUIZ_LIMIT || 50) * 3, 28800);
+        if (!rlT.ok) return json({ error: 'rate', message: MSG_QUIZ, resetIn: rlT.resetIn }, 429);
         return json({ token: await sign(env, ip) });
       }
       if (url.pathname === '/quiz') {
         if (!(await verify(env, ip, body.token))) return json({ error: 'token' }, 403);
-        const rlQuiz = await limit(env, ip, 'quiz', Number(env.QUIZ_LIMIT || 35));
-        if (!rlQuiz.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
+        const rlQuiz = await limitWin(env, ip, 'quiz8', Number(env.QUIZ_LIMIT || 50), 28800);
+        if (!rlQuiz.ok) return json({ error: 'rate', message: MSG_QUIZ, resetIn: rlQuiz.resetIn }, 429);
         const ps = Array.isArray(body.passages) ? body.passages.slice(0, 8) : [];
         const clean = ps.filter(p => p && typeof p.id === 'string' && /^(q:\d{1,3}:\d{1,3}|h:[a-z]+:\d{1,5})$/.test(p.id) && typeof p.text === 'string').map(p => ({id:p.id,text:p.text.slice(0,600)}));
         if (!clean.length) return json({ready:false});
@@ -158,7 +159,7 @@ export default {
         const cites=Array.isArray(out.cites)?out.cites.filter(id=>clean.some(p=>p.id===id)).slice(0,3):[];
         const fp=typeof out.fingerprint==='string'?out.fingerprint.replace(/[^a-z0-9_-]/gi,'').slice(0,80):'';
         if(out.ready!==true||choices.length!==4||ids.some(id=>!choices.some(c=>c.id===id&&typeof c.text==='string'&&c.text.trim()))||!ids.includes(out.answer)||!cites.length||!fp||recent.includes(fp)||!out.question||!out.explanation)return json({ready:false});
-        return json({ready:true,topic:String(out.topic||body.topic||'').slice(0,120),question:String(out.question).slice(0,500),choices,answer:out.answer,explanation:String(out.explanation).slice(0,1600),evidence:cites.join('، '),fingerprint:fp});
+        return json({ready:true,topic:String(out.topic||body.topic||'').slice(0,120),question:String(out.question).slice(0,500),choices,answer:out.answer,explanation:String(out.explanation).slice(0,1600),evidence:cites.join('، '),fingerprint:fp,remaining:rlQuiz.remaining,resetIn:rlQuiz.resetIn});
       }
       if (url.pathname === '/answer') {
         if (!(await verify(env, ip, body.token))) return json({ error: 'token' }, 403);
@@ -285,6 +286,19 @@ function parseJson(t) {
 }
 
 /* ---------- limits + token ---------- */
+/* rolling window limiter: max N per windowSec from the first use. Returns {ok, remaining, resetIn}. Fail-open. */
+async function limitWin(env, ip, pre, max, windowSec) {
+  if (!env.RL) return { ok: true, remaining: max, resetIn: windowSec };
+  const key = pre + ':' + (await sha(ip)).slice(0, 24), now = Math.floor(Date.now() / 1000);
+  let rec = null; try { rec = JSON.parse(await env.RL.get(key)); } catch (e) { return { ok: true, remaining: max, resetIn: windowSec }; }
+  if (!rec || typeof rec.s !== 'number' || now - rec.s >= windowSec) rec = { s: now, n: 0 };
+  const resetIn = Math.max(0, rec.s + windowSec - now);
+  if (rec.n >= max) return { ok: false, remaining: 0, resetIn };
+  rec.n++;
+  try { await env.RL.put(key, JSON.stringify(rec), { expirationTtl: windowSec + 600 }); } catch (e) { /* fail open */ }
+  return { ok: true, remaining: max - rec.n, resetIn };
+}
+
 async function limit(env, ip, pre, maxOverride) {
   const max = maxOverride || Number(env.DAILY_LIMIT || 25);
   if (!env.RL) return { ok: true, remaining: max };
