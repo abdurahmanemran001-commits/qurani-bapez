@@ -82,6 +82,7 @@
       +'#knowledgeView .kn-rule{width:18px;height:1px;background:#C6A15B;margin-bottom:auto}'
       +'#knowledgeView .kn-q{font-size:18px;line-height:1.5;margin:18px 0 12px}'
       +'#knowledgeView .kn-opt{width:100%;text-align:right;border:1px solid rgba(244,239,228,.16);background:rgba(16,35,28,.55);color:#F4EFE4;border-radius:8px;padding:14px;margin:0 0 8px;font-size:15px;line-height:1.45;cursor:pointer;transition:border-color .24s ease,background .24s ease}'
+      +'#knowledgeView .kn-ringwrap{display:flex;justify-content:center;margin:2px 0 8px}#knowledgeView .kn-ring{position:relative;width:62px;height:62px}#knowledgeView .kn-ring svg{width:100%;height:100%;transform:rotate(-90deg)}#knowledgeView .kn-ring circle{fill:none;stroke-width:4}#knowledgeView .kn-ring .bg{stroke:#263b32}#knowledgeView .kn-ring .fg{stroke:#8FBF9F;stroke-linecap:round;transition:stroke-dashoffset .1s linear,stroke .3s}#knowledgeView .kn-ring.low .fg{stroke:#e0584d}#knowledgeView .kn-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:#F4EFE4}#knowledgeView .kn-ring.low b{color:#ff8a80;animation:knpulse .5s infinite alternate}@keyframes knpulse{to{transform:scale(1.18)}}'
       +'#knowledgeView .kn-aitm{display:flex;align-items:center;gap:10px;margin:0 0 12px}#knowledgeView .kn-aibar{flex:1;height:9px;background:#263b32;border-radius:8px;overflow:hidden}#knowledgeView .kn-aibar i{display:block;height:100%;width:100%;background:#8FBF9F;transition:width .1s linear}#knowledgeView .kn-aibar i.low{background:#d6574d}#knowledgeView .kn-aitm span{font-size:20px;font-weight:700;color:#C6A15B;min-width:26px;text-align:center}'
       +'#knowledgeView .kn-opt.dim{opacity:.5}#knowledgeView .kn-opt.ok{background:rgba(60,160,100,.28)}#knowledgeView .kn-opt.miss{background:rgba(214,87,77,.3);animation:knshake .35s}@keyframes knshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}'
       +'#knowledgeView .kn-aiok h3{color:#8FD6A8}#knowledgeView .kn-aino h3{color:#ef8a80}'
@@ -149,7 +150,7 @@
       html+='</div></div>';
     } else if(state.view==='aiQuiz'){
       var aq=state.aiQuiz, tmo=aq.picked==='__timeout'; html+=head('پرسیاری زیرەکی','پرسیارێکی نوێ لەسەر بەڵگە'); html+='<div class="kn-body">';
-      if(!aq.picked) html+='<div class="kn-aitm"><div class="kn-aibar"><i id="knAiBar" style="width:'+Math.max(0,Math.min(100,(aq.deadline-Date.now())/AI_T/10))+'%"></i></div><span id="knAiSec">'+Math.max(0,Math.ceil((aq.deadline-Date.now())/1000))+'</span></div>';
+      if(!aq.picked) html+='<div class="kn-ringwrap">'+ringHtml(Math.max(0,(aq.deadline-Date.now())/1000),'knAiRing')+'</div>';
       html+='<div class="kn-spark"><div class="kn-kicker">'+esc(aq.topic||'بابەتی جۆراوجۆر')+(typeof state.aiRem==='number'?' · ماوە: '+state.aiRem+' لە ٥٠ (هەر ٨ سەعات)':'')+'</div><div class="kn-q">'+esc(aq.question)+'</div>';
       aq.choices.forEach(function(c){var cls='kn-opt';if(aq.picked){if(c.id===aq.answer)cls+=' ok';else if(c.id===aq.picked)cls+=' miss';else cls+=' dim';}html+='<button type="button" class="'+cls+'" data-k="aiPick" data-id="'+esc(c.id)+'" '+(aq.picked?'disabled':'')+'>'+(aq.picked&&c.id===aq.answer?'✓ ':aq.picked&&c.id===aq.picked?'✗ ':'')+esc(c.text)+'</button>';});
       if(aq.picked){var okp=aq.picked===aq.answer;html+='<div class="kn-note kn-ai'+(okp?'ok':'no')+'"><h3>'+(tmo?'⏰ کاتەکە تەواو بوو — هەڵەیە':okp?'✅ وەڵامی دروستە! ئافەرین':'❌ هەڵەیە')+'</h3><p>'+esc(aq.explanation)+'</p><div class="kn-src">بەڵگە: '+esc(aq.evidence||'')+'</div></div><button type="button" class="kn-primary" data-k="aiAgain">پرسیارێکی نوێ ‹</button>'; } html+='</div></div>';
@@ -165,7 +166,8 @@
       if(!q){ state.view='close'; return render(); }
       var meta=PATHS.filter(function(x){return x.id===state.path;})[0];
       html+=head(meta?meta.title:(state.endless?'♾️ پرسیاری بێ کۆتایی':'دانیشتن'), state.endless?('پرسیاری '+(state.i+1)):((state.i+1)+' لە '+state.items.length));
-      html+='<div class="kn-body"><div class="kn-stat">'+(state.mode==='lightning'?'⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە':(state.endless?'♾️ پرسیاری '+(state.i+1)+' · ڕاست: '+state.held:'پرسیاری '+(state.i+1)+' لە '+state.items.length))+'</div><div class="kn-progress"><i style="width:'+(state.endless?((state.i%10)+1)*10:Math.round((state.i/state.items.length)*100))+'%"></i></div><div class="kn-ar">'+esc(q.ar)+'</div><div class="kn-ref">'+esc(q.ref)+'</div>';
+      var curQ=state.items[state.i]; if(curQ&&!state.picked&&(curQ.__dl==null||state.__dlFor!==curQ)){curQ.__dl=Date.now()+Q_T*1000;state.__dlFor=curQ;}
+      html+='<div class="kn-body">'+(state.picked?'':'<div class="kn-ringwrap">'+ringHtml(Math.max(0,((curQ&&curQ.__dl)-Date.now())/1000),'knRing')+'</div>')+'<div class="kn-stat">'+(state.mode==='lightning'?'⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە':(state.endless?'♾️ پرسیاری '+(state.i+1)+' · ڕاست: '+state.held:'پرسیاری '+(state.i+1)+' لە '+state.items.length))+'</div><div class="kn-progress"><i style="width:'+(state.endless?((state.i%10)+1)*10:Math.round((state.i/state.items.length)*100))+'%"></i></div><div class="kn-ar">'+esc(q.ar)+'</div><div class="kn-ref">'+esc(q.ref)+'</div>';
       if(state.aiLimitMsg) html+='<div class="kn-kicker" style="margin-bottom:8px">🤖 '+esc(state.aiLimitMsg)+'</div>';
       html+='<div class="kn-q">'+(q.ai?'🤖 ':'')+esc(q.q)+'</div>';
       q.choices.forEach(function(c){
@@ -179,7 +181,7 @@
       if(state.picked){
         var good=state.picked===q.ok;
         var choice=q.choices.filter(function(c){return c.id===state.picked;})[0];
-        html+='<div class="kn-note"><h3>'+(good?'ئەمە خوێندنەوەکەیە':'کارتی دانایی · هەڵەکردن بەشێکە لە فێربوون')+'</h3>';
+        html+='<div class="kn-note"><h3>'+(state.picked==='__timeout'?'⏰ کاتەکە تەواو بوو':good?'ئەمە خوێندنەوەکەیە':'کارتی دانایی · هەڵەکردن بەشێکە لە فێربوون')+'</h3>';
         html+='<p>'+esc(q.why)+'</p>';
         if(!good) html+='<p>بە ئارامی فێربە؛ وەڵامی هەڵە کۆتایی نییە. سەرچاوەکە بخوێنەوە و دووبارە هەوڵ بدە.</p>';
         if(!good && q.near) html+='<p>'+esc(q.near)+'</p>';
@@ -201,6 +203,7 @@
     }
     if(state.aiBusy) html+='<div class="kn-aiload"><div class="kn-spin"></div><b>پرسیارەکە ئامادە دەکرێت…</b><small>لە سەرچاوەی قورئان و حەدیث</small></div>';
     v.innerHTML=html;
+    if(state.view==='session'&&!state.picked) qStartTimer(); else qStopTimer();
   }
   function celebrate(){
     var root=$('knowledgeView'); if(!root)return;
@@ -230,8 +233,7 @@
     aiStopTimer();
     aiTimer=setInterval(function(){
       var q=state.aiQuiz; if(!q||q.picked||state.view!=='aiQuiz'){aiStopTimer();return;}
-      var left=Math.max(0,(q.deadline-Date.now())/1000), b=$('knAiBar'), n=$('knAiSec');
-      if(b){b.style.width=(left/AI_T*100)+'%'; b.className=left<=5?'low':'';} if(n)n.textContent=Math.ceil(left);
+      var left=Math.max(0,(q.deadline-Date.now())/1000); ringSet('knAiRing',left);
       if(left<=0){ aiStopTimer(); aiPick('__timeout'); }
     },100);
   }
@@ -263,7 +265,7 @@
   function pathPrefetch(){
     if(!state.endless||state.aiStop||state.aiFetching||!window.AiShariRag||!window.AiShariRag.generateQuiz) return;
     if((state.aiBuf||[]).length>=1) return;
-    var path=state.path, topic=PATH_TOPIC[path]||''; state.aiFetching=true;
+    var path=state.path, topic=PATH_TOPIC[path]||''; if(path==='narrative'){ var PR=['ئادەم','نوح','هود','سالح','ئیبراهیم','لوط','ئیسماعیل','یەعقوب','یوسف','ئەیوب','شوعەیب','موسا','هارون','داود','سلێمان','زەکەریا','یەحیا','عیسا','یونس','ئیلیاس','ئیدریس','موحەممەد']; topic='چیرۆکی پێغەمبەر '+PR[Math.floor(Math.random()*PR.length)]; } state.aiFetching=true;
     aiFetch(topic).then(function(q){
       state.aiFetching=false; if(state.path!==path||!state.endless) return;
       (state.aiBuf=state.aiBuf||[]).push(aiToItem(q,path));
@@ -306,6 +308,39 @@
     if(mode==='lightning') state.timerId=setInterval(function(){ if(Date.now()>=state.deadline){clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();} else {var t=document.querySelector('#knowledgeView .kn-stat');if(t)t.textContent='⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە';}},1000);
     render(); if(state.endless && mode!=='lightning') pathPrefetch();
   }
+  function doPick(id){
+      if(state.picked) return;
+      var q=state.items[state.i]; if(!q) return;
+      qStopTimer(); state.picked=id;
+      var p=markDay(loadP());
+      var gen=/^(g|ai):/.test(q.id);
+      if(/^ai:/.test(q.id)&&q.fp){ var hp=loadP(); hp.aiSeen=hp.aiSeen||[]; if(hp.aiSeen.indexOf(q.fp)<0) hp.aiSeen.push(q.fp); saveP(hp); p=markDay(loadP()); }
+      if(gen){ p.gseen=p.gseen||[]; p.gseen.push(q.id); if(p.gseen.length>9000) p.gseen=p.gseen.slice(-9000); }
+      else p.seen[q.id]={choice:id, ok:id===q.ok, at:Date.now()};
+      if(id===q.ok){ state.held++; if(!gen) p.revisit=(p.revisit||[]).filter(function(x){return x!==q.id;}); celebrate(); }
+      else { state.revisits++; state.wrong++; if(!gen){ p.revisit=p.revisit||[]; if(p.revisit.indexOf(q.id)<0) p.revisit.push(q.id); } try{ if(navigator.vibrate) navigator.vibrate(120); }catch(e){} }
+      state.total=state.mode==='lightning'?Math.max(state.total,state.i+1):(state.endless?state.i+1:state.items.length);
+      saveP(p); render();
+  }
+  var Q_T=15, qTimer=null;
+  function ringHtml(left,id){
+    var C=2*Math.PI*19, off=C*(1-Math.max(0,Math.min(1,left/Q_T)));
+    return '<div class="kn-ring'+(left<=5?' low':'')+'" id="'+id+'"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="19"/><circle class="fg" cx="22" cy="22" r="19" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><b>'+Math.ceil(left)+'</b></div>';
+  }
+  function ringSet(id,left){
+    var r=$(id); if(!r) return; var C=2*Math.PI*19, fg=r.querySelector('.fg'), b=r.querySelector('b');
+    if(fg) fg.setAttribute('stroke-dashoffset',(C*(1-Math.max(0,Math.min(1,left/Q_T)))).toFixed(1)); if(b) b.textContent=Math.ceil(left); r.className='kn-ring'+(left<=5?' low':'');
+  }
+  function qStopTimer(){ if(qTimer){clearInterval(qTimer);qTimer=null;} }
+  function qStartTimer(){
+    qStopTimer(); var it=state.items[state.i]; if(!it||state.picked) return;
+    if(it.__dl==null||state.__dlFor!==it) { it.__dl=Date.now()+Q_T*1000; state.__dlFor=it; }
+    qTimer=setInterval(function(){
+      var cur=state.items[state.i]; if(state.view!=='session'||!cur||state.picked||cur!==it){qStopTimer();return;}
+      var left=Math.max(0,(it.__dl-Date.now())/1000); ringSet('knRing',left);
+      if(left<=0){ qStopTimer(); doPick('__timeout'); }
+    },100);
+  }
   function onClick(e){
     var root=$('knowledgeView'); if(!root||!root.classList.contains('active')) return;
     var el=e.target.closest('[data-k]'); if(!el||!root.contains(el)) return;
@@ -320,21 +355,7 @@
     if(k==='comfort'){ begin('comfort', el.getAttribute('data-state')); return; }
     if(k==='lightning'){ begin('all', null, 'lightning'); return; }
     if(k==='review'){ begin('review', null, 'review'); return; }
-    if(k==='pick'){
-      if(state.picked) return;
-      var id=el.getAttribute('data-id');
-      var q=state.items[state.i]; if(!q) return;
-      state.picked=id;
-      var p=markDay(loadP());
-      var gen=/^(g|ai):/.test(q.id);
-      if(/^ai:/.test(q.id)&&q.fp){ var hp=loadP(); hp.aiSeen=hp.aiSeen||[]; if(hp.aiSeen.indexOf(q.fp)<0) hp.aiSeen.push(q.fp); saveP(hp); p=markDay(loadP()); }
-      if(gen){ p.gseen=p.gseen||[]; p.gseen.push(q.id); if(p.gseen.length>9000) p.gseen=p.gseen.slice(-9000); }
-      else p.seen[q.id]={choice:id, ok:id===q.ok, at:Date.now()};
-      if(id===q.ok){ state.held++; if(!gen) p.revisit=(p.revisit||[]).filter(function(x){return x!==q.id;}); celebrate(); }
-      else { state.revisits++; state.wrong++; if(!gen){ p.revisit=p.revisit||[]; if(p.revisit.indexOf(q.id)<0) p.revisit.push(q.id); } }
-      state.total=state.mode==='lightning'?Math.max(state.total,state.i+1):(state.endless?state.i+1:state.items.length);
-      saveP(p); render(); return;
-    }
+    if(k==='pick'){ doPick(el.getAttribute('data-id')); return; }
     if(k==='finish'){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();return; }
     if(k==='next'){
       if(state.endless && state.mode!=='lightning' && (state.i+1)%3===0) injectAi();
