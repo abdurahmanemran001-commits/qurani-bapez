@@ -59,14 +59,68 @@
     }
     return null;
   }
-  function batch(n, seen) {
+
+  /* ---- Prophet-story questions (narrative path): ayah -> which prophet's story; ayah -> next ayah (within a story) ---- */
+  var STORY = [
+    ['ئادەم', [2,30,37], [20,116,122]],
+    ['نوح', [71,2,28], [11,25,48], [7,59,64], [26,105,122], [37,75,79], [23,23,30], [29,14,15], [54,9,15], [21,76,77], [10,71,73]],
+    ['هود', [11,50,60], [7,65,72], [26,123,140], [46,21,26]],
+    ['سالح', [11,61,68], [7,73,79], [26,141,159], [27,45,53]],
+    ['ئیبراهیم', [2,124,141], [6,74,83], [14,35,41], [19,41,50], [21,51,70], [26,69,89], [37,83,113], [29,16,27], [11,69,76], [15,51,60], [51,24,30]],
+    ['لوط', [11,77,83], [7,80,84], [26,160,175], [27,54,58], [15,61,77], [29,28,35], [37,133,138], [21,74,75]],
+    ['شوعەیب', [11,84,95], [7,85,93], [26,176,191], [29,36,37]],
+    ['موسا', [20,9,98], [28,7,43], [26,10,68], [7,103,137], [10,75,92], [27,7,14], [18,60,82], [79,15,26], [40,23,46], [17,101,103], [43,46,56]],
+    ['داود', [38,17,26], [34,10,11], [21,79,80]],
+    ['سلێمان', [27,15,44], [38,30,40], [34,12,14], [21,81,82]],
+    ['یوسف', [12,5,100]],
+    ['ئەیوب', [38,41,44], [21,83,84]],
+    ['یونس', [37,139,148], [21,87,88], [68,48,50]],
+    ['زەکەریا', [19,2,11], [3,37,41], [21,89,90]],
+    ['عیسا', [19,29,34], [3,45,55], [5,110,118], [43,57,65]],
+    ['ئیلیاس', [37,123,132]]
+  ];
+  var NAMES = /نوح|هود|صالح|يوسف|ابراهيم|موسي|عيسي|لوط|شعيب|داود|سليمان|ايوب|زكريا|يونس|اسماعيل|ادريس|الياس|يحيي|هارون|يعقوب|اسحاق|ادم|مريم|فرعون|قارون|هامان|ذا النون|ذو النون|اسرايل|اسرائيل/;
+  function normS(s) { return norm(s).replace(/ى/g, 'ي').replace(/ة/g, 'ه'); }
+  var story = null;
+  function buildStory() {
+    if (story) return story; story = { list: [], next: [] };
+    STORY.forEach(function (st) {
+      for (var i = 1; i < st.length; i++) {
+        var r = st[i], s = r[0];
+        for (var a = r[1]; a <= r[2]; a++) {
+          var t = bySurah[s] && bySurah[s][a]; if (!t || !uniq[s + ':' + a]) continue;
+          if (NAMES.test(normS(t))) continue;
+          var e = { p: st[0], s: s, a: a, t: t, lo: r[1], hi: r[2] };
+          story.list.push(e);
+          var nx = a < r[2] && bySurah[s][a + 1] && uniq[s + ':' + (a + 1)] ? bySurah[s][a + 1] : null;
+          if (nx) story.next.push(e);
+        }
+      }
+    });
+    return story;
+  }
+  function prophets() { return STORY.map(function (x) { return x[0]; }); }
+  function makeStory() {
+    var S = buildStory(), kind = Math.random() < .6 ? 1 : 2, e;
+    if (kind === 2 && S.next.length) {
+      e = S.next[rnd(S.next.length)];
+      var pool = []; for (var k = e.lo; k <= e.hi; k++) if (k !== e.a && k !== e.a + 1 && bySurah[e.s][k] && uniq[e.s + ':' + k]) pool.push(k);
+      if (pool.length >= 3) {
+        var wr = shuf(pool).slice(0, 3).map(function (k2) { return bySurah[e.s][k2]; });
+        return opts(bySurah[e.s][e.a + 1], wr, 'ئەم ئایەتە لە چیرۆکی پێغەمبەر ' + e.p + 'یە (' + SURAH[e.s - 1] + ' ' + num(e.s) + ':' + num(e.a) + ')، و ئایەتی دواتر ' + num(e.a + 1) + 'ە.', { id: 'g:S2:' + e.s + ':' + e.a, q: 'ئایەتی دوای ئەم ئایەتە کامەیە؟ (چیرۆکی پێغەمبەر ' + e.p + ')', ar: e.t, ref: '؟', diff: 'deep', path: 'narrative' });
+      }
+    }
+    e = S.list[rnd(S.list.length)];
+    return opts(e.p, shuf(prophets().filter(function (x) { return x !== e.p; })).slice(0, 3), 'ئەم ئایەتە لە چیرۆکی پێغەمبەر ' + e.p + 'یە — ' + SURAH[e.s - 1] + ' ' + num(e.s) + ':' + num(e.a) + '.', { id: 'g:S1:' + e.s + ':' + e.a, q: 'ئەم ئایەتە لە چیرۆکی کام پێغەمبەردایە؟', ar: e.t, ref: '؟', diff: 'steady', path: 'narrative' });
+  }
+  function batch(n, seen, path) {
     var out = [], guard = 0, mine = {}; seen = seen || {};
     while (out.length < n && guard++ < n * 40) {
-      var q = make(TYPES[rnd(TYPES.length)]);
+      var q = path === 'narrative' ? makeStory() : make(TYPES[rnd(TYPES.length)]);
       if (!q || seen[q.id] || mine[q.id]) continue;
-      mine[q.id] = 1; q.path = 'endless'; out.push(q);
+      mine[q.id] = 1; q.path = path === 'narrative' ? 'narrative' : 'endless'; out.push(q);
     }
     return out;
   }
-  window.KnEndless = { ready: ready, batch: batch, total: function () { return 114 * 3 + 6236 * 3; } };
+  window.KnEndless = { ready: ready, batch: batch, total: function () { return 114 * 3 + 6236 * 3; }, storyTotal: function () { var S = buildStory(); return S.list.length + S.next.length; } };
 })();

@@ -277,10 +277,10 @@
     var it=state.aiBuf.shift(); state.items.splice(state.i+1,0,it); setTimeout(pathPrefetch,50);
   }
   function gSeen(){var p=loadP();var m={};(p.gseen||[]).forEach(function(i){m[i]=1;});return m;}
-  function moreEndless(n){
+  function moreEndless(n,path){
     if(!window.KnEndless) return [];
-    var seen=gSeen(); var arr=window.KnEndless.batch(n,seen);
-    if(arr.length<n){ var p=loadP(); p.gseen=[]; saveP(p); arr=arr.concat(window.KnEndless.batch(n-arr.length,{})); }
+    var seen=gSeen(); var arr=window.KnEndless.batch(n,seen,path);
+    if(arr.length<n){ var p=loadP(); p.gseen=[]; saveP(p); arr=arr.concat(window.KnEndless.batch(n-arr.length,{},path)); }
     return arr;
   }
   function begin(path, comfort, mode){
@@ -297,7 +297,7 @@
     state.aiBusy=true; render();
     ep.then(function(ok){
       state.aiBusy=false;
-      if(ok) items=items.concat(moreEndless(mode==='lightning'?60:10));
+      if(ok) items=items.concat(moreEndless(mode==='lightning'?60:10,path));
       if(!items.length){ render(); alert('پرسیار ئامادە نییە؛ پەیوەندیی ئینتەرنێت بپشکنە.'); return; }
       beginSession(path,items,mode,!!ok);
     });
@@ -359,7 +359,7 @@
     if(k==='finish'){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();return; }
     if(k==='next'){
       if(state.endless && state.mode!=='lightning' && (state.i+1)%3===0) injectAi();
-      if(state.i+1>=state.items.length && state.endless){ state.items=state.items.concat(moreEndless(10)); }
+      if(state.i+1>=state.items.length && state.endless){ state.items=state.items.concat(moreEndless(10,state.path)); }
       if(state.i+1>=state.items.length){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.items.length;state.view='close'; render(); return; }
       state.i++; state.picked=null; if(state.mode==='lightning')state.total=state.i; render(); return;
     }
