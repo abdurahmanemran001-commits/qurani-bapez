@@ -55,7 +55,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
   loadScript('ai-config.js?v=2')
     .then(function () { return loadScript('ai-rag.js?v=2'); })
-    .then(function () { return loadScript('ai-shari-rag.js?v=8'); })
+    .then(function () { return loadScript('ai-shari-rag.js?v=9'); })
     .then(function () { return loadScript('ai-shari-kb.js?v=5'); })
     .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
@@ -71,7 +71,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('companions-data-p2.js?v=1'); })
     .then(function () { return loadScript('companions.js?v=1'); })
     .then(function () { return loadScript('knowledge-data.js?v=1'); })
-    .then(function () { return loadScript('knowledge.js?v=1'); })
+    .then(function () { return loadScript('knowledge.js?v=2'); })
     .then(function () { return loadScript('scholars-firebase-config.js?v=1'); })
     .then(function () { return loadScript('scholars.js?v=4'); })
     .then(function () { return loadScript('sira-library.js?v=2'); })

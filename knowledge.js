@@ -88,6 +88,10 @@
       +'#knowledgeView .kn-rule{width:18px;height:1px;background:#C6A15B;margin-bottom:auto}'
       +'#knowledgeView .kn-q{font-size:18px;line-height:1.5;margin:18px 0 12px}'
       +'#knowledgeView .kn-opt{width:100%;text-align:right;border:1px solid rgba(244,239,228,.16);background:rgba(16,35,28,.55);color:#F4EFE4;border-radius:8px;padding:14px;margin:0 0 8px;font-size:15px;line-height:1.45;cursor:pointer;transition:border-color .24s ease,background .24s ease}'
+      +'#knowledgeView .kn-aitm{display:flex;align-items:center;gap:10px;margin:0 0 12px}#knowledgeView .kn-aibar{flex:1;height:9px;background:#263b32;border-radius:8px;overflow:hidden}#knowledgeView .kn-aibar i{display:block;height:100%;width:100%;background:#8FBF9F;transition:width .1s linear}#knowledgeView .kn-aibar i.low{background:#d6574d}#knowledgeView .kn-aitm span{font-size:20px;font-weight:700;color:#C6A15B;min-width:26px;text-align:center}'
+      +'#knowledgeView .kn-opt.dim{opacity:.5}#knowledgeView .kn-opt.ok{background:rgba(60,160,100,.28)}#knowledgeView .kn-opt.miss{background:rgba(214,87,77,.3);animation:knshake .35s}@keyframes knshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}'
+      +'#knowledgeView .kn-aiok h3{color:#8FD6A8}#knowledgeView .kn-aino h3{color:#ef8a80}'
+      +'#knowledgeView .kn-aiload{position:fixed;inset:0;background:rgba(10,24,19,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#F4EFE4;z-index:20;text-align:center}#knowledgeView .kn-aiload small{opacity:.7}#knowledgeView .kn-spin{width:44px;height:44px;border:4px solid rgba(244,239,228,.2);border-top-color:#C6A15B;border-radius:50%;animation:knspin .8s linear infinite}@keyframes knspin{to{transform:rotate(360deg)}}'
       +'#knowledgeView .kn-opt.ok{border-color:#8FBF9F}#knowledgeView .kn-opt.miss{border-color:#C4785A}'
       +'#knowledgeView .kn-note{border-right:2px solid #C6A15B;padding:10px 12px;margin-top:8px;background:rgba(16,35,28,.5);border-radius:0 8px 8px 0}'
       +'#knowledgeView .kn-note h3{margin:0 0 6px;font-size:14px;color:#C6A15B;font-weight:650}'
@@ -150,9 +154,11 @@
       });
       html+='</div></div>';
     } else if(state.view==='aiQuiz'){
-      var aq=state.aiQuiz; html+=head('پرسیاری زیرەکی','پرسیارێکی نوێ لەسەر بەڵگە'); html+='<div class="kn-body"><div class="kn-spark"><div class="kn-kicker">'+esc(aq.topic||'بابەتی جۆراوجۆر')+'</div><div class="kn-q">'+esc(aq.question)+'</div>';
-      aq.choices.forEach(function(c){var cls='kn-opt';if(aq.picked){if(c.id===aq.answer)cls+=' ok';else if(c.id===aq.picked)cls+=' miss';}html+='<button type="button" class="'+cls+'" data-k="aiPick" data-id="'+esc(c.id)+'" '+(aq.picked?'disabled':'')+'>'+esc(c.text)+'</button>';});
-      if(aq.picked){html+='<div class="kn-note"><h3>'+(aq.picked===aq.answer?'وەڵامی دروستە':'وەڵامەکە دروست نییە')+'</h3><p>'+esc(aq.explanation)+'</p><div class="kn-src">بەڵگە: '+esc(aq.evidence||'')+'</div></div><button type="button" class="kn-primary" data-k="aiAgain">پرسیارێکی نوێ</button>'; } html+='</div></div>';
+      var aq=state.aiQuiz, tmo=aq.picked==='__timeout'; html+=head('پرسیاری زیرەکی','پرسیارێکی نوێ لەسەر بەڵگە'); html+='<div class="kn-body">';
+      if(!aq.picked) html+='<div class="kn-aitm"><div class="kn-aibar"><i id="knAiBar" style="width:'+Math.max(0,Math.min(100,(aq.deadline-Date.now())/AI_T/10))+'%"></i></div><span id="knAiSec">'+Math.max(0,Math.ceil((aq.deadline-Date.now())/1000))+'</span></div>';
+      html+='<div class="kn-spark"><div class="kn-kicker">'+esc(aq.topic||'بابەتی جۆراوجۆر')+'</div><div class="kn-q">'+esc(aq.question)+'</div>';
+      aq.choices.forEach(function(c){var cls='kn-opt';if(aq.picked){if(c.id===aq.answer)cls+=' ok';else if(c.id===aq.picked)cls+=' miss';else cls+=' dim';}html+='<button type="button" class="'+cls+'" data-k="aiPick" data-id="'+esc(c.id)+'" '+(aq.picked?'disabled':'')+'>'+(aq.picked&&c.id===aq.answer?'✓ ':aq.picked&&c.id===aq.picked?'✗ ':'')+esc(c.text)+'</button>';});
+      if(aq.picked){var okp=aq.picked===aq.answer;html+='<div class="kn-note kn-ai'+(okp?'ok':'no')+'"><h3>'+(tmo?'⏰ کاتەکە تەواو بوو — هەڵەیە':okp?'✅ وەڵامی دروستە! ئافەرین':'❌ هەڵەیە')+'</h3><p>'+esc(aq.explanation)+'</p><div class="kn-src">بەڵگە: '+esc(aq.evidence||'')+'</div></div><button type="button" class="kn-primary" data-k="aiAgain">پرسیارێکی نوێ ‹</button>'; } html+='</div></div>';
     } else if(state.view==='comfortPick'){
       html+=head('ئارامی','دۆخێک هەڵبژێرە');
       html+='<div class="kn-body"><p style="color:#9AAB9F;font-size:14px;line-height:1.6">ئایەتەکان بۆ ئارامین، نەک چارەسەری پزیشکی یان حوکم.</p><div class="kn-chips">';
@@ -198,6 +204,7 @@
       }
       html+='<button type="button" class="kn-primary" data-k="home">گەڕانەوە</button></div>';
     }
+    if(state.aiBusy) html+='<div class="kn-aiload"><div class="kn-spin"></div><b>پرسیارەکە ئامادە دەکرێت…</b><small>لە سەرچاوەی قورئان و حەدیث</small></div>';
     v.innerHTML=html;
   }
   function celebrate(){
@@ -207,10 +214,45 @@
     root.appendChild(layer);setTimeout(function(){if(layer.parentNode)layer.parentNode.removeChild(layer);},1700);
     try{var C=window.AudioContext||window.webkitAudioContext;if(C){var ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=660;g.gain.setValueAtTime(.045,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.18);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.18);setTimeout(function(){ctx.close();},300);}}catch(e){}
   }
+  var AI_T=15, aiTimer=null, aiPre=null;
+  function aiStopTimer(){ if(aiTimer){clearInterval(aiTimer);aiTimer=null;} }
+  function aiFetch(topic){
+    var p=loadP(), seen=(p.aiSeen||[]).slice();
+    return window.AiShariRag.generateQuiz(topic||'',seen).then(function(q){
+      if(!q||!q.question) throw new Error('پرسیار دروست نەبوو');
+      if(seen.indexOf(q.fingerprint)>=0) throw new Error('پرسیارەکە پێشتر هاتووە');
+      return q;
+    });
+  }
+  function aiPrefetch(){
+    if(aiPre||!window.AiShariRag||!window.AiShariRag.generateQuiz) return;
+    var topic=state.aiTopic||''; aiPre={topic:topic,p:aiFetch(topic).catch(function(){return null;})};
+  }
+  function aiShow(q){
+    state.aiBusy=false; state.aiQuiz=q; q.picked=null; q.deadline=Date.now()+AI_T*1000; state.view='aiQuiz'; render(); aiStartTimer(); aiPrefetch();
+  }
+  function aiStartTimer(){
+    aiStopTimer();
+    aiTimer=setInterval(function(){
+      var q=state.aiQuiz; if(!q||q.picked||state.view!=='aiQuiz'){aiStopTimer();return;}
+      var left=Math.max(0,(q.deadline-Date.now())/1000), b=$('knAiBar'), n=$('knAiSec');
+      if(b){b.style.width=(left/AI_T*100)+'%'; b.className=left<=5?'low':'';} if(n)n.textContent=Math.ceil(left);
+      if(left<=0){ aiStopTimer(); aiPick('__timeout'); }
+    },100);
+  }
+  function aiPick(id){
+    var q=state.aiQuiz; if(!q||q.picked) return; aiStopTimer(); q.picked=id;
+    var hp=loadP();hp.aiSeen=hp.aiSeen||[];if(q.fingerprint&&hp.aiSeen.indexOf(q.fingerprint)<0)hp.aiSeen.push(q.fingerprint);if(hp.aiSeen.length>1500)hp.aiSeen=hp.aiSeen.slice(-1500);saveP(hp);
+    render(); if(id===q.answer) celebrate(); else { try{ if(navigator.vibrate) navigator.vibrate(120); }catch(e){} }
+  }
   function generateAiQuiz(){
     if(!window.AiShariRag||!window.AiShariRag.generateQuiz){alert('خزمەتگوزاری AI ئامادە نییە؛ پەیوەندیی AI بپشکنە.');return;}
-    var p=loadP();window.AiShariRag.generateQuiz(state.aiTopic||'',p.aiSeen||[]).then(function(q){if(!q||!q.question)throw new Error('پرسیار دروست نەبوو');if((p.aiSeen||[]).indexOf(q.fingerprint)>=0)throw new Error('پرسیارەکە پێشتر هاتووە');state.aiQuiz=q;state.aiQuiz.picked=null;state.view='aiQuiz';render();}).catch(function(e){alert('پرسیاری AI: '+(e.message||e));});
+    var topic=state.aiTopic||'';
+    if(aiPre&&aiPre.topic===topic){ var pre=aiPre; aiPre=null; state.aiBusy=true; render(); pre.p.then(function(q){ if(q&&(loadP().aiSeen||[]).indexOf(q.fingerprint)<0) aiShow(q); else return aiFetch(topic).then(aiShow); }).catch(aiFail); return; }
+    aiPre=null; state.aiBusy=true; render();
+    aiFetch(topic).then(aiShow).catch(aiFail);
   }
+  function aiFail(e){ state.aiBusy=false; state.view='home'; render(); alert('پرسیاری AI: '+((e&&e.message)||e)); }
   function searchHits(query){
     var t=String(query||'').trim();
     if(t.length<2) return [];
@@ -235,8 +277,8 @@
     var root=$('knowledgeView'); if(!root||!root.classList.contains('active')) return;
     var el=e.target.closest('[data-k]'); if(!el||!root.contains(el)) return;
     var k=el.getAttribute('data-k');
-    if(k==='home'){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;root.classList.remove('active'); if(typeof showView==='function') showView('startScreen','بەشەکان'); return; }
-    if(k==='back'){ state.view='home'; state.picked=null; render(); return; }
+    if(k==='home'){ aiStopTimer(); if(state.timerId)clearInterval(state.timerId);state.timerId=null;root.classList.remove('active'); if(typeof showView==='function') showView('startScreen','بەشەکان'); return; }
+    if(k==='back'){ aiStopTimer(); state.view='home'; state.picked=null; render(); return; }
     if(k==='start' || k==='path'){
       var path=el.getAttribute('data-path');
       if(path==='comfort'){ state.view='comfortPick'; render(); return; }
@@ -265,8 +307,8 @@
       var inp=$('knAsk'); state.askQ=inp?inp.value.trim():''; render();
     }
     if(k==='aiGenerate'){var topic=$('knAiTopic');state.aiTopic=topic?topic.value.trim():'';generateAiQuiz();}
-    if(k==='aiPick'){if(!state.aiQuiz||state.aiQuiz.picked)return;state.aiQuiz.picked=el.getAttribute('data-id');var hp=loadP();hp.aiSeen=hp.aiSeen||[];if(state.aiQuiz.fingerprint&&hp.aiSeen.indexOf(state.aiQuiz.fingerprint)<0)hp.aiSeen.push(state.aiQuiz.fingerprint);if(hp.aiSeen.length>1500)hp.aiSeen=hp.aiSeen.slice(-1500);saveP(hp);render();}
-    if(k==='aiAgain'){state.aiQuiz=null;state.view='home';render();}
+    if(k==='aiPick'){aiPick(el.getAttribute('data-id'));}
+    if(k==='aiAgain'){aiStopTimer();state.aiTopic=state.aiTopic||'';generateAiQuiz();}
   }
   window.enterKnowledge=function(){
     injectCss(); if(!ensureView()) return;
