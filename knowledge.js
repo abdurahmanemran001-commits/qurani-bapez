@@ -166,7 +166,8 @@
       var meta=PATHS.filter(function(x){return x.id===state.path;})[0];
       html+=head(meta?meta.title:(state.endless?'♾️ پرسیاری بێ کۆتایی':'دانیشتن'), state.endless?('پرسیاری '+(state.i+1)):((state.i+1)+' لە '+state.items.length));
       html+='<div class="kn-body"><div class="kn-stat">'+(state.mode==='lightning'?'⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە':(state.endless?'♾️ پرسیاری '+(state.i+1)+' · ڕاست: '+state.held:'پرسیاری '+(state.i+1)+' لە '+state.items.length))+'</div><div class="kn-progress"><i style="width:'+(state.endless?((state.i%10)+1)*10:Math.round((state.i/state.items.length)*100))+'%"></i></div><div class="kn-ar">'+esc(q.ar)+'</div><div class="kn-ref">'+esc(q.ref)+'</div>';
-      html+='<div class="kn-q">'+esc(q.q)+'</div>';
+      if(state.aiLimitMsg) html+='<div class="kn-kicker" style="margin-bottom:8px">🤖 '+esc(state.aiLimitMsg)+'</div>';
+      html+='<div class="kn-q">'+(q.ai?'🤖 ':'')+esc(q.q)+'</div>';
       q.choices.forEach(function(c){
         var cls='kn-opt';
         if(state.picked){
@@ -255,6 +256,24 @@
       return [q.q,q.why,q.ar,q.ref,q.src,(q.state||'')].join(' ').toLowerCase().indexOf(n)>=0;
     }).slice(0,4);
   }
+  var PATH_TOPIC={spark:'ئایەتی ڕۆژانە و تێگەیشتن',tadabbur:'تەدەببوری قورئان',narrative:'چیرۆکەکانی قورئان و پێغەمبەران',signs:'نیشانەکانی خوا لە جیهان',comfort:'ئارامی و دڵنیایی',quranic:'زانستەکانی قورئان',fiqh:'فیقهی عیبادەت: نوێژ و ڕۆژوو و زەکات',aqeedah:'عەقیدە و تەوحید',jihad:'ئاشتی و ڕێسای جیهاد لە ئیسلام',seerah:'سیرەی پێغەمبەر'};
+  function aiToItem(q,path){
+    return {id:'ai:'+(q.fingerprint||Math.random().toString(36).slice(2)),path:path,diff:'steady',ar:'',ref:'',q:q.question,choices:q.choices.map(function(c){return {id:c.id,t:c.text};}),ok:q.answer,why:q.explanation,near:'',src:'🤖 بەڵگە: '+(q.evidence||''),ai:1,fp:q.fingerprint};
+  }
+  function pathPrefetch(){
+    if(!state.endless||state.aiStop||state.aiFetching||!window.AiShariRag||!window.AiShariRag.generateQuiz) return;
+    if((state.aiBuf||[]).length>=1) return;
+    var path=state.path, topic=PATH_TOPIC[path]||''; state.aiFetching=true;
+    aiFetch(topic).then(function(q){
+      state.aiFetching=false; if(state.path!==path||!state.endless) return;
+      (state.aiBuf=state.aiBuf||[]).push(aiToItem(q,path));
+      if(typeof q.remaining==='number') state.aiRem=q.remaining;
+    }).catch(function(e){ state.aiFetching=false; if(e&&e.rate){state.aiStop=true;state.aiLimitMsg=e.message;} });
+  }
+  function injectAi(){
+    if(!state.aiBuf||!state.aiBuf.length||!state.endless) return;
+    var it=state.aiBuf.shift(); state.items.splice(state.i+1,0,it); setTimeout(pathPrefetch,50);
+  }
   function gSeen(){var p=loadP();var m={};(p.gseen||[]).forEach(function(i){m[i]=1;});return m;}
   function moreEndless(n){
     if(!window.KnEndless) return [];
@@ -282,10 +301,10 @@
     });
   }
   function beginSession(path,items,mode,endless){
-    state.path=path; state.items=items; state.i=0; state.picked=null; state.held=0; state.revisits=0; state.wrong=0; state.endless=!!endless && mode!=='review'; state.total=mode==='lightning'?999:(state.endless?0:items.length); state.mode=mode||'normal'; state.deadline=mode==='lightning'?Date.now()+180000:0; state.view='session';
+    state.path=path; state.items=items; state.i=0; state.picked=null; state.held=0; state.revisits=0; state.wrong=0; state.endless=!!endless && mode!=='review'; state.aiBuf=[]; state.aiStop=false; state.aiFetching=false; state.aiLimitMsg=''; state.total=mode==='lightning'?999:(state.endless?0:items.length); state.mode=mode||'normal'; state.deadline=mode==='lightning'?Date.now()+180000:0; state.view='session';
     if(state.timerId) clearInterval(state.timerId);
     if(mode==='lightning') state.timerId=setInterval(function(){ if(Date.now()>=state.deadline){clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();} else {var t=document.querySelector('#knowledgeView .kn-stat');if(t)t.textContent='⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە';}},1000);
-    render();
+    render(); if(state.endless && mode!=='lightning') pathPrefetch();
   }
   function onClick(e){
     var root=$('knowledgeView'); if(!root||!root.classList.contains('active')) return;
@@ -307,7 +326,8 @@
       var q=state.items[state.i]; if(!q) return;
       state.picked=id;
       var p=markDay(loadP());
-      var gen=/^g:/.test(q.id);
+      var gen=/^(g|ai):/.test(q.id);
+      if(/^ai:/.test(q.id)&&q.fp){ var hp=loadP(); hp.aiSeen=hp.aiSeen||[]; if(hp.aiSeen.indexOf(q.fp)<0) hp.aiSeen.push(q.fp); saveP(hp); p=markDay(loadP()); }
       if(gen){ p.gseen=p.gseen||[]; p.gseen.push(q.id); if(p.gseen.length>9000) p.gseen=p.gseen.slice(-9000); }
       else p.seen[q.id]={choice:id, ok:id===q.ok, at:Date.now()};
       if(id===q.ok){ state.held++; if(!gen) p.revisit=(p.revisit||[]).filter(function(x){return x!==q.id;}); celebrate(); }
@@ -317,6 +337,7 @@
     }
     if(k==='finish'){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();return; }
     if(k==='next'){
+      if(state.endless && state.mode!=='lightning' && (state.i+1)%3===0) injectAi();
       if(state.i+1>=state.items.length && state.endless){ state.items=state.items.concat(moreEndless(10)); }
       if(state.i+1>=state.items.length){ if(state.timerId)clearInterval(state.timerId);state.timerId=null;state.total=state.items.length;state.view='close'; render(); return; }
       state.i++; state.picked=null; if(state.mode==='lightning')state.total=state.i; render(); return;
