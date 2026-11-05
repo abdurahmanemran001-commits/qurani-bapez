@@ -28,6 +28,28 @@
     var t = (name || '?').replace(/^\s+/, '');
     return t ? t.charAt(0) : '?';
   }
+  var PERSONS = [
+    [/alafasy|mishari/i, 'alafasy'], [/sudais/i, 'sudais'], [/shuraym|shuraim/i, 'shuraym'], [/ghamadi|ghamdi|غامدی/i, 'ghamdi'],
+    [/husary/i, 'husary'], [/minshaw|menshaw/i, 'minshawi'], [/abdul.?bas[ie]t|abdulbaset/i, 'abdulbasit'], [/hudhaify/i, 'hudhaify'],
+    [/hani.?rifai|hani_rifai/i, 'rifai'], [/muaiqly|maher/i, 'muaiqly'], [/qatami/i, 'qatami'], [/dussary|dosary/i, 'dussary'],
+    [/basfar/i, 'basfar'], [/shaatree/i, 'shaatree'], [/ajamy/i, 'ajamy'], [/tablaway/i, 'tablaway'], [/ayyoub/i, 'ayyoub'],
+    [/jibreel/i, 'jibreel'], [/mustafa_ismail/i, 'mustafa_ismail'], [/bandar/i, 'bandar_baleela'], [/yaser_salamah/i, 'yaser_salamah'],
+    [/sahl_yassin/i, 'sahl_yassin'], [/bukhatir/i, 'bukhatir'], [/fares_abbad/i, 'fares_abbad'], [/mansoori/i, 'karim_mansoori'],
+    [/matroud/i, 'abdullah_matroud'], [/ayman_sowaid/i, 'ayman_sowaid'], [/tunaiji/i, 'khalefa_tunaiji'], [/banna/i, 'mahmoud_banna'],
+    [/alaqimy/i, 'akram_alaqimy'], [/suesy/i, 'ali_hajjaj'], [/neana/i, 'ahmed_neana'], [/aziz_alili/i, 'aziz_alili'], [/abdulkareem/i, 'muhammad_abdulkareem']
+  ];
+  function personKey(r) {
+    var id = (r && r.id) || '';
+    if (!isKurd(r)) for (var i = 0; i < PERSONS.length; i++) if (PERSONS[i][0].test(id) || PERSONS[i][0].test(r.e || '')) return PERSONS[i][1];
+    return id.replace(/^g_/, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/_(\d+kbps|gapless|kurdi_mutasil)$/i, '').toLowerCase();
+  }
+  var PH = { ok: {}, bad: {} };   // remembered photo outcome per person key
+  function avatar(r, size, cls) {
+    var k = personKey(r), init = '<span class="rc-av ' + (cls || '') + '" style="background:' + color(r.n) + ';width:' + size + 'px;height:' + size + 'px;flex-basis:' + size + 'px;font-size:' + Math.round(size * .42) + 'px">' + esc(initial(r.n)) + '</span>';
+    if (PH.bad[k]) return init;
+    return '<span class="rc-ph" style="width:' + size + 'px;height:' + size + 'px;flex-basis:' + size + 'px"><img src="reciters/' + esc(k) + '.jpg" alt="" loading="lazy" onerror="window.__rcBad(this,\'' + esc(k) + '\')">' + init.replace('class="rc-av ', 'class="rc-av rc-fb ') + '</span>';
+  }
+  window.__rcBad = function (img, k) { PH.bad[k] = 1; if (img && img.parentNode) img.parentNode.removeChild(img); };
   function css() {
     if (document.getElementById('rcGroupCss')) return;
     var s = document.createElement('style');
@@ -40,6 +62,12 @@
       + '#rcPanel button.rc-item{display:flex;align-items:center;gap:10px;width:100%;text-align:right;border:0;background:transparent;padding:8px;border-radius:8px;font-size:15px;color:#173f35}'
       + '#rcPanel button.rc-item.on{background:#e7f3ec}'
       + '#rcPanel .rc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex:0 0 36px;font-size:16px}'
+      + '.rc-ph{position:relative;display:inline-flex;border-radius:50%;overflow:hidden;flex:0 0 auto;background:#e8e1cf}.rc-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2;border-radius:50%}.rc-ph .rc-fb{position:absolute;inset:0;width:100%!important;height:100%!important}'
+      + '#rcPanel .rc-cur{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#176b4b,#0e4d3a);color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:6px}#rcPanel .rc-cur b{display:block;font-size:16px}#rcPanel .rc-cur small{opacity:.85;font-size:12px}'
+      + '#rcPanel .rc-sec{display:flex;align-items:center;justify-content:space-between;position:sticky;top:-8px;background:#fffdf8;z-index:3;margin-top:8px;padding:10px 10px 8px;font-size:15px;border-radius:8px}#rcPanel .rc-sec i{font-style:normal;font-weight:400;font-size:12px;background:#e7f3ec;color:#176b4b;border-radius:10px;padding:2px 9px}'
+      + '#rcPanel .rc-sec.ar{color:#8a6232}#rcPanel .rc-sec.ar i{background:#f3ead6;color:#8a6232}'
+      + '#rcPanel .rc-line{height:3px;border-radius:3px;background:#176b4b;margin:0 8px 8px}#rcPanel .rc-line.ar{background:#b99a4b}'
+      + '#rcBtn{display:inline-flex;align-items:center;gap:6px}#rcBtn .rc-ph,#rcBtn .rc-av{width:24px!important;height:24px!important;flex-basis:24px!important}'
       + '#pl select#rc{display:none!important}';
     document.head.appendChild(s);
   }
@@ -59,18 +87,18 @@
     var kurd = all.filter(isKurd);
     var arab = all.filter(function (r) { return !isKurd(r); });
     var cur = rc.value;
-    function block(title, arr) {
-      var html = '<div class="rc-sec">' + esc(title) + '</div><div class="rc-line"></div>';
+    function block(title, arr, cls) {
+      var html = '<div class="rc-sec ' + cls + '"><span>' + esc(title) + '</span><i>' + arr.length + ' قورئانخوێن</i></div><div class="rc-line ' + cls + '"></div>';
       arr.forEach(function (r) {
         html += '<button type="button" class="rc-item' + (r.id === cur ? ' on' : '') + '" data-id="' + esc(r.id) + '">'
-          + '<span class="rc-av" style="background:' + color(r.n) + '">' + esc(initial(r.n)) + '</span>'
-          + '<span>' + esc(r.n) + '</span></button>';
+          + avatar(r, 40) + '<span>' + esc(r.n) + '</span></button>';
       });
       return html;
     }
-    panel.innerHTML = block('کوردەکان', kurd) + block('عەرەبەکان', arab);
     var found = all.filter(function (r) { return r.id === cur; })[0];
-    btn.textContent = found ? found.n : 'قورئانخوێن';
+    var curHtml = found ? '<div class="rc-cur">' + avatar(found, 54) + '<div><small>ئێستا گوێ دەگریت لە</small><b>' + esc(found.n) + '</b><small>' + (isKurd(found) ? 'قورئانخوێنی کورد' : 'قورئانخوێنی عەرەب') + '</small></div></div>' : '';
+    panel.innerHTML = curHtml + block('🟢 قورئانخوێنە کوردەکان', kurd, 'ku') + block('🟤 قورئانخوێنە عەرەبەکان', arab, 'ar');
+    btn.innerHTML = found ? avatar(found, 24) + '<span>' + esc(found.n) + '</span>' : 'قورئانخوێن';
   }
   function boot() {
     var rc = document.getElementById('rc');
