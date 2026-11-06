@@ -12,6 +12,14 @@
 (function(){
   var SRC = 'https://cdn.jsdelivr.net/gh/abdurahmanemran001-commits/qurani-bapez@b6ad7d502881aaec5c6cc4799ae182e7abe7cedc/web/mushaf/index.html';
   fetch(SRC).then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); }).then(function(html){
+    // ---- patches applied to the pinned shell (plain black mushaf mode, back-button fix) ----
+    function rep(a, b) { if (html.indexOf(a) >= 0) html = html.split(a).join(b); else if (window.console) console.warn('mushaf patch missed:', a.slice(0, 40)); }
+    rep("var BI={q:{n:window.MUSHAF_T.madina,", "var BI={p:{n:'موسحەفی ئاسایی (پەڕەش)',s:'حَفْص عن عاصم',x:'موسحەفی مەدینە بە دەقی ڕەش، بێ ڕەنگی تەجوید. لەناو ئەپەکەدایە.'},q:{n:window.MUSHAF_T.madina,");
+    rep("card('q')+card('t')", "card('p')+card('q')+card('t')");
+    rep("'qwtskbzdu'.indexOf(qs.get('m'))", "'pqwtskbzdu'.indexOf(qs.get('m'))");
+    rep("f.src='view.html?m='+mode+'&p='+page+(bp?'&b='+encodeURIComponent(bp):'');", "var __u='view.html?m='+mode+'&p='+page+(bp?'&b='+encodeURIComponent(bp):'');try{f.contentWindow.location.replace(__u);}catch(e){f.src=__u;}");
+    rep("onclick=\"location.href='../'\"", "onclick=\"__goHome()\"");
+    rep("<body>", "<body><script>window.__goHome=function(){try{history.back();}catch(e){}setTimeout(function(){location.replace('../');},450);};<\/script>");
     document.open();
     document.write(html);
     document.close();

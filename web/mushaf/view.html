@@ -31,6 +31,7 @@ var BP=q.get('b')||'';var n=('00'+page).slice(-3),dir={q:'qcf4',w:'warsh',t:'taj
 function get(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.text();});}
 function css(t){var s=document.createElement('style');s.textContent=t;document.head.appendChild(s);}
 function js(t){var s=document.createElement('script');s.textContent=t;document.body.appendChild(s);}
+if(mode==='p'){mode='q';css('.pg .line{filter:brightness(0)}.pg .line.hd{filter:grayscale(1)}.pg span.end{filter:brightness(0)}');}
 window.selectAyah=function(s,a){document.querySelectorAll('.ayah.selected').forEach(function(e){e.classList.remove('selected');});
  if(s)document.querySelectorAll('.ayah[data-sura="'+s+'"][data-ayah="'+a+'"]').forEach(function(e){e.classList.add('selected');});};
 document.addEventListener('click',function(ev){var t=ev.target;while(t&&!(t.classList&&t.classList.contains('ayah')))t=t.parentNode;
