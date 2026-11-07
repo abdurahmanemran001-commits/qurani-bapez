@@ -5,7 +5,7 @@ set -euo pipefail
 DEST="${1:?dest dir}"; NOIMG="${2:-}"
 M="$DEST/mushaf"; D="$M/data"
 mkdir -p "$D"
-cp web/mushaf/* "$M/"
+cp -r web/mushaf/. "$M/"
 A=app/src/main/assets
 cp -r $A/qcf4 "$D/qcf4"; cp -r $A/tajweed "$D/tajweed"; rm -f "$D/tajweed/tajweedquran.json"
 get() { # branch dir
