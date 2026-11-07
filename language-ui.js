@@ -5,6 +5,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
+  var s0 = document.createElement('script');
+  s0.src = 'home-clean.js?v=1';
+  s0.async = true;
+  document.head.appendChild(s0);
+
   var s2 = document.createElement('script');
   s2.src = 'mushaf/ayah-actions.js?v=4';
   s2.async = true;
