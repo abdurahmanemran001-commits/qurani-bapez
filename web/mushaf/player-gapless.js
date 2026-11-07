@@ -66,4 +66,57 @@
       else start();
     };
   });
+
+  var LENS=null;
+  function loadLens(cb){
+    if(LENS) return cb();
+    fetch('ayah-lens.json').then(function(r){return r.json()}).then(function(j){LENS=j;cb();}).catch(function(){cb();});
+  }
+  function segs(sura, dur){
+    if(!LENS||!dur) return null;
+    var w=LENS[sura-1]; if(!w||!w.length) return null;
+    var sum=0; for(var i=0;i<w.length;i++) sum+=w[i];
+    var out=[], t=0;
+    for(var i=0;i<w.length;i++){
+      var start=t, end=t+dur*(w[i]/sum);
+      out.push([i+1, start, end]);
+      t=end;
+    }
+    out[out.length-1][2]=dur;
+    return out;
+  }
+  function ayahAt(list, sec){
+    for(var i=0;i<list.length;i++) if(sec>=list[i][1] && sec<list[i][2]+0.05) return list[i][0];
+    return list[list.length-1][0];
+  }
+  loadLens(function(){});
+  au.addEventListener('timeupdate', function(){
+    if(!isGaplessRec()||!playing||!cur||!LENS) return;
+    if(typeof isG==='function' && isG()) return;
+    var list=segs(cur[0], au.duration);
+    if(!list) return;
+    var a=ayahAt(list, au.currentTime);
+    if(a!==cur[1] && typeof mark==='function') mark(cur[0], a, 1);
+  });
+  var _start2=window.start;
+  window.start=function(){
+    if(!(typeof isGaplessRec==='function' && isGaplessRec()) || (typeof isG==='function' && isG()) || !cur) return _start2.apply(this, arguments);
+    loadLens(function(){
+      var u=url();
+      var go=function(){
+        var list=segs(cur[0], au.duration);
+        var sec=0;
+        if(list){ for(var i=0;i<list.length;i++) if(list[i][0]===cur[1]){sec=list[i][1]; break;} }
+        var play=function(){ au.play().then(ok, bad); };
+        if(Math.abs(au.currentTime-sec)>0.4){
+          var once=function(){ au.removeEventListener('seeked', once); play(); };
+          au.addEventListener('seeked', once);
+          try{ au.currentTime=sec; }catch(e){ play(); }
+        } else play();
+      };
+      if(au.src===u && au.readyState>0) go();
+      else { au.src=u; au.addEventListener('loadedmetadata', go, {once:true}); }
+    });
+  };
+
 })();
