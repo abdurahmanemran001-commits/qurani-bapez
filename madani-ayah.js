@@ -281,6 +281,28 @@
     });
   }
 
+  /* persistent marks: orange tint on bookmarked ayahs + red ribbon when the page itself is bookmarked */
+  var bmEls = [];
+  function bmList(k) { try { var v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  function drawBookmarks() {
+    bmEls.forEach(function (el) { try { el.remove(); } catch (e) {} }); bmEls = [];
+    if (!overlay) return;
+    if (pageBounds) bmList('ayah_bookmarks').forEach(function (x) {
+      var q = String(x).split(':'), boxes = pageBounds[(+q[0]) + ':' + (+q[1])];
+      (boxes || []).forEach(function (b) {
+        var el = document.createElement('div'); el.className = 'ma-bm';
+        el.style.cssText = 'position:absolute;pointer-events:none;background:rgba(255,152,0,0.30);box-shadow:0 0 0 1px rgba(230,126,0,.45);border-radius:3px;left:' + (b[0] / PAGE_W) * 100 + '%;top:' + (b[1] / PAGE_H) * 100 + '%;width:' + ((b[2] - b[0]) / PAGE_W) * 100 + '%;height:' + ((b[3] - b[1]) / PAGE_H) * 100 + '%';
+        overlay.appendChild(el); bmEls.push(el);
+      });
+    });
+    if (bmList('page_bookmarks').map(Number).indexOf(lastPage) >= 0) {
+      var r = document.createElement('div'); r.className = 'ma-bm';
+      r.style.cssText = 'position:absolute;pointer-events:none;top:0;right:4%;width:7%;max-width:30px;aspect-ratio:22/38;background:#c0392b;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%)';
+      overlay.appendChild(r); bmEls.push(r);
+    }
+  }
+  window.__bmChanged = drawBookmarks;
+
   function stopWatch() { if (watchTimer) { clearInterval(watchTimer); watchTimer = null; } }
   function startWatch(timingMap, sura) {
     stopWatch();
@@ -402,6 +424,7 @@
       } else if (current) {
         drawHighlight(current.sura, current.ayah);
       }
+      drawBookmarks();
     }).catch(function () { pageBounds = null; pendingNext = null; });
   }
 

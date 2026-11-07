@@ -163,6 +163,7 @@
     var l = getJSON('ayah_bookmarks'), i = ayahBmIndex(l, s, a), on;
     if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(s + ':' + a + ':' + curPage()); on = true; }
     setJSON('ayah_bookmarks', l);
+    try { window.__bmChanged && window.__bmChanged(); } catch (e) {}
     return on;
   }
   function pageBmHas(p) { return getJSON('page_bookmarks').indexOf(p) >= 0; }
@@ -170,6 +171,7 @@
     var l = getJSON('page_bookmarks'), i = l.indexOf(p), on;
     if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(p); on = true; }
     setJSON('page_bookmarks', l);
+    try { window.__bmChanged && window.__bmChanged(); } catch (e) {}
     return on;
   }
 

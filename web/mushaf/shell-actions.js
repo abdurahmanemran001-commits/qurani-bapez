@@ -149,6 +149,7 @@
     var l = getJSON('ayah_bookmarks'), i = ayahBmIndex(l, s, a), on;
     if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(s + ':' + a + ':' + curPage()); on = true; }
     setJSON('ayah_bookmarks', l);
+    try { window.__bmChanged && window.__bmChanged(); } catch (e) {}
     return on;
   }
   function pageBmHas(p) { return getJSON('page_bookmarks').indexOf(p) >= 0; }
@@ -156,6 +157,7 @@
     var l = getJSON('page_bookmarks'), i = l.indexOf(p), on;
     if (i >= 0) { l.splice(i, 1); on = false; } else { l.push(p); on = true; }
     setJSON('page_bookmarks', l);
+    try { window.__bmChanged && window.__bmChanged(); } catch (e) {}
     return on;
   }
 
@@ -489,4 +491,12 @@
       if (a) { e.stopImmediatePropagation(); setCur(+a.dataset.sura, +a.dataset.ayah, true); }
     } catch (x) {}
   }, true);
+  /* ayah tint refresh + page-bookmark ribbon (different look from ayah bookmarks) */
+  var rb = document.createElement('div'); rb.id = 'pgRibbon';
+  rb.style.cssText = 'position:fixed;top:0;right:14px;width:22px;height:38px;background:#c0392b;z-index:25;display:none;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);pointer-events:none';
+  document.body.appendChild(rb);
+  var _rf = refreshBm;
+  refreshBm = function () { _rf(); rb.style.display = pageBmHas(curPage()) ? 'block' : 'none'; };
+  window.__bmChanged = function () { try { fr.contentWindow.applyBm(); } catch (e) {} refreshBm(); };
+  refreshBm();
 })();
