@@ -73,7 +73,10 @@
       var suraMap = all[String(sura)] || all[sura] || {};
       var map = {};
       Object.keys(suraMap).forEach(function (a) { map[+a] = +suraMap[a]; });
-      if (Object.keys(map).length) { timingCache[key] = map; cb(map); } else cb(null);
+      /* reject a broken table (missing / out-of-order ayahs) so the estimate is used instead */
+      var n = AYAH_COUNT[sura] || 0, okT = Object.keys(map).length > 0, last = -1;
+      for (var i = 1; i <= n && okT; i++) { if (map[i] == null || map[i] < last) okT = false; else last = map[i]; }
+      if (okT) { timingCache[key] = map; cb(map); } else cb(null);
     }).catch(function () { cb(null); });
   }
 

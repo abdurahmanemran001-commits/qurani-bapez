@@ -72,7 +72,22 @@
     if(LENS) return cb();
     fetch('ayah-lens.json').then(function(r){return r.json()}).then(function(j){LENS=j;cb();}).catch(function(){cb();});
   }
+  /* real per-ayah timings (same data the Android app uses): ../madani-timing/<reciter id>.json = {sura:{ayah:startMs}} */
+  var TIMC={};
+  function loadTim(cb){
+    var m=window.recMeta&&recMeta(); if(!m||m.t!=='g'||TIMC[m.id]!==undefined) return cb();
+    fetch('../madani-timing/'+encodeURIComponent(m.id)+'.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(j){TIMC[m.id]=j;cb();}).catch(function(){TIMC[m.id]=null;cb();});
+  }
+  function realSegs(sura, dur){
+    var m=window.recMeta&&recMeta(), T=m&&TIMC[m.id]; if(!T||!T[sura]) return null;
+    var n=C[sura-1], t=T[sura], st=[];
+    for(var a=1;a<=n;a++){ var v=t[a]; if(v==null) return null; if(st.length&&v<st[st.length-1]) return null; st.push(v/1000); }
+    var out=[];
+    for(var i=0;i<n;i++) out.push([i+1, st[i], i+1<n?st[i+1]:(dur||st[i]+1)]);
+    return out;
+  }
   function segs(sura, dur){
+    var rs=realSegs(sura,dur); if(rs) return rs;
     if(!LENS||!dur) return null;
     var w=LENS[sura-1]; if(!w||!w.length) return null;
     var sum=0; for(var i=0;i<w.length;i++) sum+=w[i];
@@ -91,7 +106,7 @@
   }
   loadLens(function(){});
   au.addEventListener('timeupdate', function(){
-    if(!isGaplessRec()||!playing||!cur||!LENS) return;
+    if(!isGaplessRec()||!playing||!cur) return;
     if(typeof isG==='function' && isG()) return;
     var list=segs(cur[0], au.duration);
     if(!list) return;
@@ -101,7 +116,7 @@
   var _start2=window.start;
   window.start=function(){
     if(!(typeof isGaplessRec==='function' && isGaplessRec()) || (typeof isG==='function' && isG()) || !cur) return _start2.apply(this, arguments);
-    loadLens(function(){
+    loadTim(function(){ loadLens(function(){
       var u=url();
       var go=function(){
         var list=segs(cur[0], au.duration);
@@ -116,7 +131,7 @@
       };
       if(au.src===u && au.readyState>0) go();
       else { au.src=u; au.addEventListener('loadedmetadata', go, {once:true}); }
-    });
+    }); });
   };
 
 })();
