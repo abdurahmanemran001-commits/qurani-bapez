@@ -1,7 +1,7 @@
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
-  s.src = 'madani-ayah.js?v=23';
+  s.src = 'madani-ayah.js?v=24';
   s.async = true;
   document.head.appendChild(s);
 
@@ -11,7 +11,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s0);
 
   var s2 = document.createElement('script');
-  s2.src = 'mushaf/ayah-actions.js?v=4';
+  s2.src = 'mushaf/ayah-actions.js?v=5';
   s2.async = true;
   document.head.appendChild(s2);
 
