@@ -6,6 +6,8 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.widget.LinearLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -36,6 +38,9 @@ public class BookmarksFragment extends Fragment implements QuranListAdapter.Qura
 
   private RecyclerView recyclerView;
   private QuranListAdapter bookmarksAdapter;
+  private TabLayout bookmarkTabs;
+  private BookmarkResult latestItems;
+  private boolean showingAyahBookmarks = true;
 
   @Inject BookmarkPresenter bookmarkPresenter;
   @Inject BookmarksContextualModePresenter bookmarksContextualModePresenter;
@@ -58,6 +63,20 @@ public class BookmarksFragment extends Fragment implements QuranListAdapter.Qura
     View view = inflater.inflate(R.layout.quran_list, container, false);
 
     final Context context = getActivity();
+
+    bookmarkTabs = new TabLayout(context);
+    bookmarkTabs.addTab(bookmarkTabs.newTab().setText(R.string.menu_bookmarks_ayah), true);
+    bookmarkTabs.addTab(bookmarkTabs.newTab().setText(R.string.menu_bookmarks_page));
+    ((LinearLayout) view).addView(bookmarkTabs, 0, new LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    bookmarkTabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+      @Override public void onTabSelected(TabLayout.Tab tab) {
+        showingAyahBookmarks = tab.getPosition() == 0;
+        renderCurrentBookmarks();
+      }
+      @Override public void onTabUnselected(TabLayout.Tab tab) { }
+      @Override public void onTabReselected(TabLayout.Tab tab) { }
+    });
 
     recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -136,9 +155,33 @@ public class BookmarksFragment extends Fragment implements QuranListAdapter.Qura
   }
 
   public void onNewData(BookmarkResult items) {
+    latestItems = items;
+    renderCurrentBookmarks();
+  }
+
+  private void renderCurrentBookmarks() {
+    if (bookmarksAdapter == null || latestItems == null) {
+      return;
+    }
     bookmarksAdapter.setShowTags(bookmarkPresenter.shouldShowInlineTags());
+    List<QuranRow> filteredRows = new java.util.ArrayList<>();
+    List<QuranRow> pendingHeaders = new java.util.ArrayList<>();
+    for (QuranRow row : latestItems.getRows()) {
+      if (row.isBookmark()) {
+        boolean matches = showingAyahBookmarks ? row.isAyahBookmark() : !row.isAyahBookmark();
+        if (matches) {
+          filteredRows.addAll(pendingHeaders);
+          filteredRows.add(row);
+        }
+        pendingHeaders.clear();
+      } else if (row.isHeader()) {
+        pendingHeaders.add(row);
+      } else {
+        pendingHeaders.clear();
+      }
+    }
     bookmarksAdapter.setElements(
-        items.getRows().toArray(new QuranRow[items.getRows().size()]), items.getTagMap());
+        filteredRows.toArray(new QuranRow[filteredRows.size()]), latestItems.getTagMap());
     bookmarksAdapter.notifyDataSetChanged();
   }
 
