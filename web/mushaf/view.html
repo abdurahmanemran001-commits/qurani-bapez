@@ -58,7 +58,7 @@ document.addEventListener('mouseup',lpStop,true);
 document.addEventListener('click',function(ev){if(lpF){lpF=false;return;}parent.postMessage({tap:1},'*');},true);
 window.hl=function(s,a,more){document.querySelectorAll('.ayah.audioActive').forEach(function(e){e.classList.remove('audioActive');});if(!s)return false;var f=false;[a].concat(more||[]).forEach(function(x){var l=document.querySelectorAll('.ayah[data-sura="'+s+'"][data-ayah="'+x+'"]');l.forEach(function(e){e.classList.add('audioActive');});if(l.length)f=true;});return f;};
 var tx=0,ty=0;document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
-document.addEventListener('touchend',function(e){var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy))parent.postMessage({swipe:dx>0?1:-1},'*');},{passive:true});
+document.addEventListener('touchend',function(e){var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;if(!parent.__csMode&&Math.abs(dx)>60&&Math.abs(dx)>2*Math.abs(dy))parent.postMessage({swipe:dx>0?1:-1},'*');},{passive:true});
 if(mode==='x'){
  css("body.xi{margin:0;background:#fffdf5;display:flex;justify-content:center;overflow:hidden}#xp{line-height:0;position:relative}#xp img{width:100%;height:auto;display:block;image-rendering:auto}#xp .ayah{position:absolute;cursor:pointer;display:block}#xp .ayah.audioActive{background:rgba(120,200,160,.45);mix-blend-mode:multiply}#xp .ayah.selected{background:rgba(255,200,40,.45);mix-blend-mode:multiply}");
  document.body.className='xi';
