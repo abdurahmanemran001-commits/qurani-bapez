@@ -617,31 +617,5 @@
   window.addEventListener('orientationchange', fitSoon);
   fitSoon();
 
-  /* ---------- "نیشانکراوەکان" tab: explicit page + ayah bookmarks ---------- */
-  function escH(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
-  function bmRow(title, sub, page) {
-    return '<div class="surah" onclick="openPage(' + (+page || 1) + ')"><span class="num">★</span><div class="name"><b>' + escH(title) + '</b><small>' + escH(sub) + '</small></div><span class="arrow">‹</span></div>';
-  }
-  function hookBookmarkTab() {
-    var o = window.renderSurahs;
-    if (typeof o !== 'function' || o.__bmHooked) return;
-    window.renderSurahs = function () {
-      var ret = o.apply(this, arguments);
-      try {
-        if (typeof homeTab !== 'undefined' && homeTab === 'bookmark') {
-          var html = '';
-          getJSON('page_bookmarks').forEach(function (p) { html += bmRow('پەڕەی ' + p, 'پەڕە ' + p, p); });
-          getJSON('ayah_bookmarks').forEach(function (k) {
-            var x = String(k).split(':'), s = +x[0], a = +x[1], p = +x[2] || surahStart(s);
-            html += bmRow(surahName(s) + ' : ' + a, 'پەڕە ' + p, p);
-          });
-          $('surahList').innerHTML = html || '<div class="card muted">هیچ نیشانکراوێک نییە.</div>';
-        }
-      } catch (e) {}
-      return ret;
-    };
-    window.renderSurahs.__bmHooked = true;
-  }
-  hookBookmarkTab();
-  var tries = 0, ti = setInterval(function () { hookBookmarkTab(); if (++tries > 20) clearInterval(ti); }, 250);
+  /* the bookmarks tab (separate ayah / page sections) is rendered by home-clean.js */
 })();
