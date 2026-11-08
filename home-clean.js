@@ -20,7 +20,7 @@
   function esc2(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function pages() {
     var o = [], seen = {};
-    get('page_bookmarks').concat(get('preview_bookmarks')).forEach(function (p) { p = +p; if (p >= 1 && p <= 604 && !seen[p]) { seen[p] = 1; o.push(p); } });
+    get('page_bookmarks').forEach(function (p) { p = +p; if (p >= 1 && p <= 604 && !seen[p]) { seen[p] = 1; o.push(p); } });
     return o.sort(function (a, b) { return a - b; });
   }
   function sname(s) { try { return surahs[s - 1][0]; } catch (e) { return 'سورەت ' + s; } }
@@ -40,7 +40,7 @@
         return '<div class="bm-row"><div class="surah" onclick="openPage(' + pg + ')"><span class="num">' + a + '</span><div class="name"><b>' + esc2(sname(s)) + ' : ' + a + '</b><small>پەڕە ' + pg + '</small></div><span class="arrow">‹</span></div><button class="bm-del" type="button" data-a="' + i + '">×</button></div>';
       }).join('') : '<div class="card muted">هیچ ئایەتێک نیشان نەکراوە. پەنجە لەسەر ئایەتێک ڕابگرە و نیشانە هەڵبژێرە.</div>';
     }
-    h += '<div class="muted" style="text-align:center;font-size:11px;opacity:.5;margin-top:8px">v3 · ئایەت: ' + get('ayah_bookmarks').length + ' · لاپەڕە: ' + pages().length + '</div>';
+    h += '<div class="muted" style="text-align:center;font-size:11px;opacity:.5;margin-top:8px">v4 · ئایەت: ' + get('ayah_bookmarks').length + ' · لاپەڕە: ' + pages().length + '</div>';
     box.innerHTML = h;
     Array.prototype.forEach.call(box.querySelectorAll('.bm-sub button'), function (b) {
       b.onclick = function () { sub = b.getAttribute('data-s'); try { localStorage.setItem('bm_sub2', sub); } catch (e) {} renderBm(); };
