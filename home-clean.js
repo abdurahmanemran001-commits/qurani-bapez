@@ -13,8 +13,8 @@
   ].join('\n');
   document.head.appendChild(st);
 
-  var sub = 'page';
-  try { sub = localStorage.getItem('bm_sub') || 'page'; } catch (e) {}
+  var sub = 'ayah';
+  try { sub = localStorage.getItem('bm_sub2') || 'ayah'; } catch (e) {}
   function get(k) { try { var v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   function set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function esc2(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -27,7 +27,7 @@
 
   function renderBm() {
     var box = document.getElementById('surahList'); if (!box) return;
-    var h = '<div class="bm-sub"><button type="button" data-s="page" class="' + (sub === 'page' ? 'on' : '') + '">📄 نیشانەی لاپەڕە</button><button type="button" data-s="ayah" class="' + (sub === 'ayah' ? 'on' : '') + '">🔖 نیشانەی ئایەت</button></div>';
+    var h = '<div class="bm-sub"><button type="button" data-s="ayah" class="' + (sub === 'ayah' ? 'on' : '') + '">نیشانەکردنی ئایەت</button><button type="button" data-s="page" class="' + (sub === 'page' ? 'on' : '') + '">نیشانەکردنی لاپەڕە</button></div>';
     if (sub === 'page') {
       var p = pages();
       h += p.length ? p.map(function (n) {
@@ -42,7 +42,7 @@
     }
     box.innerHTML = h;
     Array.prototype.forEach.call(box.querySelectorAll('.bm-sub button'), function (b) {
-      b.onclick = function () { sub = b.getAttribute('data-s'); try { localStorage.setItem('bm_sub', sub); } catch (e) {} renderBm(); };
+      b.onclick = function () { sub = b.getAttribute('data-s'); try { localStorage.setItem('bm_sub2', sub); } catch (e) {} renderBm(); };
     });
     Array.prototype.forEach.call(box.querySelectorAll('.bm-del'), function (b) {
       b.onclick = function (ev) {
@@ -62,6 +62,13 @@
       return orig.apply(this, arguments);
     };
     if (typeof homeTab !== 'undefined' && homeTab === 'bookmark') renderBm();
+    /* whatever else writes into the list while the bookmarks tab is open, keep our two sections */
+    var list = document.getElementById('surahList');
+    if (list) new MutationObserver(function () {
+      if (typeof homeTab !== 'undefined' && homeTab === 'bookmark' && !list.querySelector('.bm-sub')) renderBm();
+    }).observe(list, { childList: true });
+    var tb = document.getElementById('tabBookmark');
+    if (tb) tb.addEventListener('click', function () { setTimeout(function () { if (!list.querySelector('.bm-sub')) renderBm(); }, 0); });
   }
   hook();
 })();
