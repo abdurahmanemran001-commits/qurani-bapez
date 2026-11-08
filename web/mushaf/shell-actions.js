@@ -416,6 +416,9 @@
     '#ayahBar.up .ab-arrow{bottom:-9px;border-top:9px solid #2f6b45}',
     '#ayahBar.down .ab-arrow{top:-9px;border-bottom:9px solid #2f6b45}',
     '#hdTf,#hdBm{flex:0 0 auto;min-width:38px}',
+    '#hdBm svg{width:22px;height:22px;display:block;margin:auto}',
+    'header>button:not(#home):not(#hdTf):not(#hdBm),header>#pg,header>#sura{display:none!important}',
+    '#hdInfo{flex:1;text-align:center;color:#fff;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}',
     '#sura,#lib{position:fixed;z-index:32;left:8px;margin:0;max-width:46vw;box-shadow:0 4px 14px #0003}',
     '#lib{top:62px}',
     '#sura{top:108px;width:46vw;min-width:0}',
@@ -426,7 +429,7 @@
   var app = $('app'), fr = $('f'), bar = null, sel = null;
   function uiOn() { return app.classList.contains('ui'); }
   function setUI(on) { app.classList.toggle('ui', !!on); if (on) refreshBm(); }
-  function refreshBm() { var b = $('hdBm'); if (b) b.textContent = pageBmHas(curPage()) ? '★' : '☆'; }
+  function refreshBm() { var b = $('hdBm'); if (b) b.innerHTML = pageBmHas(curPage()) ? ICON.bmd1 : ICON.bmd0; }
 
   var hd = document.querySelector('header');
   if (hd) {
@@ -436,6 +439,15 @@
     if (home && home.nextSibling) { hd.insertBefore(b2, home.nextSibling); hd.insertBefore(b1, home.nextSibling); } else { hd.appendChild(b1); hd.appendChild(b2); }
     b1.onclick = function () { openPageTafsir(); };
     b2.onclick = function () { var on = pageBmToggle(curPage()); refreshBm(); toast(on ? tr('bm1') : tr('bm0')); };
+    var inf = document.createElement('div'); inf.id = 'hdInfo'; hd.appendChild(inf);
+    var lastP = 0;
+    function info() {
+      var p = curPage(); if (p === lastP && inf.textContent) return; lastP = p;
+      var nm = '';
+      try { if (typeof S !== 'undefined' && S && typeof N !== 'undefined') { var i = 0; for (var k = 0; k < S.length; k++) if (S[k] <= p) i = k; nm = N[i]; } } catch (e) {}
+      inf.textContent = (nm ? nm + ' · ' : '') + 'پەڕەی ' + p;
+    }
+    setInterval(info, 300); info();
     refreshBm();
   }
 
