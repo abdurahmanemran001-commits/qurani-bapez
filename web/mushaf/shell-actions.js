@@ -463,10 +463,10 @@
     $('abPlay').onclick = function () { var x = sel; if (!x) return; closeBar(true); setCur(x.sura, x.ayah, true); setUI(true); };
     return bar;
   }
-  function openBar(s, a, r) {
+  function openBar(s, a, r, srcF) {
     buildBar(); sel = { sura: s, ayah: a };
     $('abBm').innerHTML = bmHas(s, a) ? ICON.bm1 : ICON.bm0;
-    var o = fr.getBoundingClientRect();
+    var o = (srcF || fr).getBoundingClientRect();
     var top = o.top + (r ? r.t : 100), bottom = o.top + (r ? r.b : 120), cx = o.left + (r ? (r.l + r.r) / 2 : o.width / 2);
     bar.style.visibility = 'hidden'; bar.className = 'on up';
     setTimeout(function () {
@@ -493,7 +493,10 @@
       if (bar && bar.classList.contains('on')) { closeBar(false); return; }
       setUI(!uiOn());
     }
-    if (d.hold && !overlaysOpen()) openBar(d.hold[0], d.hold[1], d.rect);
+    if (d.hold && !overlaysOpen()) {
+      var sf = null; if (typeof cs !== 'undefined' && cs) Array.prototype.forEach.call(cs.children, function (x) { if (x.contentWindow === e.source) sf = x; });
+      asStop(); openBar(d.hold[0], d.hold[1], d.rect, sf);
+    }
     if (d.swipe || d.ready) { closeBar(false); refreshBm(); }
   });
   ['pg', 'next', 'prev'].forEach(function (id) { var el = $(id); if (el) el.addEventListener('click', function () { setTimeout(refreshBm, 100); }); });
@@ -515,4 +518,59 @@
   refreshBm = function () { _rf(); rb.style.display = pageBmHas(curPage()) ? 'block' : 'none'; };
   window.__bmChanged = function () { try { fr.contentWindow.applyBm(); } catch (e) {} refreshBm(); };
   refreshBm();
+  /* ================= continuous reading + auto-scroll: hold the button and the pages glide down; speed adjustable ================= */
+  var ASP = [12, 25, 45, 70, 105, 150, 220], asLv = 2, asRun = false, asLatch = false, asT0 = 0, asLast = 0, asAcc = 0, asRaf = 0, cs = null, csLast = 0;
+  try { var q0 = parseInt(localStorage.getItem('as_speed'), 10); if (q0 >= 0 && q0 < ASP.length) asLv = q0; } catch (e) {}
+  var asCss = document.createElement('style');
+  asCss.textContent = '#csWrap{position:fixed;left:0;top:0;right:0;bottom:0;z-index:2;overflow-y:auto;overflow-x:hidden;background:#fffdf5;-webkit-overflow-scrolling:touch}#csWrap iframe{display:block;width:100%;border:0;border-bottom:2px solid #e3d8b8}' +
+    '#asBox{position:fixed;right:10px;bottom:96px;z-index:31;display:none;flex-direction:column;gap:6px;align-items:center;touch-action:none}#app.ui ~ #asBox{display:flex}' +
+    '#asBox button{width:44px;height:44px;border:0;border-radius:50%;background:rgba(27,107,75,.92);color:#fff;font-size:20px;font-weight:700;box-shadow:0 3px 10px #0004;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}' +
+    '#asGo{width:58px!important;height:58px!important;font-size:26px!important;background:#ffd54f!important;color:#173f35!important}#asGo.on{background:#e67e22!important;color:#fff!important}#asExit{display:none;background:rgba(120,30,30,.9)!important}#asBox.cs #asExit{display:block}' +
+    '#asLv{color:#fff;background:rgba(0,0,0,.55);border-radius:10px;padding:1px 8px;font-size:12px}';
+  document.head.appendChild(asCss);
+  var asBox = document.createElement('div'); asBox.id = 'asBox';
+  asBox.innerHTML = '<button type="button" id="asExit" aria-label="exit">✕</button><button type="button" id="asUp">＋</button><span id="asLv"></span><button type="button" id="asDn">－</button><button type="button" id="asGo" aria-label="auto scroll">⬇</button>';
+  document.body.appendChild(asBox);
+  function asLabel() { $('asLv').textContent = (asLv + 1) + '/' + ASP.length; try { localStorage.setItem('as_speed', String(asLv)); } catch (e) {} }
+  asLabel();
+
+  function csUrl(p) { var bp = baseFor(mode); return 'view.html?m=' + mode + '&p=' + p + (bp ? '&b=' + encodeURIComponent(bp) : ''); }
+  function csAdd() { var n = csLast + 1; if (n > 604) return false; csLast = n; var fx = document.createElement('iframe'); fx.dataset.p = n; fx.style.height = Math.round(window.innerWidth * 1.62) + 'px'; fx.src = csUrl(n); cs.appendChild(fx); return true; }
+  function csEnter() {
+    if (cs) return true;
+    if (baseFor(mode) === null) return false;
+    cs = document.createElement('div'); cs.id = 'csWrap'; document.body.appendChild(cs);
+    csLast = page - 1; for (var i = 0; i < 3; i++) csAdd();
+    cs.addEventListener('scroll', csScroll, { passive: true });
+    window.__csMode = true; asBox.classList.add('cs'); closeBar(false);
+    return true;
+  }
+  function csScroll() {
+    var mid = cs.scrollTop + cs.clientHeight / 2, ifr = cs.children, cur2 = page;
+    for (var i = 0; i < ifr.length; i++) { var t = ifr[i].offsetTop; if (t <= mid && mid < t + ifr[i].offsetHeight) { cur2 = +ifr[i].dataset.p; break; } }
+    if (cur2 !== page) { page = cur2; try { sv('p', page); } catch (e) {} refreshBm(); }
+    if (cs.scrollTop + cs.clientHeight * 2.2 > cs.scrollHeight) csAdd();
+  }
+  function csExit() { asStop(); if (!cs) return; cs.remove(); cs = null; window.__csMode = false; asBox.classList.remove('cs'); show(); }
+  $('asExit').onclick = csExit;
+
+  function asTick(t) {
+    if (!asRun || !cs) return;
+    var dt = Math.min(0.05, (t - asLast) / 1000); asLast = t;
+    asAcc += ASP[asLv] * dt; var step = Math.floor(asAcc);
+    if (step > 0) {
+      asAcc -= step; var before = cs.scrollTop; cs.scrollTop = before + step;
+      if (cs.scrollTop === before && !csAdd()) { asStop(); return; }
+    }
+    asRaf = requestAnimationFrame(asTick);
+  }
+  function asStart() { if (asRun) return; if (!csEnter()) return; asRun = true; asAcc = 0; asLast = performance.now(); $('asGo').classList.add('on'); asRaf = requestAnimationFrame(asTick); }
+  function asStop() { asRun = false; asLatch = false; cancelAnimationFrame(asRaf); var g = $('asGo'); if (g) { g.classList.remove('on'); g.textContent = '⬇'; } }
+  var goB = $('asGo');
+  goB.addEventListener('pointerdown', function (e) { e.preventDefault(); try { goB.setPointerCapture(e.pointerId); } catch (x) {} if (asLatch) { asStop(); asT0 = -1; return; } asT0 = Date.now(); asStart(); });
+  goB.addEventListener('pointerup', function () { if (asT0 < 0) { asT0 = 0; return; } if (!asRun) return; if (Date.now() - asT0 < 250) { asLatch = true; goB.textContent = '⏸'; } else if (!asLatch) asStop(); });
+  goB.addEventListener('pointercancel', function () { if (!asLatch) asStop(); });
+  goB.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  $('asUp').onclick = function () { asLv = Math.min(ASP.length - 1, asLv + 1); asLabel(); };
+  $('asDn').onclick = function () { asLv = Math.max(0, asLv - 1); asLabel(); };
 })();
