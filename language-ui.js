@@ -6,7 +6,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s);
 
   var s0 = document.createElement('script');
-  s0.src = 'home-clean.js?v=2';
+  s0.src = 'home-clean.js?v=3';
   s0.async = true;
   document.head.appendChild(s0);
 

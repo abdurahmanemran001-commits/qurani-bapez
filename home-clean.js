@@ -40,6 +40,7 @@
         return '<div class="bm-row"><div class="surah" onclick="openPage(' + pg + ')"><span class="num">' + a + '</span><div class="name"><b>' + esc2(sname(s)) + ' : ' + a + '</b><small>پەڕە ' + pg + '</small></div><span class="arrow">‹</span></div><button class="bm-del" type="button" data-a="' + i + '">×</button></div>';
       }).join('') : '<div class="card muted">هیچ ئایەتێک نیشان نەکراوە. پەنجە لەسەر ئایەتێک ڕابگرە و نیشانە هەڵبژێرە.</div>';
     }
+    h += '<div class="muted" style="text-align:center;font-size:11px;opacity:.5;margin-top:8px">v3 · ئایەت: ' + get('ayah_bookmarks').length + ' · لاپەڕە: ' + pages().length + '</div>';
     box.innerHTML = h;
     Array.prototype.forEach.call(box.querySelectorAll('.bm-sub button'), function (b) {
       b.onclick = function () { sub = b.getAttribute('data-s'); try { localStorage.setItem('bm_sub2', sub); } catch (e) {} renderBm(); };
