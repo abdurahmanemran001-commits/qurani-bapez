@@ -58,6 +58,8 @@
   document.head.appendChild(st);
 
   /* ---------- bar ---------- */
+  /* the two big buttons (موسحەف / ڕەنگاوڕەنگ) on the surah list are replaced by the bar */
+  Array.prototype.forEach.call(document.querySelectorAll('button[onclick*="mushaf/"], button[onclick*="openPage("]'), function (b) { if (b.closest('#tb')) return; var r = b.parentNode; if (r && r.classList.contains('search')) r.style.display = 'none'; });
   var phone = document.querySelector('.phone');
   var bar = document.createElement('div'); bar.id = 'tb';
   bar.innerHTML = [['tbHome', '⌂', 'سەرەتا'], ['tbMus', '📖', 'موسحەف'], ['tbQ', '🕌', 'قیرائات'], ['tbS', '🔍', 'گەڕان'], ['tbSet', '⚙', 'ڕێکخستن']].map(function (x) { return '<button type="button" id="' + x[0] + '"><span>' + x[1] + '</span>' + x[2] + '</button>'; }).join('');
@@ -99,32 +101,48 @@
     return Math.max(1, Math.min(604, st + Math.floor(((a - 1) / n) * Math.max(0, nx - st + (L[s] ? 0 : 1)))));
   }
   function go(p) { close(); if (typeof openPage === 'function') openPage(p); }
+  var smode = 'surah';
+  function sname2(s) { return esc(surahList()[s - 1] ? surahList()[s - 1][0] : s); }
+  function needCorpus(then) {
+    if (corpus) return true;
+    if (!corpusLoading) { corpusLoading = true; fetch('ai/quran.json').then(function (r) { return r.json(); }).then(function (j) { corpus = (j && j.v) || []; then(); }).catch(function () { corpus = []; then(); }); }
+    return false;
+  }
   function doSearch(q) {
     var out = $('tbOut'); q = (q || '').trim(); if (!out) return;
-    if (!q) { out.innerHTML = '<div class="tbRes"><small>ناوی سورەت، ژمارەی پەڕە (p12)، 2:255 یان دەقی عەرەبی بنووسە.</small></div>'; return; }
-    var h = [], m;
-    if ((m = q.match(/^(\d{1,3})\s*[:\/\-]\s*(\d{1,3})$/))) { var s = +m[1], a = +m[2]; if (s >= 1 && s <= 114) h.push('<div class="tbRes" data-p="' + pageOf(s, a) + '"><b>' + esc(surahList()[s - 1] ? surahList()[s - 1][0] : s) + ' : ' + a + '</b><small>پەڕەی ~' + pageOf(s, a) + '</small></div>'); }
-    else if ((m = q.match(/^(?:p|page|پەڕە|لاپەڕە)?\s*(\d{1,3})$/i)) && +m[1] >= 1 && +m[1] <= 604 && /^[a-z؀-ۿ]/i.test(q)) h.push('<div class="tbRes" data-p="' + (+m[1]) + '"><b>پەڕەی ' + (+m[1]) + '</b></div>');
-    var nq = norm(q);
-    surahList().forEach(function (x) { if (h.length < 12 && (norm(x[0]).indexOf(nq) >= 0 || String(x[1]) === q)) h.push('<div class="tbRes" data-p="' + x[3] + '"><b>' + esc(x[0]) + '</b><small>سورەتی ' + x[1] + ' · ' + x[2] + ' ئایەت · پەڕە ' + x[3] + '</small></div>'); });
-    if (nq.length >= 3) {
-      if (!corpus) {
-        if (!corpusLoading) { corpusLoading = true; fetch('ai/quran.json').then(function (r) { return r.json(); }).then(function (j) { corpus = (j && j.v) || []; doSearch($('tbQ2') ? $('tbQ2').value : q); }).catch(function () { corpus = []; }); }
-        h.push('<div class="tbRes"><small>… گەڕان لە دەقی قورئان</small></div>');
-      } else {
-        var c = 0;
-        for (var i = 0; i < corpus.length && c < 40; i++) {
-          var r = corpus[i]; if (norm(r[2]).indexOf(nq) >= 0) { c++; var p = pageOf(r[0], r[1]); h.push('<div class="tbRes" data-p="' + p + '"><b style="font-family:inherit">' + esc(r[2]) + '</b><small>' + esc(surahList()[r[0] - 1] ? surahList()[r[0] - 1][0] : r[0]) + ' : ' + r[1] + ' · پەڕەی ~' + p + '</small></div>'); }
-        }
+    var h = [], nq = norm(q), m;
+    if (smode === 'surah') {
+      surahList().forEach(function (x) { if (!q || norm(x[0]).indexOf(nq) >= 0 || String(x[1]) === q) h.push('<div class="tbRes" data-p="' + x[3] + '"><b>' + esc(x[1] + '. ' + x[0]) + '</b><small>' + x[2] + ' ئایەت · پەڕە ' + x[3] + '</small></div>'); });
+    } else if (!q) {
+      h.push('<div class="tbRes"><small>' + (smode === 'ayah' ? 'دەقی عەرەبی ئایەت بنووسە، یان 2:255 / p12.' : 'وشەیەک لە تەفسیر بنووسە.') + '</small></div>');
+    } else if (smode === 'ayah') {
+      if ((m = q.match(/^(\d{1,3})\s*[:\/\-]\s*(\d{1,3})$/))) { var s = +m[1], a = +m[2]; if (s >= 1 && s <= 114) h.push('<div class="tbRes" data-p="' + pageOf(s, a) + '"><b>' + sname2(s) + ' : ' + a + '</b><small>پەڕەی ~' + pageOf(s, a) + '</small></div>'); }
+      else if ((m = q.match(/^(?:p|page|پەڕە|لاپەڕە)\s*(\d{1,3})$/i)) && +m[1] >= 1 && +m[1] <= 604) h.push('<div class="tbRes" data-p="' + (+m[1]) + '"><b>پەڕەی ' + (+m[1]) + '</b></div>');
+      if (nq.length >= 2) {
+        if (!needCorpus(function () { if ($('tbQ2')) doSearch($('tbQ2').value); })) h.push('<div class="tbRes"><small>… گەڕان</small></div>');
+        else for (var i = 0, c = 0; i < corpus.length && c < 40; i++) { var r = corpus[i]; if (norm(r[2]).indexOf(nq) >= 0) { c++; var p = pageOf(r[0], r[1]); h.push('<div class="tbRes" data-p="' + p + '"><b>' + esc(r[2]) + '</b><small>' + sname2(r[0]) + ' : ' + r[1] + ' · پەڕەی ~' + p + '</small></div>'); } }
       }
+    } else { /* tafsir */
+      if (nq.length >= 2) {
+        if (!needCorpus(function () { if ($('tbQ2')) doSearch($('tbQ2').value); })) h.push('<div class="tbRes"><small>… گەڕان</small></div>');
+        else for (var j = 0, d = 0; j < corpus.length && d < 40; j++) {
+          var t = corpus[j][3]; if (!t) continue; var nt = norm(t), k = nt.indexOf(nq); if (k < 0) continue; d++;
+          var st0 = Math.max(0, k - 40), snip = String(t).slice(st0, st0 + 110), pp = pageOf(corpus[j][0], corpus[j][1]);
+          h.push('<div class="tbRes" data-p="' + pp + '"><b>' + sname2(corpus[j][0]) + ' : ' + corpus[j][1] + '</b><small>' + (st0 ? '…' : '') + esc(snip) + '…</small></div>');
+        }
+      } else h.push('<div class="tbRes"><small>لانیکەم دوو پیت بنووسە.</small></div>');
     }
     out.innerHTML = h.join('') || '<div class="tbRes"><small>هیچ شتێک نەدۆزرایەوە.</small></div>';
     Array.prototype.forEach.call(out.querySelectorAll('[data-p]'), function (el) { el.onclick = function () { go(+el.getAttribute('data-p')); }; });
   }
-  $('tbS').onclick = function () {
-    open('<h3>گەڕان</h3><input type="search" id="tbQ2" placeholder="سورەت، 2:255، پەڕە، یان دەقی عەرەبی…" autocomplete="off"><div id="tbOut"></div>');
-    var inp = $('tbQ2'); inp.oninput = function () { doSearch(inp.value); }; doSearch(''); setTimeout(function () { inp.focus(); }, 50);
-  };
+  function renderSearch() {
+    open('<h3>گەڕان</h3><div class="tbRow" id="tbTabs">' + [['surah', 'سورەت'], ['ayah', 'ئایەت'], ['tafsir', 'تەفسیر']].map(function (t) { return '<span class="tbChip' + (t[0] === smode ? ' on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</span>'; }).join('') + '</div><input type="search" id="tbQ2" placeholder="" autocomplete="off"><div id="tbOut"></div>');
+    var inp = $('tbQ2'); inp.placeholder = smode === 'surah' ? 'ناوی سورەت یان ژمارە…' : smode === 'ayah' ? 'دەقی ئایەت، 2:255، یان p12…' : 'وشەیەک لە تەفسیر…';
+    inp.oninput = function () { doSearch(inp.value); };
+    Array.prototype.forEach.call($('tbTabs').querySelectorAll('[data-t]'), function (el) { el.onclick = function () { smode = el.getAttribute('data-t'); renderSearch(); }; });
+    doSearch(''); setTimeout(function () { inp.focus(); }, 50);
+  }
+  $('tbS').onclick = renderSearch;
 
   /* ---------- settings ---------- */
   function chips(arr, cur, attr) { return arr.map(function (x) { return '<span class="tbChip' + (x[0] === cur ? ' on' : '') + '" data-' + attr + '="' + esc(x[0]) + '">' + esc(x[1]) + '</span>'; }).join(''); }
