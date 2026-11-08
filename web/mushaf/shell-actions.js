@@ -415,7 +415,11 @@
     '#ayahBar .ab-arrow{position:absolute;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent}',
     '#ayahBar.up .ab-arrow{bottom:-9px;border-top:9px solid #2f6b45}',
     '#ayahBar.down .ab-arrow{top:-9px;border-bottom:9px solid #2f6b45}',
-    '#hdTf,#hdBm{flex:0 0 auto;min-width:38px}'
+    '#hdTf,#hdBm{flex:0 0 auto;min-width:38px}',
+    '#sura,#lib{position:fixed;z-index:32;left:8px;margin:0;max-width:46vw;box-shadow:0 4px 14px #0003}',
+    '#lib{top:62px}',
+    '#sura{top:108px;width:46vw;min-width:0}',
+    'header{flex-wrap:nowrap}'
   ].join('\n');
   document.head.appendChild(st2);
 
