@@ -62,6 +62,15 @@
   var bar = document.createElement('div'); bar.id = 'tb';
   bar.innerHTML = [['tbHome', '⌂', 'سەرەتا'], ['tbMus', '📖', 'موسحەف'], ['tbQ', '🕌', 'قیرائات'], ['tbS', '🔍', 'گەڕان'], ['tbSet', '⚙', 'ڕێکخستن']].map(function (x) { return '<button type="button" id="' + x[0] + '"><span>' + x[1] + '</span>' + x[2] + '</button>'; }).join('');
   if (phone) phone.insertBefore(bar, phone.firstChild);
+  /* the bar belongs to the Quran section only: visible on the surah list and the reader, hidden on the start screen and in the dhikr section */
+  function syncBar() {
+    var on = ['home', 'reader'].some(function (id) { var v = $(id); return v && v.classList.contains('active'); });
+    bar.style.display = on ? 'flex' : 'none';
+    if (!on) { var sh = $('tbSheet'); if (sh) sh.classList.remove('on'); }
+  }
+  var mainEl = document.querySelector('.main');
+  if (mainEl && window.MutationObserver) new MutationObserver(syncBar).observe(mainEl, { attributes: true, attributeFilter: ['class'], subtree: true });
+  syncBar();
 
   var sheet = document.createElement('div'); sheet.id = 'tbSheet';
   sheet.innerHTML = '<div class="tbBox" id="tbBox"></div>';
