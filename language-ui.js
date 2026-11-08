@@ -5,6 +5,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s.async = true;
   document.head.appendChild(s);
 
+  var sT = document.createElement('script');
+  sT.src = 'topbar.js?v=1';
+  sT.async = true;
+  document.head.appendChild(sT);
+
   var s0 = document.createElement('script');
   s0.src = 'home-clean.js?v=4';
   s0.async = true;
