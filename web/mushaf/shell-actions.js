@@ -672,3 +672,32 @@
   }
   repBtn.onclick = openRepeat;
 })();
+
+/* surah list: shown when a qira'at is chosen (?list=1) and when the surah name in the header is tapped */
+(function () {
+  if (window.__sl) return; window.__sl = 1;
+  function openList() {
+    var o = document.getElementById('slBox'); if (o) { o.remove(); return; }
+    if (typeof N === 'undefined' || typeof S === 'undefined' || !S.length) return;
+    var d = document.createElement('div'); d.id = 'slBox';
+    d.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#f6f1e3;overflow:auto;direction:rtl;font-family:inherit';
+    var h = '<div style="position:sticky;top:0;background:#173f35;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center"><span>سووڕەتێک هەڵبژێرە</span><button id="slX" style="border:0;background:#2a5a4d;color:#fff;border-radius:8px;padding:6px 12px;font-weight:bold">✕</button></div>';
+    for (var i = 0; i < 114; i++) h += '<div class="slI" data-i="' + i + '" style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #e3d9bd;color:#173f35;cursor:pointer"><b>' + (i + 1) + '. ' + N[i] + '</b><span style="opacity:.6">' + S[i] + '</span></div>';
+    d.innerHTML = h; document.body.appendChild(d);
+    d.querySelector('#slX').onclick = function () { d.remove(); };
+    d.onclick = function (e) {
+      var t = e.target.closest && e.target.closest('.slI'); if (!t) return;
+      d.remove(); page = S[+t.getAttribute('data-i')]; show();
+    };
+  }
+  window.__openSurahList = openList;
+  var n = 0, iv = setInterval(function () {
+    var inf = document.getElementById('hdInfo');
+    if (inf && !inf.__sl) { inf.__sl = 1; inf.style.cursor = 'pointer'; inf.onclick = function (e) { e.stopPropagation(); openList(); }; }
+    if (typeof S !== 'undefined' && S.length && inf && !window.__slAuto) {
+      window.__slAuto = 1;
+      if (new URLSearchParams(location.search).get('list') === '1') openList();
+    }
+    if (++n > 40) clearInterval(iv);
+  }, 300);
+})();
