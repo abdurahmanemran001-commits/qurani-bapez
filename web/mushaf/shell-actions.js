@@ -673,24 +673,32 @@
   repBtn.onclick = openRepeat;
 })();
 
-/* surah list: shown when a qira'at is chosen (?list=1) and when the surah name in the header is tapped */
+/* surah list (same look as the home surah list): shown when a qira'at is chosen (?list=1), when the header surah name / ⌂ is used, and when leaving a surah */
 (function () {
   if (window.__sl) return; window.__sl = 1;
+  var AC = [7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+  function isOpen() { return !!document.getElementById('slBox'); }
   function openList() {
-    var o = document.getElementById('slBox'); if (o) { o.remove(); return; }
+    if (isOpen()) return;
     if (typeof N === 'undefined' || typeof S === 'undefined' || !S.length) return;
     var d = document.createElement('div'); d.id = 'slBox';
-    d.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#f6f1e3;overflow:auto;direction:rtl;font-family:inherit';
-    var h = '<div style="position:sticky;top:0;background:#173f35;color:#fff;padding:12px 14px;font-weight:bold;display:flex;justify-content:space-between;align-items:center"><span>سووڕەتێک هەڵبژێرە</span><button id="slX" style="border:0;background:#2a5a4d;color:#fff;border-radius:8px;padding:6px 12px;font-weight:bold">✕</button></div>';
-    for (var i = 0; i < 114; i++) h += '<div class="slI" data-i="' + i + '" style="display:flex;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #e3d9bd;color:#173f35;cursor:pointer"><b>' + (i + 1) + '. ' + N[i] + '</b><span style="opacity:.6">' + S[i] + '</span></div>';
-    d.innerHTML = h; document.body.appendChild(d);
-    d.querySelector('#slX').onclick = function () { d.remove(); };
+    d.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#eef2f1;overflow:auto;direction:rtl;font-family:Tahoma,Arial,sans-serif;color:#18231f';
+    var h = '<div style="position:sticky;top:0;background:#176b4b;color:#fff;padding:12px 14px;font-weight:bold;display:flex;gap:10px;align-items:center"><button id="slH" style="border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:10px;padding:6px 12px;font-size:16px">⌂</button><span style="flex:1">سووڕەتەکان</span></div><div style="display:grid;gap:8px;padding:12px">';
+    for (var i = 0; i < 114; i++) h += '<div class="slI" data-i="' + i + '" style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dce5e1;border-radius:13px;padding:10px;cursor:pointer"><span style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e8f3ee;color:#176b4b;font-weight:bold;font-size:12px">' + (i + 1) + '</span><div style="flex:1"><b style="display:block">' + N[i] + '</b><small style="color:#6d7975">' + AC[i] + ' ئایەت · پەڕە ' + S[i] + '</small></div><span style="color:#94a09b">‹</span></div>';
+    d.innerHTML = h + '</div>'; document.body.appendChild(d);
+    d.querySelector('#slH').onclick = function () { location.href = '../'; };
     d.onclick = function (e) {
       var t = e.target.closest && e.target.closest('.slI'); if (!t) return;
       d.remove(); page = S[+t.getAttribute('data-i')]; show();
+      try { history.pushState({ sl: 1 }, ''); } catch (x) {}
     };
   }
   window.__openSurahList = openList;
+  window.addEventListener('popstate', function () { if (!isOpen()) openList(); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#home');
+    if (b && !isOpen()) { e.preventDefault(); e.stopPropagation(); openList(); }
+  }, true);
   var n = 0, iv = setInterval(function () {
     var inf = document.getElementById('hdInfo');
     if (inf && !inf.__sl) { inf.__sl = 1; inf.style.cursor = 'pointer'; inf.onclick = function (e) { e.stopPropagation(); openList(); }; }
