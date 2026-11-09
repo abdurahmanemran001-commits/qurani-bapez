@@ -37,6 +37,9 @@
       var h=document.createElement('script');
       h.src='shell-actions.js?v=9';
       document.body.appendChild(h);
+      var dl=document.createElement('script');
+      dl.src='audio-dl.js?v=1';
+      document.body.appendChild(dl);
     }, 800);
   }).catch(function(e){
     var el = document.getElementById('boot');

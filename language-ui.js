@@ -20,6 +20,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s2.async = true;
   document.head.appendChild(s2);
 
+  var sD = document.createElement('script');
+  sD.src = 'mushaf/audio-dl.js?v=1';
+  sD.async = true;
+  document.head.appendChild(sD);
+
   var s3 = document.createElement('script');
   s3.src = 'zikr-enhance.js?v=4';
   s3.async = true;
