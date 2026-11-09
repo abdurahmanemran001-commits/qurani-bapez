@@ -468,7 +468,7 @@
   function asLabel() { var l = asEl('asLv2'); if (l) l.textContent = (asLv + 1) + '/' + ASP.length; try { localStorage.setItem('as_speed', String(asLv)); } catch (e) {} }
   function asStop() { asRun = false; asLatch = false; cancelAnimationFrame(asRaf); var g = asEl('asGo2'); if (g) { g.classList.remove('on'); g.textContent = '⬇'; } }
   /* continuous mode: a scrolling stack of page images (pages are fit-to-screen, so there is nothing to scroll otherwise) */
-  var cont = null, contLast = 0;
+  var cont = null, contLast = 0, asShow = true;
   function pageUrl(n) { return 'https://android.quran.com/data/width_1260/page' + String(n).padStart(3, '0') + '.png'; }
   function contAdd() { if (!cont || contLast >= 604) return false; contLast++; var im = document.createElement('img'); im.dataset.p = contLast; im.src = pageUrl(contLast); im.style.cssText = 'display:block;width:100%;height:auto;border-bottom:2px solid #e3d8b8;min-height:' + Math.round(window.innerWidth * 1.6) + 'px;background:#fffdf5'; cont.appendChild(im); return true; }
   function contScroll() {
@@ -488,6 +488,7 @@
     cont.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:' + (pb && pb.offsetHeight ? pb.offsetHeight : 0) + 'px;z-index:9980;overflow-y:auto;overflow-x:hidden;background:#fffdf5;-webkit-overflow-scrolling:touch';
     document.body.appendChild(cont); contLast = lastPage - 1; for (var i = 0; i < 3; i++) contAdd();
     cont.addEventListener('scroll', contScroll, { passive: true });
+    asShow = true; cont.addEventListener('click', function () { asShow = !asShow; asBox.classList.toggle('on', asShow); });
     asBox.classList.add('cs'); var pg = asEl('asPg'); if (pg) pg.textContent = lastPage;
   }
   function contExit() {
@@ -522,13 +523,31 @@
     asEl('asDn2').onclick = function () { asLv = Math.max(0, asLv - 1); asLabel(); };
     setInterval(function () {
       var rd = asEl('reader'), on = !!(rd && rd.classList.contains('active'));
-      asBox.classList.toggle('on', on); if (!on) { if (cont) contExit(); else if (asRun) asStop(); }
+      var pbv = asEl('madaniPlayer'), uiVis = !!(pbv && pbv.style.display !== 'none' && getComputedStyle(pbv).display !== 'none');
+      if (!on) { if (cont) contExit(); else if (asRun) asStop(); }
+      asBox.classList.toggle('on', on && (cont ? asShow : uiVis));
       var pb = asEl('madaniPlayer'); asBox.style.bottom = ((pb && pb.offsetHeight ? pb.offsetHeight : 0) + 8) + 'px';
     }, 400);
   }
 
+  /* swipe left/right on the page to turn it (same as the other mushafs) */
+  function installSwipe() {
+    var m = asEl('mushaf'); if (!m || m.__swipe) return; m.__swipe = true;
+    var sx = 0, sy = 0, multi = false;
+    m.addEventListener('touchstart', function (e) { multi = e.touches.length !== 1; if (!multi) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; } }, { capture: true, passive: true });
+    m.addEventListener('touchend', function (e) {
+      if (multi || !e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) {
+        e.stopPropagation(); e.preventDefault();
+        var np = lastPage + (dx > 0 ? 1 : -1);
+        if (np >= 1 && np <= 604 && typeof window.openPage === 'function') window.openPage(np);
+      }
+    }, { capture: true, passive: false });
+  }
+
   function boot() {
-    buildAuto();
+    buildAuto(); installSwipe();
     installHook();
     try {
       var reader = document.getElementById('reader');
