@@ -25,6 +25,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sD.async = true;
   document.head.appendChild(sD);
 
+  var sK = document.createElement('script');
+  sK.src = 'khatma.js?v=1';
+  sK.async = true;
+  document.head.appendChild(sK);
+
   var s3 = document.createElement('script');
   s3.src = 'zikr-enhance.js?v=4';
   s3.async = true;
