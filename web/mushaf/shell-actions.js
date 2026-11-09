@@ -574,4 +574,101 @@
   goB.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   $('asUp').onclick = function () { asLv = Math.min(ASP.length - 1, asLv + 1); asLabel(); };
   $('asDn').onclick = function () { asLv = Math.max(0, asLv - 1); asLabel(); };
+  /* ================= repeat (each ayah N times / range of ayahs) for every reciter type ================= */
+  var REP = { mode: 'off', count: 3, gap: 0, n: 0, from: null, to: null }, repTimer = 0, repBusy = false;
+  try { var rc0 = JSON.parse(localStorage.getItem('rep_cfg') || '{}'); if (rc0.count != null) REP.count = rc0.count; if (rc0.gap != null) REP.gap = rc0.gap; } catch (e) {}
+  function repSave() { try { localStorage.setItem('rep_cfg', JSON.stringify({ count: REP.count, gap: REP.gap })); } catch (e) {} }
+  var repBtn = document.createElement('button'); repBtn.id = 'prp'; repBtn.type = 'button'; repBtn.textContent = '🔁';
+  var plx = $('px'); if (plx && plx.parentNode) plx.parentNode.insertBefore(repBtn, plx);
+  function repLabel() { repBtn.textContent = REP.mode === 'off' ? '🔁' : '🔁' + (REP.count ? '×' + REP.count : '∞'); }
+  function repeatTarget(sura, ayah) {
+    if (REP.mode === 'off') return null;
+    var inf = REP.count === 0;
+    if (REP.mode === 'ayah') { if (inf || REP.n < REP.count - 1) { REP.n++; return ayah; } REP.n = 0; return null; }
+    if (REP.mode === 'range' && REP.from && REP.to && REP.from.s === sura && ayah === REP.to.a) {
+      if (inf || REP.n < REP.count - 1) { REP.n++; return REP.from.a; }
+      REP.n = 0; return 'stop';
+    }
+    return null;
+  }
+  function qIdx() { return (mode === 'k' && typeof QM !== 'undefined' && QM) ? (cq || h2q(cur[0], cur[1])) : cur[1]; }
+  function repEntries() {
+    try {
+      if (typeof isG === 'function' && isG() && TT[mode] && TT[mode][cur[0]]) return TT[mode][cur[0]].map(function (x) { return { a: x[0], st: x[1], en: x[2] }; });
+      if (typeof isGaplessRec === 'function' && isGaplessRec() && window.__aySegs) { var l = window.__aySegs(cur[0], au.duration); return l ? l.map(function (x) { return { a: x[0], st: x[1] * 1000, en: x[2] * 1000 }; }) : null; }
+    } catch (e) {}
+    return null;
+  }
+  function repGo(fn) { repBusy = true; clearTimeout(repTimer); if (REP.gap > 0) { try { au.pause(); } catch (e) {} repTimer = setTimeout(function () { fn(); repBusy = false; }, REP.gap * 1000); } else { fn(); setTimeout(function () { repBusy = false; }, 250); } }
+  function repSeekTo(list, t) {
+    for (var i = 0; i < list.length; i++) if (list[i].a === t) { var ms = list[i].st; repGo(function () { au.currentTime = ms / 1000; var pr = au.play(); if (pr && pr.catch) pr.catch(function () {}); }); return true; }
+    return false;
+  }
+  /* gapless: jump back just before the next ayah begins */
+  setInterval(function () {
+    if (REP.mode === 'off' || repBusy || !playing || !cur) return;
+    var list = repEntries(); if (!list) return;
+    var qi = qIdx(), e = null; for (var i = 0; i < list.length; i++) if (list[i].a === qi) { e = list[i]; break; }
+    if (!e) return;
+    var ms = au.currentTime * 1000;
+    if (ms >= e.en - 90 && ms < e.en + 500) {
+      var t = repeatTarget(cur[0], (mode === 'k' && typeof QM !== 'undefined' && QM) ? cur[1] : qi);
+      if (t === 'stop') { au.pause(); bad(); repBusy = true; setTimeout(function () { repBusy = false; }, 300); return; }
+      if (typeof t === 'number') repSeekTo(list, (mode === 'k' && typeof QM !== 'undefined' && QM) ? qi : t);
+    }
+  }, 60);
+  /* ayah-by-ayah files and the end of a gapless file */
+  var prevEnded = au.onended;
+  au.onended = function () {
+    if (REP.mode !== 'off' && cur) {
+      var s0 = cur[0], a0 = cur[1], t = repeatTarget(s0, a0), list = repEntries();
+      if (t === 'stop') { bad(); return; }
+      if (typeof t === 'number') {
+        if (list) { if (repSeekTo(list, (mode === 'k' && typeof QM !== 'undefined' && QM) ? qIdx() : t)) return; }
+        else { repGo(function () { if (t === a0) { au.currentTime = 0; var pr = au.play(); if (pr && pr.catch) pr.catch(function () {}); } else setCur(s0, t, true); }); return; }
+      }
+    }
+    if (typeof prevEnded === 'function') return prevEnded.apply(this, arguments);
+  };
+  [pa, pn].forEach(function (b) { if (b) b.addEventListener('click', function () { REP.n = 0; }, true); });
+
+  function openRepeat() {
+    if (!cur) { toast('...'); return; }
+    var ov = $('repSheet'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'repSheet';
+    ov.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:99990;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center';
+    var cs0 = { sura: cur[0], ayah: cur[1] }, maxA = CC(cs0.sura) || 7, kMode = mode === 'k';
+    var toDef = REP.to && REP.to.s === cs0.sura ? REP.to.a : Math.min(maxA, cs0.ayah + 4);
+    function chip(id, on, txt) { return '<span data-i="' + id + '" style="display:inline-block;padding:9px 13px;margin:3px;border-radius:12px;border:1px solid #cfe0d6;cursor:pointer;' + (on ? 'background:#1b6b4b;color:#fff' : 'background:#fff;color:#173f35') + '">' + txt + '</span>'; }
+    var h = '<div style="width:100%;max-width:560px;background:#fff;color:#1b1b1b;border-radius:18px 18px 0 0;padding:14px 14px 22px;direction:rtl;max-height:85vh;overflow:auto;font-family:inherit">';
+    h += '<b style="font-size:18px">دووبارەکردنەوە</b><div style="color:#666;font-size:13px;margin:4px 0 8px">ئایەتی ئێستا: ' + cs0.sura + ' : ' + cs0.ayah + '</div>';
+    h += '<div>' + chip('m:off', REP.mode === 'off', 'کوژاوە') + chip('m:ayah', REP.mode === 'ayah', 'هەر ئایەتێک چەند جار') + (kMode ? '' : chip('m:range', REP.mode === 'range', 'دووبارەکردنەوەی چەند ئایەت')) + '</div>';
+    h += '<div id="repRange" style="margin:8px 0;display:' + (REP.mode === 'range' ? 'block' : 'none') + '">لە ئایەتی <b>' + cs0.ayah + '</b> تا ئایەتی <input id="repTo" type="number" min="' + cs0.ayah + '" max="' + maxA + '" value="' + toDef + '" style="width:70px;padding:6px;border-radius:8px;border:1px solid #cfd8d3;font:inherit"> (لە ' + maxA + ')</div>';
+    h += '<div style="margin-top:8px;font-weight:700">ژمارەی دووبارەکردنەوە</div><div>' + [2, 3, 5, 7, 10, 0].map(function (n) { return chip('c:' + n, REP.count === n, n ? n + '×' : '∞ بێکۆتا'); }).join('') + '</div>';
+    h += '<div style="margin-top:8px;font-weight:700">وەستان لە نێوان دووبارەکان</div><div>' + [0, 1, 2, 3, 5].map(function (n) { return chip('g:' + n, REP.gap === n, n ? n + ' چرکە' : 'بێ وەستان'); }).join('') + '</div>';
+    h += '<div style="margin-top:14px;text-align:center"><span id="repOk" style="display:inline-block;padding:11px 30px;border-radius:12px;background:#1b6b4b;color:#fff;font-weight:700;cursor:pointer">باشە</span></div></div>';
+    ov.innerHTML = h; document.body.appendChild(ov);
+    var m2 = REP.mode, c2 = REP.count, g2 = REP.gap;
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) { ov.remove(); return; }
+      var t = e.target.closest && e.target.closest('[data-i]');
+      if (t) {
+        var k = t.getAttribute('data-i').split(':');
+        if (k[0] === 'm') m2 = k[1]; else if (k[0] === 'c') c2 = +k[1]; else g2 = +k[1];
+        Array.prototype.forEach.call(ov.querySelectorAll('[data-i]'), function (x) {
+          var q = x.getAttribute('data-i').split(':'), on = (q[0] === 'm' && q[1] === m2) || (q[0] === 'c' && +q[1] === c2) || (q[0] === 'g' && +q[1] === g2);
+          x.style.background = on ? '#1b6b4b' : '#fff'; x.style.color = on ? '#fff' : '#173f35';
+        });
+        ov.querySelector('#repRange').style.display = m2 === 'range' ? 'block' : 'none';
+        return;
+      }
+      if (e.target.id === 'repOk') {
+        REP.mode = m2; REP.count = c2; REP.gap = g2; REP.n = 0; repSave(); clearTimeout(repTimer); repBusy = false;
+        if (m2 === 'range') { var to = Math.max(cs0.ayah, Math.min(maxA, +ov.querySelector('#repTo').value || cs0.ayah)); REP.from = { s: cs0.sura, a: cs0.ayah }; REP.to = { s: cs0.sura, a: to }; }
+        else { REP.from = null; REP.to = null; }
+        repLabel(); ov.remove();
+      }
+    });
+  }
+  repBtn.onclick = openRepeat;
 })();
