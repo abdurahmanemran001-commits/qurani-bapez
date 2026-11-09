@@ -25,8 +25,13 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sD.async = true;
   document.head.appendChild(sD);
 
+  var sS = document.createElement('script');
+  sS.src = 'mushaf/stats.js?v=1';
+  sS.async = true;
+  document.head.appendChild(sS);
+
   var sK = document.createElement('script');
-  sK.src = 'khatma.js?v=1';
+  sK.src = 'khatma.js?v=2';
   sK.async = true;
   document.head.appendChild(sK);
 

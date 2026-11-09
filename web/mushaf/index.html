@@ -40,6 +40,9 @@
       var dl=document.createElement('script');
       dl.src='audio-dl.js?v=1';
       document.body.appendChild(dl);
+      var st=document.createElement('script');
+      st.src='stats.js?v=1';
+      document.body.appendChild(st);
     }, 800);
   }).catch(function(e){
     var el = document.getElementById('boot');

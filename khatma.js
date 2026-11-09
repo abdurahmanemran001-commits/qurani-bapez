@@ -43,7 +43,7 @@
   }
   function render() {
     var P = document.getElementById('khP'); if (!P) return;
-    P.innerHTML = personalHTML() + groupHTML(); bind(P);
+    P.innerHTML = (window.__stats ? window.__stats.html() : '') + personalHTML() + groupHTML(); bind(P);
   }
   function bind(P) {
     var q = function (s) { return P.querySelector(s); };
@@ -80,7 +80,7 @@
   function install() {
     var tabs = document.querySelector('.tabs'); if (!tabs || document.getElementById('tabKh')) return !!document.getElementById('tabKh');
     tabs.style.gridTemplateColumns = 'repeat(4,1fr)';
-    var b = document.createElement('button'); b.id = 'tabKh'; b.className = 'tab'; b.textContent = 'خەتمە'; b.onclick = function () { show(true); };
+    var b = document.createElement('button'); b.id = 'tabKh'; b.className = 'tab'; b.textContent = 'خەتمە و ئامار'; b.onclick = function () { show(true); };
     tabs.appendChild(b);
     var P = document.createElement('div'); P.id = 'khP'; tabs.parentNode.insertBefore(P, tabs.nextSibling);
     var o = window.setHomeTab;
