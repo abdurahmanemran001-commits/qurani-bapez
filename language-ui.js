@@ -6,7 +6,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s);
 
   var sT = document.createElement('script');
-  sT.src = 'topbar.js?v=4';
+  sT.src = 'topbar.js?v=5';
   sT.async = true;
   document.head.appendChild(sT);
 
