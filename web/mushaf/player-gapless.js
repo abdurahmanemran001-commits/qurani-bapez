@@ -104,6 +104,7 @@
     for(var i=0;i<list.length;i++) if(sec>=list[i][1] && sec<list[i][2]+0.05) return list[i][0];
     return list[list.length-1][0];
   }
+  window.__aySegs = function(sura, dur){ return segs(sura, dur); };
   loadLens(function(){});
   au.addEventListener('timeupdate', function(){
     if(!isGaplessRec()||!playing||!cur) return;
