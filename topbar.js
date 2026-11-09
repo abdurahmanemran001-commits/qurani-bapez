@@ -100,7 +100,7 @@
   var QIRA = [['', 'موسحەفی ئاسایی (لاپەڕە)'], ['q', 'حەفس — موسحەفی مەدینە (ڕەنگاوڕەنگ)'], ['t', 'حەفس — تەجوید'], ['w', 'وەرش عن نافع'], ['k', 'قالون عن نافع'], ['s', 'شوعبە عن عاصم'], ['d', 'دووری عن أبي عمرو'], ['u', 'سووسی عن أبي عمرو'], ['b', 'قونبول عن ابن كثير'], ['z', 'بەززی عن ابن كثير']];
   $('tbQ').onclick = function () {
     open('<h3>هەڵبژاردنی قیرائەت</h3><div>' + QIRA.map(function (q) { return '<div class="tbRes" data-m="' + q[0] + '"><b>' + q[1] + '</b></div>'; }).join('') + '</div>');
-    Array.prototype.forEach.call($('tbBox').querySelectorAll('[data-m]'), function (el) { el.onclick = function () { ls.set('m', el.getAttribute('data-m')); var k = el.getAttribute('data-m'); try { localStorage.setItem('qira_sel', k); } catch (e) {} if (!k) { close(); return; } location.href = 'mushaf/?m=' + k + '&list=1'; }; });
+    Array.prototype.forEach.call($('tbBox').querySelectorAll('[data-m]'), function (el) { el.onclick = function () { ls.set('m', el.getAttribute('data-m')); var k = el.getAttribute('data-m'); try { localStorage.setItem('qira_sel', k); } catch (e) {} close(); try { if (typeof setHomeTab === 'function') setHomeTab('surah'); window.scrollTo(0, 0); } catch (e) {} var tq = $('tbQ'); if (tq) tq.title = k; }; });
   };
 
   /* ---------- search ---------- */

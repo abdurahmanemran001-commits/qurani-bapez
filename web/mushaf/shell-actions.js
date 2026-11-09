@@ -690,22 +690,12 @@
     d.onclick = function (e) {
       var t = e.target.closest && e.target.closest('.slI'); if (!t) return;
       d.remove(); page = S[+t.getAttribute('data-i')]; show();
-      try { history.pushState({ sl: 1 }, ''); } catch (x) {}
     };
   }
   window.__openSurahList = openList;
-  window.addEventListener('popstate', function () { if (!isOpen()) openList(); });
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('#home');
-    if (b && !isOpen()) { e.preventDefault(); e.stopPropagation(); openList(); }
-  }, true);
   var n = 0, iv = setInterval(function () {
     var inf = document.getElementById('hdInfo');
-    if (inf && !inf.__sl) { inf.__sl = 1; inf.style.cursor = 'pointer'; inf.onclick = function (e) { e.stopPropagation(); openList(); }; }
-    if (typeof S !== 'undefined' && S.length && inf && !window.__slAuto) {
-      window.__slAuto = 1;
-      if (new URLSearchParams(location.search).get('list') === '1') openList();
-    }
+    if (inf && !inf.__sl) { inf.__sl = 1; inf.style.cursor = 'pointer'; inf.onclick = function (e) { e.stopPropagation(); location.href = '../'; }; }
     if (++n > 40) clearInterval(iv);
   }, 300);
 })();
