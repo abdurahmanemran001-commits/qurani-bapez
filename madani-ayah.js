@@ -136,7 +136,7 @@
   }
   function stopAll() {
     if (audio) { try { audio.pause(); audio.currentTime = 0; } catch (e) {} }
-    stopWatch(); resumable = false; pendingNext = null;
+    stopWatch(); resumable = false; pendingNext = null; clearTimeout(repTimer);
     var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶';
     /* next ▶ starts again from the current ayah */
     if (current) { var c = current; audio = null; var pb = b; if (pb) pb.onclick = function () { pb.onclick = onPlayerButton; playAyah(c.sura, c.ayah); }; }
@@ -237,7 +237,7 @@
       playerBar.style.cssText = 'display:none;margin-top:10px;padding:10px;background:#173f35;color:#fff;border-radius:12px;font-size:14px;gap:8px;align-items:center;flex-wrap:wrap;';
       playerBar.innerHTML = '<select id="madaniReciter" style="flex:1;min-width:160px;padding:6px;border-radius:8px;border:0"></select><button id="madaniPlay" type="button" style="padding:8px 14px;border:0;border-radius:8px;background:#ffd54f;color:#173f35;font-weight:bold;cursor:pointer">▶</button><span id="madaniLabel" style="min-width:70px;text-align:center">—</span>'
         + '<span style="display:flex;gap:6px;width:100%;justify-content:center">'
-        + ['madaniPrev|⏮','madaniStop|⏹','madaniNext|⏭','madaniSpeed|1×'].map(function (x) { x = x.split('|'); return '<button id="' + x[0] + '" type="button" style="flex:1;max-width:80px;padding:8px 0;border:0;border-radius:8px;background:#2a5a4d;color:#fff;font-weight:bold;cursor:pointer">' + x[1] + '</button>'; }).join('') + '</span>';
+        + ['madaniPrev|⏮','madaniStop|⏹','madaniNext|⏭','madaniSpeed|1×','madaniRep|🔁'].map(function (x) { x = x.split('|'); return '<button id="' + x[0] + '" type="button" style="flex:1;max-width:80px;padding:8px 0;border:0;border-radius:8px;background:#2a5a4d;color:#fff;font-weight:bold;cursor:pointer">' + x[1] + '</button>'; }).join('') + '</span>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
       var sel = playerBar.querySelector('#madaniReciter');
       loadRecitersList(function () { fillReciters(sel); });
@@ -248,6 +248,7 @@
       };
       playerBar.querySelector('#madaniPlay').onclick = onPlayerButton;
       playerBar.querySelector('#madaniStop').onclick = stopAll;
+      playerBar.querySelector('#madaniRep').onclick = openRepeat; repLabel();
       playerBar.querySelector('#madaniPrev').onclick = function () { stepAyah(-1); };
       playerBar.querySelector('#madaniNext').onclick = function () { stepAyah(1); };
       playerBar.querySelector('#madaniSpeed').onclick = function () {
@@ -304,8 +305,71 @@
   window.__bmChanged = drawBookmarks;
 
   function stopWatch() { if (watchTimer) { clearInterval(watchTimer); watchTimer = null; } }
+  /* ---------- repeat (ayah / range of ayahs) ---------- */
+  var REP = { mode: 'off', count: 3, gap: 0, n: 0, from: null, to: null }, repTimer = 0, curMap = null, repKeep = false;
+  try { var rc = JSON.parse(localStorage.getItem('rep_cfg') || '{}'); if (rc.count != null) REP.count = rc.count; if (rc.gap != null) REP.gap = rc.gap; } catch (e) {}
+  function repSave() { try { localStorage.setItem('rep_cfg', JSON.stringify({ count: REP.count, gap: REP.gap })); } catch (e) {} }
+  function repLabel() { var b = playerBar && playerBar.querySelector('#madaniRep'); if (b) b.textContent = REP.mode === 'off' ? '🔁' : '🔁' + (REP.count ? '×' + REP.count : '∞'); }
+  /* called when ayah `ayah` of `sura` has just finished: returns an ayah number to play again, 'stop', or null to carry on normally */
+  function repeatTarget(sura, ayah) {
+    if (REP.mode === 'off') return null;
+    var inf = REP.count === 0;
+    if (REP.mode === 'ayah') {
+      if (inf || REP.n < REP.count - 1) { REP.n++; return ayah; }
+      REP.n = 0; return null;
+    }
+    if (REP.mode === 'range' && REP.from && REP.to && REP.from.s === sura && ayah === REP.to.a) {
+      if (inf || REP.n < REP.count - 1) { REP.n++; return REP.from.a; }
+      REP.n = 0; return 'stop';
+    }
+    return null;
+  }
+  function repSeek(t) {
+    clearTimeout(repTimer);
+    var ms = curMap ? (curMap[t] != null ? curMap[t] : (t === 1 && curMap[0] != null ? curMap[0] : 0)) : 0;
+    var go = function () { if (!audio) return; try { audio.currentTime = ms / 1000; var pr = audio.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} };
+    if (REP.gap > 0) { try { audio.pause(); } catch (e) {} repTimer = setTimeout(go, REP.gap * 1000); } else go();
+  }
+  function openRepeat() {
+    var ov = document.getElementById('madaniRepSheet'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'madaniRepSheet';
+    ov.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;z-index:99990;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center';
+    var cs = current || { sura: 1, ayah: 1 }, maxA = AYAH_COUNT[cs.sura] || 7;
+    var toDef = REP.to && REP.to.s === cs.sura ? REP.to.a : Math.min(maxA, cs.ayah + 4);
+    function chip(id, on, txt) { return '<span data-i="' + id + '" style="display:inline-block;padding:9px 13px;margin:3px;border-radius:12px;border:1px solid #cfe0d6;cursor:pointer;' + (on ? 'background:#1b6b4b;color:#fff' : 'background:#fff;color:#173f35') + '">' + txt + '</span>'; }
+    var h = '<div style="width:100%;max-width:560px;background:#fff;color:#1b1b1b;border-radius:18px 18px 0 0;padding:14px 14px 22px;direction:rtl;max-height:85vh;overflow:auto">';
+    h += '<b style="font-size:18px">دووبارەکردنەوە</b><div style="color:#666;font-size:13px;margin:4px 0 8px">ئایەتی ئێستا: ' + cs.sura + ' : ' + cs.ayah + '</div>';
+    h += '<div>' + chip('m:off', REP.mode === 'off', 'کوژاوە') + chip('m:ayah', REP.mode === 'ayah', 'هەر ئایەتێک چەند جار') + chip('m:range', REP.mode === 'range', 'دووبارەکردنەوەی چەند ئایەت') + '</div>';
+    h += '<div id="repRange" style="margin:8px 0;display:' + (REP.mode === 'range' ? 'block' : 'none') + '">لە ئایەتی <b>' + cs.ayah + '</b> تا ئایەتی <input id="repTo" type="number" min="' + cs.ayah + '" max="' + maxA + '" value="' + toDef + '" style="width:70px;padding:6px;border-radius:8px;border:1px solid #cfd8d3;font:inherit"> (لە ' + maxA + ')</div>';
+    h += '<div style="margin-top:8px;font-weight:700">ژمارەی دووبارەکردنەوە</div><div>' + [2, 3, 5, 7, 10, 0].map(function (n) { return chip('c:' + n, REP.count === n, n ? n + '×' : '∞ بێکۆتا'); }).join('') + '</div>';
+    h += '<div style="margin-top:8px;font-weight:700">وەستان لە نێوان دووبارەکان</div><div>' + [0, 1, 2, 3, 5].map(function (n) { return chip('g:' + n, REP.gap === n, n ? n + ' چرکە' : 'بێ وەستان'); }).join('') + '</div>';
+    h += '<div style="margin-top:14px;text-align:center"><span id="repOk" style="display:inline-block;padding:11px 30px;border-radius:12px;background:#1b6b4b;color:#fff;font-weight:700;cursor:pointer">باشە</span></div></div>';
+    ov.innerHTML = h; document.body.appendChild(ov);
+    var mode = REP.mode, count = REP.count, gap = REP.gap;
+    ov.addEventListener('click', function (e) {
+      if (e.target === ov) { ov.remove(); return; }
+      var t = e.target.closest && e.target.closest('[data-i]');
+      if (t) {
+        var k = t.getAttribute('data-i').split(':');
+        if (k[0] === 'm') mode = k[1]; else if (k[0] === 'c') count = +k[1]; else gap = +k[1];
+        Array.prototype.forEach.call(ov.querySelectorAll('[data-i]'), function (x) {
+          var q = x.getAttribute('data-i').split(':'), on = (q[0] === 'm' && q[1] === mode) || (q[0] === 'c' && +q[1] === count) || (q[0] === 'g' && +q[1] === gap);
+          x.style.background = on ? '#1b6b4b' : '#fff'; x.style.color = on ? '#fff' : '#173f35';
+        });
+        ov.querySelector('#repRange').style.display = mode === 'range' ? 'block' : 'none';
+        return;
+      }
+      if (e.target.id === 'repOk') {
+        REP.mode = mode; REP.count = count; REP.gap = gap; REP.n = 0; repSave(); clearTimeout(repTimer);
+        if (mode === 'ayah') { REP.from = { s: cs.sura, a: cs.ayah }; REP.to = null; }
+        else if (mode === 'range') { var to = Math.max(cs.ayah, Math.min(maxA, +ov.querySelector('#repTo').value || cs.ayah)); REP.from = { s: cs.sura, a: cs.ayah }; REP.to = { s: cs.sura, a: to }; }
+        repLabel(); ov.remove();
+      }
+    });
+  }
+
   function startWatch(timingMap, sura) {
-    stopWatch();
+    stopWatch(); curMap = timingMap;
     if (!timingMap || !audio) return;
     watchTimer = setInterval(function () {
       if (!audio || audio.paused) return;
@@ -313,6 +377,11 @@
       var ayahs = Object.keys(timingMap).map(Number).filter(function (a) { return a > 0 && a < 900; }).sort(function (a, b) { return a - b; });
       var curA = ayahs[0] || 1;
       for (var i = 0; i < ayahs.length; i++) { if (timingMap[ayahs[i]] <= ms) curA = ayahs[i]; else break; }
+      if (REP.mode !== 'off' && current && current.sura === sura && curA > current.ayah) {
+        var rt = repeatTarget(sura, current.ayah);
+        if (rt === 'stop') { try { audio.pause(); } catch (e) {} finishPlayback(); return; }
+        if (typeof rt === 'number') { repSeek(rt); return; }
+      }
       if (!current || current.sura !== sura || current.ayah !== curA) {
         current = { sura: sura, ayah: curA };
         drawHighlight(sura, curA);
@@ -323,7 +392,7 @@
           window.openPage(lastPage + 1);
         }
       }
-    }, 150);
+    }, 70);
   }
 
   function playGapless(m, sura, ayah, map) {
@@ -361,7 +430,11 @@
       }, { once: true });
       audio.load();
     }
-    audio.onended = function () { finishPlayback(); };
+    audio.onended = function () {
+      var t = current ? repeatTarget(sura, current.ayah) : null;
+      if (typeof t === 'number') { repSeek(t); return; }
+      finishPlayback();
+    };
   }
 
   function playAyah(sura, ayah) {
@@ -369,7 +442,8 @@
     current = { sura: sura, ayah: ayah };
     pendingNext = null;
     resumable = false;
-    drawHighlight(sura, ayah); stopWatch();
+    if (!repKeep) REP.n = 0; repKeep = false;
+    drawHighlight(sura, ayah); stopWatch(); clearTimeout(repTimer);
     if (playerBar) {
       var lab = playerBar.querySelector('#madaniLabel'); if (lab) lab.textContent = sura + ' : ' + ayah;
       var btn = playerBar.querySelector('#madaniPlay'); if (btn) btn.textContent = '⏸';
@@ -388,6 +462,9 @@
       var b = playerBar && playerBar.querySelector('#madaniPlay'); if (b) b.textContent = '▶';
     });
     audio.onended = function () {
+      var rt = repeatTarget(sura, ayah);
+      if (rt === 'stop') { finishPlayback(); return; }
+      if (typeof rt === 'number') { clearTimeout(repTimer); repTimer = setTimeout(function () { repKeep = true; playAyah(sura, rt); }, REP.gap * 1000); return; }
       var so = window.__surahOnly;
       var next = null;
       for (var i = 0; i < pageAyahOrder.length; i++) {
