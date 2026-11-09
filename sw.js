@@ -2,7 +2,7 @@
 // - app pages (html/js/css/json): NETWORK FIRST, so every change you push shows up right away;
 //   cached copy is only used when offline.
 // - heavy mushaf data (fonts / page images under /data/): cache first, size-limited.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const SHELL = 'shell-' + VERSION;
 const PAGES = 'pages-' + VERSION;
 const DATA = 'data-' + VERSION;
@@ -12,7 +12,8 @@ const MAX_PAGES = 150;
 const MAX_DATA = 400;
 const MAX_IMAGES = 40;
 const SHELL_FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
-const KEEP = [SHELL, PAGES, DATA, IMAGES, API];
+const AUDIO = 'audio-dl'; // user-downloaded recitations (never auto-deleted)
+const KEEP = [SHELL, PAGES, DATA, IMAGES, API, AUDIO];
 const HEAVY = /\.(woff2?|ttf|otf|webp|png|jpe?g|gif)$/i;
 
 self.addEventListener('install', (e) => {
@@ -82,8 +83,34 @@ async function staleWhileRevalidate(req, name) {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
-  if (req.headers.has('range')) return; // audio/video range requests: leave to the browser
   const url = new URL(req.url);
+
+  // Downloaded recitations: online -> browser streams from the internet as usual;
+  // offline -> play the saved copy (with Range support so seeking works).
+  if (/\.mp3$/i.test(url.pathname) && url.origin !== location.origin) {
+    if (self.navigator.onLine) return;
+    e.respondWith((async () => {
+      const c = await caches.open(AUDIO);
+      const hit = await c.match(url.href);
+      if (!hit) return Response.error();
+      const rng = req.headers.get('range');
+      if (!rng) return hit;
+      const m = /bytes=(\d*)-(\d*)/.exec(rng);
+      const buf = await hit.arrayBuffer();
+      const n = buf.byteLength;
+      let a = m && m[1] ? parseInt(m[1], 10) : 0;
+      let b = m && m[2] ? parseInt(m[2], 10) : n - 1;
+      if (m && !m[1] && m[2]) { a = Math.max(0, n - parseInt(m[2], 10)); b = n - 1; }
+      b = Math.min(b, n - 1);
+      return new Response(buf.slice(a, b + 1), { status: 206, headers: {
+        'Content-Type': hit.headers.get('Content-Type') || 'audio/mpeg',
+        'Content-Range': 'bytes ' + a + '-' + b + '/' + n,
+        'Content-Length': String(b - a + 1), 'Accept-Ranges': 'bytes' } });
+    })());
+    return;
+  }
+
+  if (req.headers.has('range')) return; // audio/video range requests: leave to the browser
 
   if (url.hostname === 'api.github.com') return; // live commit info: always network
 
