@@ -461,7 +461,74 @@
     }
   }
 
+  /* ---------- hold-to-auto-scroll (page reader): glides down the page, then continues on the next page ---------- */
+  var ASP = [12, 25, 45, 70, 105, 150, 220], asLv = 2, asRun = false, asLatch = false, asT0 = 0, asLast = 0, asAcc = 0, asRaf = 0, asBox = null, asWait = 0;
+  try { var q0 = parseInt(localStorage.getItem('as_speed'), 10); if (q0 >= 0 && q0 < ASP.length) asLv = q0; } catch (e) {}
+  function asEl(i) { return document.getElementById(i); }
+  function asLabel() { var l = asEl('asLv2'); if (l) l.textContent = (asLv + 1) + '/' + ASP.length; try { localStorage.setItem('as_speed', String(asLv)); } catch (e) {} }
+  function asStop() { asRun = false; asLatch = false; cancelAnimationFrame(asRaf); var g = asEl('asGo2'); if (g) { g.classList.remove('on'); g.textContent = '⬇'; } }
+  /* continuous mode: a scrolling stack of page images (pages are fit-to-screen, so there is nothing to scroll otherwise) */
+  var cont = null, contLast = 0;
+  function pageUrl(n) { return 'https://android.quran.com/data/width_1260/page' + String(n).padStart(3, '0') + '.png'; }
+  function contAdd() { if (!cont || contLast >= 604) return false; contLast++; var im = document.createElement('img'); im.dataset.p = contLast; im.src = pageUrl(contLast); im.style.cssText = 'display:block;width:100%;height:auto;border-bottom:2px solid #e3d8b8;min-height:' + Math.round(window.innerWidth * 1.6) + 'px;background:#fffdf5'; cont.appendChild(im); return true; }
+  function contScroll() {
+    var mid = cont.scrollTop + cont.clientHeight / 2, ims = cont.children, cur2 = lastPage;
+    for (var i = 0; i < ims.length; i++) { var t = ims[i].offsetTop; if (t <= mid && mid < t + ims[i].offsetHeight) { cur2 = +ims[i].dataset.p; break; } }
+    if (cur2 !== lastPage) {
+      lastPage = cur2; try { localStorage.setItem('preview_page', String(cur2)); if (typeof currentPage !== 'undefined') currentPage = cur2; } catch (e) {}
+      var t2 = asEl('pageTitle'); if (t2) t2.textContent = 'پەڕەی ' + cur2; var inp = asEl('pageInput'); if (inp) inp.value = cur2;
+      var pg = asEl('asPg'); if (pg) pg.textContent = cur2;
+    }
+    if (cont.scrollTop + cont.clientHeight * 2.2 > cont.scrollHeight) contAdd();
+  }
+  function contEnter() {
+    if (cont) return;
+    cont = document.createElement('div'); cont.id = 'madaniCont';
+    var pb = asEl('madaniPlayer');
+    cont.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:' + (pb && pb.offsetHeight ? pb.offsetHeight : 0) + 'px;z-index:9980;overflow-y:auto;overflow-x:hidden;background:#fffdf5;-webkit-overflow-scrolling:touch';
+    document.body.appendChild(cont); contLast = lastPage - 1; for (var i = 0; i < 3; i++) contAdd();
+    cont.addEventListener('scroll', contScroll, { passive: true });
+    asBox.classList.add('cs'); var pg = asEl('asPg'); if (pg) pg.textContent = lastPage;
+  }
+  function contExit() {
+    asStop(); if (!cont) return; var p = lastPage; cont.remove(); cont = null; asBox.classList.remove('cs');
+    if (typeof window.openPage === 'function') window.openPage(p);
+  }
+  function asTick(t) {
+    if (!asRun || !cont) return;
+    var dt = Math.min(0.05, (t - asLast) / 1000); asLast = t;
+    asAcc += ASP[asLv] * dt; var step = Math.floor(asAcc);
+    if (step > 0) { asAcc -= step; var before = cont.scrollTop; cont.scrollTop = before + step; if (cont.scrollTop === before && !contAdd()) { asStop(); return; } }
+    asRaf = requestAnimationFrame(asTick);
+  }
+  function asStart() { if (asRun) return; contEnter(); asRun = true; asAcc = 0; asLast = performance.now(); asWait = 0; asEl('asGo2').classList.add('on'); asRaf = requestAnimationFrame(asTick); }
+  function buildAuto() {
+    if (asBox) return;
+    var st = document.createElement('style');
+    st.textContent = '#asBox2{position:fixed;right:8px;bottom:8px;z-index:9990;display:none;gap:5px;align-items:center;touch-action:none;background:rgba(0,0,0,.38);padding:4px 6px;border-radius:26px}#asBox2.on{display:flex}' +
+      '#asBox2 button{width:34px;height:34px;border:0;border-radius:50%;background:rgba(27,107,75,.95);color:#fff;font-size:17px;font-weight:700;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none;padding:0}' +
+      '#asGo2{width:44px!important;height:44px!important;font-size:22px!important;background:#ffd54f!important;color:#173f35!important}#asGo2.on{background:#e67e22!important;color:#fff!important}#asLv2{color:#fff;font-size:11px;min-width:26px;text-align:center}#asExit2{display:none;background:rgba(120,30,30,.9)!important}#asBox2.cs #asExit2{display:block}#asPg{color:#ffd54f;font-size:12px;font-weight:700;min-width:24px;text-align:center;display:none}#asBox2.cs #asPg{display:inline}';
+    document.head.appendChild(st);
+    asBox = document.createElement('div'); asBox.id = 'asBox2';
+    asBox.innerHTML = '<button type="button" id="asExit2" aria-label="exit">✕</button><span id="asPg"></span><button type="button" id="asDn2">－</button><span id="asLv2"></span><button type="button" id="asUp2">＋</button><button type="button" id="asGo2" aria-label="auto scroll">⬇</button>';
+    document.body.appendChild(asBox); asLabel();
+    var g = asEl('asGo2');
+    g.addEventListener('pointerdown', function (e) { e.preventDefault(); try { g.setPointerCapture(e.pointerId); } catch (x) {} if (asLatch) { asStop(); asT0 = -1; return; } asT0 = Date.now(); asStart(); });
+    g.addEventListener('pointerup', function () { if (asT0 < 0) { asT0 = 0; return; } if (!asRun) return; if (Date.now() - asT0 < 250) { asLatch = true; g.textContent = '⏸'; } else if (!asLatch) asStop(); });
+    g.addEventListener('pointercancel', function () { if (!asLatch) asStop(); });
+    g.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    asEl('asExit2').onclick = contExit;
+    asEl('asUp2').onclick = function () { asLv = Math.min(ASP.length - 1, asLv + 1); asLabel(); };
+    asEl('asDn2').onclick = function () { asLv = Math.max(0, asLv - 1); asLabel(); };
+    setInterval(function () {
+      var rd = asEl('reader'), on = !!(rd && rd.classList.contains('active'));
+      asBox.classList.toggle('on', on); if (!on) { if (cont) contExit(); else if (asRun) asStop(); }
+      var pb = asEl('madaniPlayer'); asBox.style.bottom = ((pb && pb.offsetHeight ? pb.offsetHeight : 0) + 8) + 'px';
+    }, 400);
+  }
+
   function boot() {
+    buildAuto();
     installHook();
     try {
       var reader = document.getElementById('reader');

@@ -523,16 +523,17 @@
   try { var q0 = parseInt(localStorage.getItem('as_speed'), 10); if (q0 >= 0 && q0 < ASP.length) asLv = q0; } catch (e) {}
   var asCss = document.createElement('style');
   asCss.textContent = '#csWrap{position:fixed;left:0;top:0;right:0;bottom:0;z-index:2;overflow-y:auto;overflow-x:hidden;background:#fffdf5;-webkit-overflow-scrolling:touch}#csWrap iframe{display:block;width:100%;border:0;border-bottom:2px solid #e3d8b8}' +
-    '#asBox{position:fixed;right:10px;bottom:96px;z-index:31;display:none;flex-direction:column;gap:6px;align-items:center;touch-action:none}#app.ui ~ #asBox{display:flex}' +
-    '#asBox button{width:44px;height:44px;border:0;border-radius:50%;background:rgba(27,107,75,.92);color:#fff;font-size:20px;font-weight:700;box-shadow:0 3px 10px #0004;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}' +
-    '#asGo{width:58px!important;height:58px!important;font-size:26px!important;background:#ffd54f!important;color:#173f35!important}#asGo.on{background:#e67e22!important;color:#fff!important}#asExit{display:none;background:rgba(120,30,30,.9)!important}#asBox.cs #asExit{display:block}' +
-    '#asLv{color:#fff;background:rgba(0,0,0,.55);border-radius:10px;padding:1px 8px;font-size:12px}';
+    '#asBox{position:fixed;right:8px;bottom:8px;z-index:31;display:none;flex-direction:row;gap:5px;align-items:center;touch-action:none;background:rgba(0,0,0,.35);padding:4px 6px;border-radius:26px}#app.ui ~ #asBox{display:flex}' +
+    '#asBox button{width:34px;height:34px;border:0;border-radius:50%;background:rgba(27,107,75,.95);color:#fff;font-size:17px;font-weight:700;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none;padding:0}' +
+    '#asGo{width:44px!important;height:44px!important;font-size:22px!important;background:#ffd54f!important;color:#173f35!important}#asGo.on{background:#e67e22!important;color:#fff!important}#asExit{display:none;background:rgba(120,30,30,.9)!important}#asBox.cs #asExit{display:block}' +
+    '#asLv{color:#fff;font-size:11px;min-width:26px;text-align:center}';
   document.head.appendChild(asCss);
   var asBox = document.createElement('div'); asBox.id = 'asBox';
-  asBox.innerHTML = '<button type="button" id="asExit" aria-label="exit">✕</button><button type="button" id="asUp">＋</button><span id="asLv"></span><button type="button" id="asDn">－</button><button type="button" id="asGo" aria-label="auto scroll">⬇</button>';
+  asBox.innerHTML = '<button type="button" id="asExit" aria-label="exit">✕</button><button type="button" id="asDn">－</button><span id="asLv"></span><button type="button" id="asUp">＋</button><button type="button" id="asGo" aria-label="auto scroll">⬇</button>';
   document.body.appendChild(asBox);
   function asLabel() { $('asLv').textContent = (asLv + 1) + '/' + ASP.length; try { localStorage.setItem('as_speed', String(asLv)); } catch (e) {} }
   asLabel();
+  setInterval(function () { var pl = $('pl'), h = pl && getComputedStyle(pl).display !== 'none' ? pl.offsetHeight : 0; asBox.style.bottom = (h + 8) + 'px'; }, 400);
 
   function csUrl(p) { var bp = baseFor(mode); return 'view.html?m=' + mode + '&p=' + p + (bp ? '&b=' + encodeURIComponent(bp) : ''); }
   function csAdd() { var n = csLast + 1; if (n > 604) return false; csLast = n; var fx = document.createElement('iframe'); fx.dataset.p = n; fx.style.height = Math.round(window.innerWidth * 1.62) + 'px'; fx.src = csUrl(n); cs.appendChild(fx); return true; }
