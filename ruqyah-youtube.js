@@ -1,4 +1,4 @@
-/* ruqyah-youtube.js — special long sessions (YouTube embeds) */
+/* ruqyah-youtube.js — localized special long sessions (YouTube embeds) */
 (function () {
   if (window.__ruqyahYT) return;
   window.__ruqyahYT = true;
