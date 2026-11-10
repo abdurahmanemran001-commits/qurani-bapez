@@ -57,6 +57,7 @@
         status('… نووسینی وەڵام');
         return post('/answer', {
           q: q,
+          lang: window.appLang || 'ckb',
           token: ex.token,
           detail: full ? 'full' : 'short',
           personal: !!ex.personal,
@@ -111,7 +112,7 @@
     return (hits.quran || []).concat(hits.hadith || []).slice(0, 8);
   }
   function quizPost(tok, topic, recent, all) {
-    return post('/quiz', {q: topic || 'general', topic: topic || '', token: tok, recent: (recent || []).slice(-25), passages: all.map(function (d) { return {id: d.id, text: passageText(d).slice(0, 600)}; })}, 45000);
+    return post('/quiz', {q: topic || 'general', topic: topic || '', lang: window.appLang || 'ckb', token: tok, recent: (recent || []).slice(-25), passages: all.map(function (d) { return {id: d.id, text: passageText(d).slice(0, 600)}; })}, 45000);
   }
   function generateQuiz(topic, recent) {
     if (!endpoint() || !window.AiRag) return Promise.reject(new Error(NET));
