@@ -31,6 +31,7 @@ jobs:
             curl -fsSL -o index.html "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
           fi
           sed -i "s/language-ui\.js?v=[0-9a-f]*/language-ui.js?v=${GITHUB_SHA::8}/g" index.html
+          sed -i "s/language\\.js?v=[0-9a-f]*/language.js?v=${GITHUB_SHA::8}/g" index.html
           grep -n 'language-ui' index.html || true
           wc -c index.html
 
