@@ -1,4 +1,4 @@
-document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=1"><\/script>');
+document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=2"><\/script>');
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
@@ -57,7 +57,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s5);
 
   var s6 = document.createElement('script');
-  s6.src = 'ruqyah.js?v=6';
+  s6.src = 'ruqyah.js?v=7';
   s6.async = true;
   document.head.appendChild(s6);
 
@@ -67,7 +67,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(sr);
 
   var sy = document.createElement('script');
-  sy.src = 'ruqyah-youtube.js?v=1';
+  sy.src = 'ruqyah-youtube.js?v=2';
   sy.async = true;
   document.head.appendChild(sy);
 
