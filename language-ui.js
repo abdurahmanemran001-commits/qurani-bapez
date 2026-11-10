@@ -30,8 +30,13 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sS.async = true;
   document.head.appendChild(sS);
 
+  var sR = document.createElement('script');
+  sR.src = 'srs.js?v=1';
+  sR.async = true;
+  document.head.appendChild(sR);
+
   var sK = document.createElement('script');
-  sK.src = 'khatma.js?v=2';
+  sK.src = 'khatma.js?v=3';
   sK.async = true;
   document.head.appendChild(sK);
 
