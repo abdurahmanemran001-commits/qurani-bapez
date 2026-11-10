@@ -1,5 +1,6 @@
 /* SRS memorisation helper (SM-2 style spaced repetition) on ayah cards. Data stays on the device. */
 (function () {
+  var T = window.T || function (k) { var a = [].slice.call(arguments, 1); return String(k).replace(/\{(\d+)\}/g, function (m, i) { return a[i]; }); };
   if (window.__srs) return; window.__srs = 1;
   var LS = 'srs_cards', corpus = null, loading = false, sess = null;
   function jget() { try { return JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { return {}; } }
@@ -51,7 +52,7 @@
     var gs = Object.keys(g).sort(function (a, b) { return a - b; });
     if (gs.length) {
       h += '<div class="sc"><h3>ئەوانەی لەبەرت دەکەیت</h3>';
-      gs.forEach(function (s) { h += '<div class="sr" style="border-top:1px solid #eef2f1;margin:0;padding:8px 0"><span style="flex:1">' + esc(sname(+s)) + ' — ' + g[s] + ' ئایەت</span><button class="sb d" data-rm="' + s + '">لابردن</button></div>'; });
+      gs.forEach(function (s) { h += '<div class="sr" style="border-top:1px solid #eef2f1;margin:0;padding:8px 0"><span style="flex:1">' + '<bdi>' + esc(sname(+s)) + '</bdi> — <span>' + g[s] + ' ئایەت</span></span><button class="sb d" data-rm="' + s + '">لابردن</button></div>'; });
       h += '</div>';
     }
     P.innerHTML = h; bind(P);
@@ -75,7 +76,7 @@
     }
     var k = sess.list[sess.pos], p = k.split(':'), s = +p[0], a = +p[1], c = o[k];
     var prev = a > 1 ? corpus[s + ':' + (a - 1)] : '';
-    P.innerHTML = '<div class="sc"><div style="display:flex;justify-content:space-between;color:#6d7975;font-size:13px"><span>' + (sess.pos + 1) + ' / ' + sess.list.length + '</span><span>' + esc(sname(s)) + ' · ئایەتی ' + a + '</span></div>'
+    P.innerHTML = '<div class="sc"><div style="display:flex;justify-content:space-between;color:#6d7975;font-size:13px"><span>' + (sess.pos + 1) + ' / ' + sess.list.length + '</span><span><bdi>' + esc(sname(s)) + '</bdi> · <span>ئایەتی ' + a + '</span></span></div>'
       + '<div style="margin:10px 0;color:#6d7975;font-size:14px">' + (a > 1 ? 'ئایەتی پێشوو:' : 'دەستپێکی سووڕەت — ئایەتی یەکەم:') + '</div>'
       + '<div class="sq">' + (prev ? esc(prev) : '﴿ ... ﴾') + '</div>'
       + '<div style="margin:10px 0;text-align:center;font-weight:bold">ئایەتی ' + a + ' بخوێنەوە لە بیرەوە</div>'

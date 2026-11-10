@@ -1,3 +1,4 @@
+document.write('<script src="lang-extra.js?v=2"><\/script><script src="lang-tt.js?v=2"><\/script>');
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
