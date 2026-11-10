@@ -93,13 +93,13 @@ function phrase(core,b){
  let out=core;const tok=[];
  for(const k of b.keys){
   if(out.indexOf(k)<0)continue;
-  out=out.split(k).join('\\uE000'+tok.length+'\\uE001');tok.push(b.map[k]);
+  out=out.split(k).join('@@@TOKEN'+tok.length+'@@@');tok.push(b.map[k]);
  }
- return tok.length?out.replace(/\\uE000(\\d+)\\uE001/g,(m,i)=>tok[+i]):core;
+ return tok.length?out.replace(/@@@TOKEN(\d+)@@@/g,(m,i)=>tok[+i]):core;
 }
 function tr(original){
  const b=build(window.appLang);
- const m=/^(\\s*)([\\s\\S]*?)(\\s*)$/.exec(String(original));
+ const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(String(original));
  const core=m[2];if(!core)return original;
  let r=b.map[core];
  if(r===undefined&&KLETTER.test(core))r=phrase(core,b);
