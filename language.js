@@ -93,9 +93,15 @@ function phrase(core,b){
  let out=core;const tok=[];
  for(const k of b.keys){
   if(out.indexOf(k)<0)continue;
-  out=out.split(k).join('@@@TOKEN'+tok.length+'@@@');tok.push(b.map[k]);
+  if(k.length<=3){
+   const escaped=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   const re=new RegExp('(^|[\\s·])'+escaped+'(?=$|[\\s·])','g');
+   out=out.replace(re,function(full,prefix){const i=tok.length;tok.push(b.map[k]);return prefix+'@@@TOKEN'+i+'@@@';});
+  }else{
+   out=out.split(k).join('@@@TOKEN'+tok.length+'@@@');tok.push(b.map[k]);
+  }
  }
- return tok.length?out.replace(/@@@TOKEN(\d+)@@@/g,(m,i)=>tok[+i]):core;
+ return tok.length?out.replace(/@@@TOKEN(\\d+)@@@/g,(m,i)=>tok[+i]):core;
 }
 function tr(original){
  const b=build(window.appLang);
