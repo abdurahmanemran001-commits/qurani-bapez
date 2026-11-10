@@ -1,5 +1,6 @@
 /* Khatma: personal plan (N days, daily portion) + group (split juz between people via share links). No backend: progress is stored on each device. */
 (function () {
+  var T = window.T || function (k) { var a = [].slice.call(arguments, 1); return String(k).replace(/\{(\d+)\}/g, function (m, i) { return a[i]; }); };
   if (window.__khatma) return; window.__khatma = 1;
   var LP = 'khatma_p', LG = 'khatma_g';
   function jget(k, d) { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } }
@@ -24,20 +25,20 @@
     var done = p.done || {}, n = 0, k; for (k in done) n++;
     var late = 0; for (k = 0; k < i; k++) if (!done[k]) late++;
     var over = dayDiff(p.start) >= days;
-    return '<div class="khc"><h3>📖 خەتمەی تایبەت</h3><div>ڕۆژی <b>' + (i + 1) + '</b> لە ' + days + (over ? ' (ماوەکە تەواو بوو)' : '') + '</div>'
-      + '<div style="margin:6px 0">بەشی ئەمڕۆ: پەڕە <b>' + a + '</b> تا <b>' + b + '</b> (' + (b - a + 1) + ' پەڕە)</div>'
-      + '<div class="khbar"><i style="width:' + Math.round(n / days * 100) + '%"></i></div><small>' + n + ' ڕۆژ تەواو کراوە لە ' + days + (late ? ' • ' + late + ' ڕۆژ دواکەوتوویت' : '') + '</small>'
+    return '<div class="khc"><h3>📖 خەتمەی تایبەت</h3><div>' + T('ڕۆژی {0} لە {1}', i + 1, days) + (over ? ' ' + T('(ماوەکە تەواو بوو)') : '') + '</div>'
+      + '<div style="margin:6px 0">' + T('بەشی ئەمڕۆ: پەڕە {0} تا {1} ({2} پەڕە)', a, b, b - a + 1) + '</div>'
+      + '<div class="khbar"><i style="width:' + Math.round(n / days * 100) + '%"></i></div><small><span>' + T('{0} ڕۆژ تەواو کراوە لە {1}', n, days) + '</span>' + (late ? ' • <span>' + T('{0} ڕۆژ دواکەوتوویت', late) + '</span>' : '') + '</small>'
       + '<div class="khr"><button class="khb" id="khRead" data-p="' + a + '">بخوێنەوە</button><button class="khb s" id="khDone">' + (done[i] ? '✓ ئەمڕۆ تەواو کراوە' : 'ئەمڕۆم تەواو کرد') + '</button><button class="khb d" id="khReset">سڕینەوە</button></div></div>';
   }
   function groupHTML() {
     var g = jget(LG, []), h = '';
     g.forEach(function (x, idx) {
       var j1 = Math.floor(x.i * 30 / x.n) + 1, j2 = Math.floor((x.i + 1) * 30 / x.n);
-      h += '<div class="khc"><h3>👥 ' + esc(x.name) + '</h3><div>بەشی تۆ: جوزی <b>' + j1 + (j2 > j1 ? ' تا ' + j2 : '') + '</b> (پەڕە ' + jStart(j1) + ' - ' + jEnd(j2) + ') • ' + x.n + ' کەس</div>'
+      h += '<div class="khc"><h3>👥 ' + esc(x.name) + '</h3><div>' + T('بەشی تۆ: جوزی {0} (پەڕە {1} - {2}) • {3} کەس', j1 + (j2 > j1 ? '–' + j2 : ''), jStart(j1), jEnd(j2), x.n) + '</div>'
         + '<div class="khr"><button class="khb" data-gr="' + jStart(j1) + '">بخوێنەوە</button><button class="khb s" data-gd="' + idx + '">' + (x.done ? '✓ تەواو کراوە' : 'بەشەکەم تەواو کرد') + '</button><button class="khb d" data-gx="' + idx + '">لابردن</button></div></div>';
     });
     h += '<div class="khc"><h3>👨‍👩‍👧 خەتمەی بە کۆمەڵ</h3><div>ناو و ژمارەی کەسەکان دیاری بکە؛ بۆ هەر کەسێک بەستەرێک دەنێریت و بەشی خۆی (جوز) پێ دەدرێت.</div>'
-      + '<div class="khr"><input id="khName" placeholder="ناوی خەتمە" style="flex:1"><label>کەس: <input id="khN" type="number" min="2" max="30" value="5" style="width:70px"></label><button class="khb" id="khMake">دروستکردن</button></div><div id="khLinks"></div>'
+      + '<div class="khr"><input id="khName" placeholder="' + T('ناوی خەتمە') + '" style="flex:1"><label>کەس: <input id="khN" type="number" min="2" max="30" value="5" style="width:70px"></label><button class="khb" id="khMake">دروستکردن</button></div><div id="khLinks"></div>'
       + '<small style="display:block;margin-top:8px;color:#6d7975">تێبینی: پێشکەوتنی هەر کەسێک لەسەر مۆبایلی خۆی دەمێنێتەوە و بۆ ئەوانی تر نانێردرێت.</small></div>';
     return h;
   }
@@ -50,16 +51,16 @@
     if (q('#khStart')) q('#khStart').onclick = function () { var d = Math.max(3, Math.min(365, +q('#khDays').value || 30)); jset(LP, { start: iso(today()), days: d, done: {} }); render(); };
     if (q('#khRead')) q('#khRead').onclick = function () { openAt(+this.getAttribute('data-p')); };
     if (q('#khDone')) q('#khDone').onclick = function () { var p = jget(LP, null), i = Math.max(0, Math.min(p.days - 1, dayDiff(p.start))); p.done = p.done || {}; if (p.done[i]) delete p.done[i]; else p.done[i] = 1; jset(LP, p); render(); };
-    if (q('#khReset')) q('#khReset').onclick = function () { if (confirm('خەتمەکە بسڕدرێتەوە؟')) { try { localStorage.removeItem(LP); } catch (e) {} render(); } };
+    if (q('#khReset')) q('#khReset').onclick = function () { if (confirm(T('خەتمەکە بسڕدرێتەوە؟'))) { try { localStorage.removeItem(LP); } catch (e) {} render(); } };
     Array.prototype.forEach.call(P.querySelectorAll('[data-gr]'), function (b) { b.onclick = function () { openAt(+b.getAttribute('data-gr')); }; });
     Array.prototype.forEach.call(P.querySelectorAll('[data-gd]'), function (b) { b.onclick = function () { var g = jget(LG, []), x = g[+b.getAttribute('data-gd')]; x.done = !x.done; jset(LG, g); render(); }; });
     Array.prototype.forEach.call(P.querySelectorAll('[data-gx]'), function (b) { b.onclick = function () { var g = jget(LG, []); g.splice(+b.getAttribute('data-gx'), 1); jset(LG, g); render(); }; });
     if (q('#khMake')) q('#khMake').onclick = function () {
-      var name = (q('#khName').value || '').trim() || 'خەتمەی کۆمەڵ', n = Math.max(2, Math.min(30, +q('#khN').value || 5)), base = location.origin + location.pathname, h = '';
+      var name = (q('#khName').value || '').trim() || T('خەتمەی کۆمەڵ'), n = Math.max(2, Math.min(30, +q('#khN').value || 5)), base = location.origin + location.pathname, h = '';
       for (var i = 0; i < n; i++) {
         var j1 = Math.floor(i * 30 / n) + 1, j2 = Math.floor((i + 1) * 30 / n), url = base + '?kh=' + encodeURIComponent(name) + '&n=' + n + '&i=' + i;
-        var txt = 'بەشداربە لە ' + name + ' — بەشی تۆ: جوزی ' + j1 + (j2 > j1 ? ' تا ' + j2 : '') + '\n' + url;
-        h += '<div class="khm"><span style="flex:1">کەسی ' + (i + 1) + ': جوزی ' + j1 + (j2 > j1 ? '–' + j2 : '') + '</span>'
+        var txt = T('بەشداربە لە {0} — بەشی تۆ: جوزی {1}', name, j1 + (j2 > j1 ? '–' + j2 : '')) + '\n' + url;
+        h += '<div class="khm"><span style="flex:1">' + T('کەسی {0}: جوزی {1}', i + 1, j1 + (j2 > j1 ? '–' + j2 : '')) + '</span>'
           + (i === 0 ? '<button class="khb s" data-me="' + i + '">بەشی خۆم</button>' : '')
           + '<button class="khb s" data-sh="' + encodeURIComponent(txt) + '">ناردن</button></div>';
       }
@@ -80,7 +81,7 @@
   function install() {
     var tabs = document.querySelector('.tabs'); if (!tabs || document.getElementById('tabKh')) return !!document.getElementById('tabKh');
     tabs.style.gridTemplateColumns = 'repeat(4,1fr)';
-    var b = document.createElement('button'); b.id = 'tabKh'; b.className = 'tab'; b.textContent = 'خەتمە و ئامار'; b.onclick = function () { show(true); };
+    var b = document.createElement('button'); b.id = 'tabKh'; b.className = 'tab'; b.textContent = T('خەتمە و ئامار'); b.onclick = function () { show(true); };
     tabs.appendChild(b);
     var P = document.createElement('div'); P.id = 'khP'; tabs.parentNode.insertBefore(P, tabs.nextSibling);
     var o = window.setHomeTab;
