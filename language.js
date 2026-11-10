@@ -76,7 +76,7 @@ const X=window.LANG_EXTRA||{};
 Object.keys(X).forEach(c=>{D[c]=Object.assign(D[c]||{},X[c])});
 const TT=window.LANG_TT||{};
 const KURDISH={ckb:1,bad:1};
-const KLETTER=/[ەێۆڕڵڤ]|جوزی|زیکر/;
+const KLETTER=/[ئێەۆڕڵڤگچپژک]/;
 const cache={};
 function build(code){
  if(cache[code])return cache[code];
