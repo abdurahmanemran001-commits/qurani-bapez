@@ -101,7 +101,7 @@ function phrase(core,b){
    out=out.split(k).join('@@@TOKEN'+tok.length+'@@@');tok.push(b.map[k]);
   }
  }
- return tok.length?out.replace(/@@@TOKEN(\\d+)@@@/g,(m,i)=>tok[+i]):core;
+ return tok.length?out.replace(/@@@TOKEN(\d+)@@@/g,(m,i)=>tok[+i]):core;
 }
 function tr(original){
  const b=build(window.appLang);
