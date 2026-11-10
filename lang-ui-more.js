@@ -102,4 +102,19 @@ bad:{
 };
 Object.keys(SALAH_TRANSLATIONS).forEach(function(lang){T[lang]=T[lang]||{};Object.assign(T[lang],SALAH_TRANSLATIONS[lang]);});
 
+
+/* Prayer-name and native select-option labels (select options are localized directly). */
+var SALAH_EXTRA={
+en:{"عیشا":"Isha","ڕۆژهەڵاتن":"Sunrise","Muslim World League":"Muslim World League","Umm Al-Qura":"Umm Al-Qura","Egyptian":"Egyptian","Diyanet":"Diyanet","ISNA":"ISNA"},
+ar:{"عیشا":"العشاء","ڕۆژهەڵاتن":"الشروق","Muslim World League":"رابطة العالم الإسلامي","Umm Al-Qura":"أم القرى","Egyptian":"المصرية","Diyanet":"ديانت التركية","ISNA":"الجمعية الإسلامية لأمريكا الشمالية"},
+tr:{"عیشا":"Yatsı","ڕۆژهەڵاتن":"Güneş","Muslim World League":"Müslüman Dünya Birliği","Umm Al-Qura":"Ümmü'l-Kura","Egyptian":"Mısır","Diyanet":"Diyanet","ISNA":"Kuzey Amerika İslam Toplumu"},
+fa:{"عیشا":"عشا","ڕۆژهەڵاتن":"طلوع آفتاب","Muslim World League":"رابطه جهان اسلام","Umm Al-Qura":"ام‌القری","Egyptian":"مصر","Diyanet":"دیانت ترکیه","ISNA":"انجمن اسلامی آمریکای شمالی"},
+ur:{"عیشا":"عشاء","ڕۆژهەڵاتن":"طلوع آفتاب","Muslim World League":"رابطہ عالم اسلامی","Umm Al-Qura":"ام القریٰ","Egyptian":"مصری","Diyanet":"ترک ڈایانت","ISNA":"اسلامک سوسائٹی آف نارتھ امریکہ"},
+fr:{"عیشا":"Icha","ڕۆژهەڵاتن":"Lever du soleil","Muslim World League":"Ligue islamique mondiale","Umm Al-Qura":"Oumm al-Qoura","Egyptian":"Méthode égyptienne","Diyanet":"Diyanet turc","ISNA":"Société islamique d’Amérique du Nord"},
+ru:{"عیشا":"Иша","ڕۆژهەڵاتن":"Восход","Muslim World League":"Всемирная исламская лига","Umm Al-Qura":"Умм аль-Кура","Egyptian":"Египетский метод","Diyanet":"Турецкий Диянет","ISNA":"Исламское общество Северной Америки"},
+id:{"عیشا":"Isya","ڕۆژهەڵاتن":"Matahari terbit","Muslim World League":"Liga Muslim Dunia","Umm Al-Qura":"Ummul Qura","Egyptian":"Metode Mesir","Diyanet":"Diyanet Turki","ISNA":"Masyarakat Islam Amerika Utara"},
+bad:{"عیشا":"عیشا","ڕۆژهەڵاتن":"ڕۆژهەلاتن","Muslim World League":"یەکێتیا جیهانیا موسلمانان","Umm Al-Qura":"ئوم القورا","Egyptian":"میسری","Diyanet":"دیانەت","ISNA":"کۆمەڵا ئیسلامی یا ئەمریکایا باکوور"}
+};
+Object.keys(SALAH_EXTRA).forEach(function(lang){T[lang]=T[lang]||{};Object.assign(T[lang],SALAH_EXTRA[lang]);});
+
 })();
