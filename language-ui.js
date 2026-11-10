@@ -1,4 +1,4 @@
-document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=2"><\/script><script src="lang-ui-more.js?v=5"><\/script>');
+document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=6"><\/script>');
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
