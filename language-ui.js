@@ -57,7 +57,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(s5);
 
   var s6 = document.createElement('script');
-  s6.src = 'ruqyah.js?v=5';
+  s6.src = 'ruqyah.js?v=6';
   s6.async = true;
   document.head.appendChild(s6);
 
