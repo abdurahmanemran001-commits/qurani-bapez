@@ -70,17 +70,79 @@ id:{
 'بەخێربێیت بۆ قورئانی پیرۆز':'Selamat datang di Al-Qur’an Mulia','تکایە ئەو بەشە هەڵبژێرە کە دەتەوێت بەکاری بهێنیت.':'Silakan pilih bagian yang ingin digunakan.','قورئانی پیرۆز':'Al-Qur’an Mulia','زیکرەکانم':'Zikir Saya','سەرەتا':'Beranda','قورئان':'Al-Qur’an','ڕێکخستن':'Pengaturan','گەڕان بە ناوی سورەت...':'Cari nama surah...','سورەتەکان':'Surah','جوز':'Juz','نیشانکراوەکان':'Penanda','بەشەکان':'Bagian','بابەتەکان':'Topik','موسحەف':'Mushaf','فهرست':'Daftar','دابەزاندنی ئەپ':'Pasang aplikasi','بارکردنی زیکرەکان...':'Memuat zikir...','بارکردن...':'Memuat...','ئامادە':'Siap','هیچ شتێک نەدۆزرایەوە.':'Tidak ditemukan.','وەرگێڕان بۆ ئەم زمانە هێشتا ئامادە نییە.':'Terjemahan dalam bahasa ini belum tersedia.','ڕێکخستنەکان':'Pengaturan','شێوازی موسحەف':'Gaya Mushaf','موسحەفی ئاسایی':'Mushaf standar','ڕەنگی گەرم':'Warna hangat','شەو':'Malam','هایلایت':'Sorotan','نوێترین گۆڕانکاری':'Perubahan terbaru','ڕەنگی نوسین':'Warna teks','تەواو · پاشەکەوتکرا':'Selesai · Tersimpan','ژمارەی دووبارەکردنەوە: ':'Jumlah pengulangan: '}
 };
 const originals=new WeakMap();
+const attributeOriginals=new WeakMap();
 const $=id=>document.getElementById(id);
-const X=window.LANG_EXTRA||{};Object.keys(X).forEach(c=>{D[c]=Object.assign(D[c]||{},X[c])});
+const X=window.LANG_EXTRA||{};
+Object.keys(X).forEach(c=>{D[c]=Object.assign(D[c]||{},X[c])});
+const TT=window.LANG_TT||{};
 const KURDISH={ckb:1,bad:1};
 const KLETTER=/[ەێۆڕڵڤ]|جوزی|زیکر/;
 const cache={};
-function build(code){if(cache[code])return cache[code];const raw=KURDISH[code]?Object.assign({},D[code]):Object.assign({},D.en,D[code]);const map={};Object.keys(raw).forEach(k=>{const t=k.trim();if(t)map[t]=String(raw[k]).trim()});const keys=Object.keys(map).filter(k=>KLETTER.test(k)||k.length>3).sort((a,b)=>b.length-a.length);return cache[code]={raw,map,keys}}
+function build(code){
+ if(cache[code])return cache[code];
+ const raw=KURDISH[code]
+  ?Object.assign({},D[code]||{},TT[code]||{})
+  :Object.assign({},D.en||{},D[code]||{},TT.en||{},TT[code]||{});
+ const map={};
+ Object.keys(raw).forEach(k=>{const key=k.trim();if(key)map[key]=String(raw[k]).trim()});
+ const keys=Object.keys(map).filter(k=>KLETTER.test(k)||k.length>3).sort((a,b)=>b.length-a.length);
+ return cache[code]={raw,map,keys};
+}
 function dict(){return build(window.appLang).raw}
-function phrase(core,b){let out=core;const tok=[];for(const k of b.keys){if(out.indexOf(k)<0)continue;out=out.split(k).join('\uE000'+tok.length+'\uE001');tok.push(b.map[k])}return tok.length?out.replace(/\uE000(\d+)\uE001/g,(m,i)=>tok[+i]):core}
-function tr(original){const b=build(window.appLang);const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(original);const core=m[2];if(!core)return original;let r=b.map[core];if(r===undefined&&!KURDISH[window.appLang]&&KLETTER.test(core))r=phrase(core,b);if(r===undefined&&window.appLang==='bad'&&KLETTER.test(core))r=phrase(core,b);return r===undefined||r===core?original:m[1]+r+m[3]}
-function translateNode(n){if(!n||n.nodeType!==3)return;const p=n.parentElement;if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/i.test(p.tagName)||p.closest('#languageChoices'))return;if(!originals.has(n))originals.set(n,n.nodeValue);n.nodeValue=tr(originals.get(n))}
-function translateTree(root){const walker=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);let n;while((n=walker.nextNode()))translateNode(n);document.querySelectorAll('[placeholder]').forEach(el=>{if(!el.dataset.originalPlaceholder)el.dataset.originalPlaceholder=el.placeholder;el.placeholder=tr(el.dataset.originalPlaceholder)})}
+function phrase(core,b){
+ let out=core;const tok=[];
+ for(const k of b.keys){
+  if(out.indexOf(k)<0)continue;
+  out=out.split(k).join('\\uE000'+tok.length+'\\uE001');tok.push(b.map[k]);
+ }
+ return tok.length?out.replace(/\\uE000(\\d+)\\uE001/g,(m,i)=>tok[+i]):core;
+}
+function tr(original){
+ const b=build(window.appLang);
+ const m=/^(\\s*)([\\s\\S]*?)(\\s*)$/.exec(String(original));
+ const core=m[2];if(!core)return original;
+ let r=b.map[core];
+ if(r===undefined&&KLETTER.test(core))r=phrase(core,b);
+ return r===undefined||r===core?original:m[1]+r+m[3];
+}
+function isProtected(el){
+ return !el||el.closest('#languageChoices,[data-no-translate],.ar,.arabic,.quran-text,.ayah-text,.mushaf-text');
+}
+function translateNode(n){
+ if(!n||n.nodeType!==3)return;
+ const p=n.parentElement;
+ if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/i.test(p.tagName)||isProtected(p))return;
+ let state=originals.get(n);
+ if(!state){state={original:n.nodeValue,last:null};originals.set(n,state)}
+ else if(state.last!==null&&n.nodeValue!==state.last){state.original=n.nodeValue}
+ const next=tr(state.original);
+ if(n.nodeValue!==next)n.nodeValue=next;
+ state.last=next;
+}
+function translateAttributes(el){
+ if(!el||el.nodeType!==1||isProtected(el))return;
+ const attrs=['placeholder','title','aria-label','alt'];
+ if(/^(BUTTON)$/i.test(el.tagName)||(/^(INPUT)$/i.test(el.tagName)&&/^(button|submit|reset)$/i.test(el.type||'')))attrs.push('value');
+ let state=attributeOriginals.get(el);if(!state){state={};attributeOriginals.set(el,state)}
+ attrs.forEach(function(name){
+  if(!el.hasAttribute(name))return;
+  const current=el.getAttribute(name);let item=state[name];
+  if(!item){item={original:current,last:null};state[name]=item}
+  else if(item.last!==null&&current!==item.last){item.original=current}
+  const next=tr(item.original);
+  if(current!==next)el.setAttribute(name,next);
+  item.last=next;
+ });
+}
+function translateTree(root){
+ if(!root)return;
+ const base=root.nodeType===9?root.body:root;
+ if(!base)return;
+ if(base.nodeType===1)translateAttributes(base);
+ const walker=document.createTreeWalker(base,NodeFilter.SHOW_TEXT);let n;
+ while((n=walker.nextNode()))translateNode(n);
+ if(base.querySelectorAll)base.querySelectorAll('*').forEach(translateAttributes);
+}
 function renderChoices(){const box=$('languageChoices');if(!box)return;const gate=document.documentElement.classList.contains('language-gate');const sel=window.pendingLang||(gate?null:window.appLang);box.innerHTML=LANGS.map(l=>'<button type="button" class="section-choice '+(l.code===sel?'selected':'')+'" style="padding:13px;margin:0" onclick="chooseLanguage(\''+l.code+'\')"><span class="choice-icon">🌐</span><span class="choice-copy"><b>'+l.name+'</b><small>'+l.code.toUpperCase()+'</small></span><span class="choice-arrow">'+(l.code===sel?'✓':'›')+'</span></button>').join('')}
 window.chooseLanguage=function(code){if(!LANGS.some(l=>l.code===code))return;window.pendingLang=code;renderChoices()};
 window.openLanguagePicker=function(){window.pendingLang=null;renderChoices();if($('languageModal'))$('languageModal').classList.add('open')};
