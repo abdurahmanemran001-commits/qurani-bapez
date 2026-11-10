@@ -6,22 +6,44 @@
   var TT = window.LANG_TT = window.LANG_TT || { en: {}, ar: {} };
   var recs = new WeakMap();
   function lang() { return window.appLang || (function () { try { return localStorage.getItem('app_language') || 'ckb'; } catch (e) { return 'ckb'; } })(); }
-  function table(l) { if (l === 'ckb' || l === 'bad') return null; return Object.assign({}, TT.en, l === 'en' ? null : TT[l]); }
+  function table(l) { if (l === 'ckb') return null; if (l === 'bad') return TT.bad || null; return Object.assign({}, TT.en || {}, (l === 'en' ? {} : (TT[l] || {}))); }
+  var keyCache = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function keysOf(tab) {
+    if (keyCache && keyCache.has(tab)) return keyCache.get(tab);
+    var k = Object.keys(tab).filter(function (x) { return x.length >= 4 && /[ەێۆڕڵڤ]/.test(x); }).sort(function (a, b) { return b.length - a.length; });
+    if (keyCache) keyCache.set(tab, k);
+    return k;
+  }
+  function phrase(core, tab) {
+    if (!core || core.length > 180 || !/[ەێۆڕڵڤ]/.test(core)) return core;
+    var keys = keysOf(tab), out = core, tok = [];
+    for (var i = 0; i < keys.length; i++) {
+      if (out.indexOf(keys[i]) < 0) continue;
+      out = out.split(keys[i]).join('\uE000' + tok.length + '\uE001');
+      tok.push(tab[keys[i]]);
+    }
+    if (!tok.length) return core;
+    return out.replace(/\uE000(\d+)\uE001/g, function (m, n) { return tok[+n]; });
+  }
   function conv(s, tab) {
     var m = /^(\s*)([\s\S]*?)(\s*)$/.exec(s), core = m[2]; if (!core) return s;
     var nums = [], key = core.replace(/[0-9\u0660-\u0669]+(?:[.,][0-9]+)?(?:\s?(?:KB|MB))?/g, function (x) { nums.push(x); return '{' + (nums.length - 1) + '}'; });
-    var v = tab[key]; if (v === undefined) return s;
+    var v = tab[key];
+    if (v === undefined) {
+      var p = phrase(core, tab);
+      return p === core ? s : m[1] + p + m[3];
+    }
     return m[1] + v.replace(/\{(\d+)\}/g, function (q, i) { return nums[i] === undefined ? q : nums[i]; }) + m[3];
   }
   function node(n, tab) {
-    var p = n.parentElement; if (!p || /^(SCRIPT|STYLE|TEXTAREA|INPUT)$/i.test(p.tagName) || (p.closest && p.closest('#languageChoices'))) return;
+    var p = n.parentElement; if (!p || /^(SCRIPT|STYLE|TEXTAREA|INPUT)$/i.test(p.tagName) || (p.closest && p.closest('#languageChoices,.ayah,.quran-text,[data-keep-ar]'))) return;
     var r = recs.get(n), orig = (r && n.nodeValue === r.t) ? r.o : n.nodeValue;
     if (!/[؀-ۿ]/.test(orig)) return;
     var t = tab ? conv(orig, tab) : orig;
     if (t !== n.nodeValue) n.nodeValue = t;
     recs.set(n, { o: orig, t: t });
   }
-  var attrs = ['placeholder', 'title'];
+  var attrs = ['placeholder', 'title', 'aria-label'];
   function elAttrs(e, tab) {
     attrs.forEach(function (a) {
       if (!e.getAttribute) return; var v = e.getAttribute(a); if (v == null) return;
