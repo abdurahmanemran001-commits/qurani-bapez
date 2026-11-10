@@ -71,7 +71,40 @@ MANDATORY SCHOLARLY AND SAFETY RULES:
 Return ONLY JSON: {"answerable": true|false, "answer": "...", "cites": ["id", ...], "scholar": true|false, "general": true|false}`;
 
 
-const QUIZ_PROMPT = `Create one Sorani Kurdish Islamic multiple-choice question using ONLY supplied Quran/hadith source passages. If no clear supported question is possible return {"ready":false}. Never invent verses, hadith wording, collection names, numbers, authenticity grades, scholarly quotations, consensus, or rulings. Do not issue personal fatwas. Respect Sunni school differences. Exactly four distinct choices a,b,c,d and one correct answer. Explain from supplied passages and cite only their IDs. Avoid recent semantic duplicates. Return JSON only: {"ready":true,"topic":"...","question":"...","choices":[{"id":"a","text":"..."},{"id":"b","text":"..."},{"id":"c","text":"..."},{"id":"d","text":"..."}],"answer":"a","explanation":"...","cites":["source-id"],"fingerprint":"stable_key"}.`;
+function answerPrompt(code) {
+  const names = {
+    ckb: 'Central Kurdish (Sorani, Arabic script)',
+    bad: 'Badini Kurdish (Kurmanji, Arabic script)',
+    ar: 'clear Modern Standard Arabic',
+    en: 'English',
+    tr: 'Turkish',
+    fa: 'Persian (Farsi)',
+    ur: 'Urdu',
+    fr: 'French',
+    ru: 'Russian',
+    id: 'Indonesian'
+  };
+  const language = names[code] || names.ckb;
+  if (code === 'ckb' || !names[code]) return ANSWER_PROMPT;
+  return ANSWER_PROMPT + `\nLANGUAGE OVERRIDE: Write the complete answer, including every heading, explanation, and safety note, in ${language}. Do not answer in Sorani Kurdish. Keep Quran and hadith quotations in Arabic and keep source names in their recognized original form. The selected language overrides the Sorani language instruction above.`;
+}
+
+function quizPrompt(code) {
+  const names = {
+    ckb: 'Central Kurdish (Sorani, Arabic script)',
+    bad: 'Badini Kurdish (Kurmanji, Arabic script)',
+    ar: 'clear Modern Standard Arabic',
+    en: 'English',
+    tr: 'Turkish',
+    fa: 'Persian (Farsi)',
+    ur: 'Urdu',
+    fr: 'French',
+    ru: 'Russian',
+    id: 'Indonesian'
+  };
+  const language = names[code] || names.ckb;
+  return `Create one Islamic multiple-choice question in ${language} using ONLY the supplied Quran/hadith source passages. Every user-facing field (topic, question, all four choices, explanation) MUST be written fully and naturally in ${language}; do not mix in Kurdish unless Kurdish is the selected language. Quran and hadith quotations may remain in their original Arabic. If no clear supported question is possible return {"ready":false}. Never invent verses, hadith wording, collection names, numbers, authenticity grades, scholarly quotations, consensus, or rulings. Do not issue personal fatwas. Respect Sunni school differences. Exactly four distinct choices a,b,c,d and one correct answer. Explain from supplied passages and cite only their IDs. Avoid recent semantic duplicates. Return JSON only: {"ready":true,"topic":"...","question":"...","choices":[{"id":"a","text":"..."},{"id":"b","text":"..."},{"id":"c","text":"..."},{"id":"d","text":"..."}],"answer":"a","explanation":"...","cites":["source-id"],"fingerprint":"stable_key"}`;
+}
 
 export default {
   async fetch(req, env) {
@@ -154,7 +187,7 @@ export default {
         const clean = ps.filter(p => p && typeof p.id === 'string' && /^(q:\d{1,3}:\d{1,3}|h:[a-z]+:\d{1,5})$/.test(p.id) && typeof p.text === 'string').map(p => ({id:p.id,text:p.text.slice(0,600)}));
         if (!clean.length) return json({ready:false});
         const recent = Array.isArray(body.recent) ? body.recent.filter(x => typeof x === 'string').slice(-60) : [];
-        const out = await gemini(env, QUIZ_PROMPT, JSON.stringify({topic:String(body.topic||'').slice(0,120),passages:clean,recent:recent.slice(-25)}), 600, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
+        const out = await gemini(env, quizPrompt(body.lang), JSON.stringify({topic:String(body.topic||'').slice(0,120),passages:clean,recent:recent.slice(-25)}), 600, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
         const ids=['a','b','c','d'], choices=Array.isArray(out.choices)?out.choices.slice(0,4):[];
         const cites=Array.isArray(out.cites)?out.cites.filter(id=>clean.some(p=>p.id===id)).slice(0,3):[];
         const fp=typeof out.fingerprint==='string'?out.fingerprint.replace(/[^a-z0-9_-]/gi,'').slice(0,80):'';
@@ -176,7 +209,7 @@ export default {
         }
         if (!clean.length) return json({ answerable: false, answer: '', cites: [], scholar: true, general: false });
         const full = body.detail === 'full';
-        const sys = ANSWER_PROMPT + (full ? '' : '\nOVERRIDE LENGTH: be concise and fast. 200-300 words total. Sections only: "وەڵامی کورت:", "ڕوونکردنەوە:" (one or two short paragraphs), "ڕای چوار مەزهەب:" (only for fiqh topics, one line per school), "خاڵە گرنگەکان:" (max 4 lines). Skip the other sections.');
+        const sys = answerPrompt(body.lang) + (full ? '' : '\nOVERRIDE LENGTH: be concise and fast. 200-300 words total. Sections only: "وەڵامی کورت:", "ڕوونکردنەوە:" (one or two short paragraphs), "ڕای چوار مەزهەب:" (only for fiqh topics, one line per school), "خاڵە گرنگەکان:" (max 4 lines). Skip the other sections.');
         const out = await gemini(env, sys, JSON.stringify({ question: q, passages: clean, personal_case: personal }), full ? 3500 : 1600, full ? null : (env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash'));
         const ids = new Set(clean.map(p => p.id));
         const cites = (Array.isArray(out.cites) ? out.cites : []).filter(c => ids.has(c)).slice(0, 6);
