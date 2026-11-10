@@ -47,6 +47,14 @@
 
   var adhanAudio = null;
   function save() { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch (e) {} }
+  // The global text observer intentionally skips OPTION elements, so translate
+  // select labels here using the same per-language dictionary.
+  function ST(source) {
+    try {
+      var dict = window.LANG_TT && window.LANG_TT[window.appLang];
+      return dict && dict[source] ? dict[source] : source;
+    } catch (e) { return source; }
+  }
 
   function applyTheme() {
     var th = THEMES[cfg.theme] || THEMES.green;
@@ -82,14 +90,14 @@
     if (!body) return;
 
     var methodOpts = METHODS.map(function (m) {
-      return '<option value="' + m.id + '"' + (cfg.method == m.id ? ' selected' : '') + '>' + m.name + '</option>';
+      return '<option value="' + m.id + '"' + (cfg.method == m.id ? ' selected' : '') + '>' + ST(m.name) + '</option>';
     }).join('');
     var themeOpts = Object.keys(THEMES).map(function (k) {
       var names = { green: 'سەوز', navy: 'شین', gold: 'زەڕین', dark: 'ڕەش', teal: 'کەنەری' };
-      return '<option value="' + k + '"' + (cfg.theme === k ? ' selected' : '') + '>' + (names[k] || k) + '</option>';
+      return '<option value="' + k + '"' + (cfg.theme === k ? ' selected' : '') + '>' + ST(names[k] || k) + '</option>';
     }).join('');
     var adhanOpts = ADHANS.map(function (a) {
-      return '<option value="' + a.id + '"' + (cfg.adhanId === a.id ? ' selected' : '') + '>' + a.name + '</option>';
+      return '<option value="' + a.id + '"' + (cfg.adhanId === a.id ? ' selected' : '') + '>' + ST(a.name) + '</option>';
     }).join('');
     var labels = { Fajr: 'بەیانی', Dhuhr: 'نیوەڕۆ', Asr: 'عەسر', Maghrib: 'مەغریب', Isha: 'عیشا' };
     var checks = ['Fajr','Dhuhr','Asr','Maghrib','Isha'].map(function (id) {
@@ -107,7 +115,7 @@
       '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>باکگراوند</span><select id="ssTheme">' + themeOpts + '</select></div></div>' +
       '<div class="salah-card"><h3 style="margin:0 0 10px">حیسابی کات</h3>' +
       '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>شێواز</span><select id="ssMethod">' + methodOpts + '</select></div>' +
-      '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>عەسر</span><select id="ssSchool"><option value="0"' + (cfg.school == 0 ? ' selected' : '') + '>شافعی</option><option value="1"' + (cfg.school == 1 ? ' selected' : '') + '>حەنەفی</option></select></div></div>' +
+      '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>عەسر</span><select id="ssSchool"><option value="0"' + (cfg.school == 0 ? ' selected' : '') + '> ' + ST('شافعی') + '</option><option value="1"' + (cfg.school == 1 ? ' selected' : '') + '>' + ST('حەنەفی') + '</option></select></div></div>' +
       '<div class="salah-card"><h3 style="margin:0 0 10px">ڕێکخستنی خولەک</h3>' +
       '<p style="font-size:12px;opacity:.8;margin:0 0 8px">ئەگەر کاتەکان زوو/درەنگ بن، لێرە ڕێکیان بخە. پێشگریمان: نیوەڕۆ +١٠.</p>' +
       offRows +
