@@ -109,6 +109,21 @@
     }
     return false;
   }
+  function localizeSearchHit(q){
+    var lang=currentLang();
+    if(!q||lang==='ckb'||q.__localizedLang===lang||q.__localizingSearch) return;
+    if(q.__original&&q.__localizedLang&&q.__localizedLang!==lang) restoreQuestion(q);
+    var cached=questionCache(lang)[q.id];
+    if(cached){applyQuestionTranslation(q,cached,lang);return;}
+    if(!window.AiShariRag||!window.AiShariRag.localizeQuestion) return;
+    q.__localizingSearch=true;
+    window.AiShariRag.localizeQuestion(q).then(function(data){
+      q.__localizingSearch=false;
+      if(currentLang()!==lang) return;
+      applyQuestionTranslation(q,data,lang); saveQuestionCache(lang,q.id,data);
+      if(state.view==='home') render();
+    }).catch(function(){q.__localizingSearch=false;});
+  }
 
   function injectCss(){
     if($('knowledgeCss')) return;
@@ -205,6 +220,7 @@
       html+='<button type="button" class="kn-primary" data-k="askGo">گەڕان لە دەق</button>';
       var hits=searchHits(state.askQ);
       hits.forEach(function(q){
+        localizeSearchHit(q);
         html+='<div class="kn-note" style="margin-top:10px"><h3>'+esc(q.ref)+'</h3><div class="kn-ar" style="font-size:18px">'+esc(q.ar)+'</div><p>'+esc(q.why)+'</p><div class="kn-src">'+esc(q.src)+' · خوێندنەوەیە، فەتوا نییە</div></div>';
       });
       html+='</div></div>';
@@ -457,6 +473,7 @@
   window.addEventListener('app-language-changed',function(){
     var lang=currentLang();
     if(state.view==='session'){
+      bank().forEach(function(item){if(item.__original){restoreQuestion(item);item.__localizingSearch=false;item.__localizeFailed=false;}});
       var q=state.items[state.i];
       if(q&&!q.ai){restoreQuestion(q);q.__localizedLang=null;q.__localizing=false;q.__localizeFailed=false;}
       render();
