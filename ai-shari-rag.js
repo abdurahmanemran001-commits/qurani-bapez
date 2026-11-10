@@ -139,10 +139,28 @@
     }).then(function (out) { if (out && out.error === 'rate') { var er = new Error(out.message || 'سنووری پرسیار تەواو بوو. دوای هەشت سەعات نوێ دەبێتەوە.'); er.rate = true; throw er; } if (!out || !out.ready) throw new Error(NOT_FOUND); return out; });
   }
 
+  function localizeQuestion(item) {
+    if (!item || !item.q || !Array.isArray(item.choices)) return Promise.reject(new Error('Invalid question'));
+    return post('/localize-question', {
+      lang: window.appLang || 'ckb',
+      item: {
+        q: item.q,
+        choices: item.choices.map(function (c) { return { id: c.id, t: c.t }; }),
+        why: item.why || '',
+        near: item.near || '',
+        src: item.src || ''
+      }
+    }, 30000).then(function (out) {
+      if (!out || out.error || !out.item) throw new Error((out && out.message) || 'Question translation unavailable');
+      return out.item;
+    });
+  }
+
   window.AiShariRag = {
     enabled: function () { return !!endpoint() && !!window.AiRag; },
     ask: ask,
     generateQuiz: generateQuiz,
+    localizeQuestion: localizeQuestion,
     srcHtml: srcHtml,
     endpoint: endpoint
   };
