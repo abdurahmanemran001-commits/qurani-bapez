@@ -158,6 +158,51 @@ export default {
         return json({ error: (e && e.status === 429) ? 'busy' : 'upstream', message: MSG_BUSY, detail: e && e.detail ? String(e.detail) : '' }, 502);
       }
     }
+    if (url.pathname === '/localize-question') {
+      const LANGS = {
+        ckb: 'Central Kurdish (Sorani, Arabic script)',
+        bad: 'Badini Kurdish (Kurmanji, Arabic script)',
+        ar: 'clear Modern Standard Arabic',
+        en: 'English',
+        tr: 'Turkish',
+        fa: 'Persian (Farsi)',
+        ur: 'Urdu',
+        fr: 'French',
+        ru: 'Russian',
+        id: 'Indonesian'
+      };
+      const lang = typeof body.lang === 'string' ? body.lang : 'ckb';
+      const target = LANGS[lang];
+      const item = body.item && typeof body.item === 'object' ? body.item : null;
+      if (!target || !item || typeof item.q !== 'string' || !Array.isArray(item.choices)) return json({ error: 'bad' }, 400);
+      if (lang === 'ckb') return json({ item });
+      const ipL = req.headers.get('CF-Connecting-IP') || 'anon';
+      const rlL = await limit(env, ipL, 'knloc', Number(env.KNOWLEDGE_TRANSLATE_LIMIT || 120));
+      if (!rlL.ok) return json({ error: 'rate', message: 'The translation limit has been reached for today. Please try again tomorrow.' }, 429);
+      const safe = {
+        question: item.q.slice(0, 700),
+        choices: item.choices.slice(0, 4).map(c => ({ id: String(c.id || '').slice(0, 8), text: String(c.t || '').slice(0, 700) })),
+        explanation: String(item.why || '').slice(0, 1800),
+        clarification: String(item.near || '').slice(0, 1200),
+        source: String(item.src || '').slice(0, 300)
+      };
+      const sys = `Translate this Islamic learning question from Central Kurdish (Sorani, Arabic script) into ${target}. Return ONLY JSON with keys question, choices, explanation, clarification, source. Translate every user-facing Kurdish phrase naturally and completely. Preserve the exact meaning, religious nuance, answer correctness, choice order, and each choice id. Do not add facts or explanations. Keep Quran and hadith quotations in Arabic and preserve surah/ayah references and collection names. If a field is empty, return it empty. The choices array must contain the same ids in the same order, with translated text only.`;
+      try {
+        const out = await gemini(env, sys, JSON.stringify(safe), 2200, env.FAST_MODELS || 'gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.8-flash');
+        const choices = Array.isArray(out.choices) ? out.choices.slice(0, safe.choices.length) : [];
+        const validChoices = choices.length === safe.choices.length && choices.every((c, i) => c && String(c.id) === safe.choices[i].id && typeof c.text === 'string' && c.text.trim());
+        if (!out.question || !validChoices) return json({ error: 'upstream', message: MSG_BUSY }, 502);
+        return json({ item: {
+          q: String(out.question).slice(0, 900),
+          choices: choices.map(c => ({ id: String(c.id), t: String(c.text).slice(0, 700) })),
+          why: String(out.explanation || '').slice(0, 1800),
+          near: String(out.clarification || '').slice(0, 1200),
+          src: String(out.source || item.src || '').slice(0, 300)
+        }});
+      } catch (e) {
+        return json({ error: (e && e.status === 429) ? 'busy' : 'upstream', message: MSG_BUSY }, 502);
+      }
+    }
     const q = typeof body.q === 'string' ? body.q.trim().slice(0, 500) : '';
     if (!q) return json({ error: 'bad' }, 400);
     const ip = req.headers.get('CF-Connecting-IP') || 'anon';
