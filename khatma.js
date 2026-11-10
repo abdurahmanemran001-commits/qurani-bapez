@@ -75,7 +75,7 @@
     if (!P) return;
     P.style.display = on ? 'block' : 'none'; if (L) L.style.display = on ? 'none' : '';
     if (t) t.classList.toggle('on', on);
-    if (on) { ['tabSurah', 'tabJuz', 'tabBookmark'].forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.remove('on'); }); render(); }
+    if (on) { var sp = document.getElementById('srsP'), st = document.getElementById('tabSrs'); if (sp) sp.style.display = 'none'; if (st) st.classList.remove('on'); ['tabSurah', 'tabJuz', 'tabBookmark'].forEach(function (id) { var e = document.getElementById(id); if (e) e.classList.remove('on'); }); render(); }
   }
   function install() {
     var tabs = document.querySelector('.tabs'); if (!tabs || document.getElementById('tabKh')) return !!document.getElementById('tabKh');
