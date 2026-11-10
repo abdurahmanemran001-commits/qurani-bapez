@@ -56,6 +56,59 @@
     return all;
   }
   function hash(s){var h=0;for(var i=0;i<s.length;i++) h=((h<<5)-h)+s.charCodeAt(i);return h;}
+  function currentLang(){
+    if(window.appLang) return window.appLang;
+    try{return localStorage.getItem('app_language')||'ckb';}catch(e){return 'ckb';}
+  }
+  function questionCache(lang){
+    try{return JSON.parse(localStorage.getItem('kn_i18n_v1_'+lang)||'{}');}catch(e){return {};}
+  }
+  function saveQuestionCache(lang,id,data){
+    try{
+      var c=questionCache(lang); c[id]=data;
+      var keys=Object.keys(c); if(keys.length>250) keys.slice(0,keys.length-250).forEach(function(k){delete c[k];});
+      localStorage.setItem('kn_i18n_v1_'+lang,JSON.stringify(c));
+    }catch(e){}
+  }
+  function restoreQuestion(q){
+    if(!q.__original) return;
+    q.q=q.__original.q;
+    q.choices=q.__original.choices.map(function(c){return Object.assign({},c);});
+    q.why=q.__original.why; q.near=q.__original.near; q.src=q.__original.src;
+    q.__localizedLang=null;
+  }
+  function applyQuestionTranslation(q,data,lang){
+    if(!q.__original){
+      q.__original={q:q.q,choices:(q.choices||[]).map(function(c){return Object.assign({},c);}),why:q.why||'',near:q.near||'',src:q.src||''};
+    }
+    q.q=data.q||q.__original.q;
+    q.choices=Array.isArray(data.choices)&&data.choices.length===q.__original.choices.length?data.choices.map(function(c){return {id:c.id,t:c.t};}):q.__original.choices.map(function(c){return Object.assign({},c);});
+    q.why=data.why||q.__original.why;
+    q.near=data.near||q.__original.near;
+    q.src=data.src||q.__original.src;
+    q.__localizedLang=lang; q.__localizing=false; q.__localizeFailed=false;
+  }
+  function localizeQuestionForDisplay(q){
+    var lang=currentLang();
+    if(!q||lang==='ckb'||q.ai) return true;
+    if(q.__localizedLang===lang) return true;
+    if(q.__original && q.__localizedLang && q.__localizedLang!==lang) restoreQuestion(q);
+    var cached=questionCache(lang)[q.id];
+    if(cached){applyQuestionTranslation(q,cached,lang);return true;}
+    if(q.__localizeFailed) return true;
+    if(!window.AiShariRag||!window.AiShariRag.localizeQuestion){q.__localizeFailed=true;return true;}
+    if(!q.__localizing){
+      q.__localizing=true; qStopTimer();
+      window.AiShariRag.localizeQuestion(q).then(function(data){
+        if(state.view!=='session'||state.items[state.i]!==q||currentLang()!==lang){q.__localizing=false;return;}
+        applyQuestionTranslation(q,data,lang); saveQuestionCache(lang,q.id,data); render();
+      }).catch(function(){
+        q.__localizing=false; q.__localizeFailed=true;
+        if(state.view==='session'&&state.items[state.i]===q) render();
+      });
+    }
+    return false;
+  }
 
   function injectCss(){
     if($('knowledgeCss')) return;
@@ -120,6 +173,13 @@
   }
   function render(){
     injectCss(); var v=ensureView(); if(!v) return;
+    if(state.view==='session'){
+      var activeQuestion=state.items[state.i];
+      if(activeQuestion&&!localizeQuestionForDisplay(activeQuestion)){
+        v.innerHTML='<div class="kn-aiload"><div class="kn-spin"></div><b>وەرگێڕانی پرسیارەکە ئامادە دەکرێت…</b><small>تکایە چاوەڕێ بکە</small></div>';
+        return;
+      }
+    }
     var p=loadP();
     var html='';
     if(state.view==='home'){
@@ -303,7 +363,7 @@
     });
   }
   function beginSession(path,items,mode,endless){
-    state.path=path; state.items=items; state.i=0; state.picked=null; state.held=0; state.revisits=0; state.wrong=0; state.endless=!!endless && mode!=='review'; state.aiBuf=[]; state.aiStop=false; state.aiFetching=false; state.aiLimitMsg=''; state.total=mode==='lightning'?999:(state.endless?0:items.length); state.mode=mode||'normal'; state.deadline=mode==='lightning'?Date.now()+180000:0; state.view='session';
+    state.path=path; state.items=items.map(function(q){var x=Object.assign({},q);if(q.choices)x.choices=q.choices.map(function(c){return Object.assign({},c);});return x;}); state.i=0; state.picked=null; state.held=0; state.revisits=0; state.wrong=0; state.endless=!!endless && mode!=='review'; state.aiBuf=[]; state.aiStop=false; state.aiFetching=false; state.aiLimitMsg=''; state.total=mode==='lightning'?999:(state.endless?0:items.length); state.mode=mode||'normal'; state.deadline=mode==='lightning'?Date.now()+180000:0; state.view='session';
     if(state.timerId) clearInterval(state.timerId);
     if(mode==='lightning') state.timerId=setInterval(function(){ if(Date.now()>=state.deadline){clearInterval(state.timerId);state.timerId=null;state.total=state.i+(state.picked?1:0);state.view='close';render();} else {var t=document.querySelector('#knowledgeView .kn-stat');if(t)t.textContent='⏱️ '+Math.max(0,Math.ceil((state.deadline-Date.now())/1000))+' چرکە ماوە';}},1000);
     render(); if(state.endless && mode!=='lightning') pathPrefetch();
@@ -394,5 +454,13 @@
     if(!window.__knowledgeClick){ window.__knowledgeClick=true; document.addEventListener('click', onClick); }
     var n=0; var iv=setInterval(function(){ addCard(); if(++n>30) clearInterval(iv); }, 300);
   }
+  window.addEventListener('app-language-changed',function(){
+    var lang=currentLang();
+    if(state.view==='session'){
+      var q=state.items[state.i];
+      if(q&&!q.ai){restoreQuestion(q);q.__localizedLang=null;q.__localizing=false;q.__localizeFailed=false;}
+      render();
+    }else if(state.view==='home'||state.view==='comfortPick'||state.view==='close'){render();}
+  });
   if(document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
