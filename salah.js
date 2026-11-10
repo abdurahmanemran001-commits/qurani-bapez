@@ -193,7 +193,7 @@
     injectCss();var main=document.querySelector('.main');if(!main)return null;
     var v=document.getElementById('salahView');if(v)return v;
     v=document.createElement('section');v.id='salahView';v.className='view';
-    v.innerHTML='<div class="salah-head"><button class="tab" type="button" id="salahBack">‹ سەرەتا</button><b>نویژەکانم</b><button class="tab" type="button" id="salahRefresh">↻</button></div><div class="salah-loc"><input id="salahCity" placeholder="گەڕان: شار، ناحیە..." autocomplete="off" /><button type="button" id="salahGps">📍</button></div><div id="salahProvList" class="salah-prov-list"></div><div class="salah-tabs"><button type="button" data-tab="times" class="on">کاتەکان</button><button type="button" data-tab="virtues">فەزڵ</button><button type="button" data-tab="qibla">قیبلە</button></div><div id="salahBody"><div class="card muted">بارکردن...</div></div>';
+    v.innerHTML='<div class="salah-head"><button class="tab" type="button" id="salahBack">‹ سەرەتا</button><b>نوێژەکانم</b><button class="tab" type="button" id="salahRefresh">↻</button></div><div class="salah-loc"><input id="salahCity" placeholder="گەڕان: شار، ناحیە..." autocomplete="off" /><button type="button" id="salahGps">📍</button></div><div id="salahProvList" class="salah-prov-list"></div><div class="salah-tabs"><button type="button" data-tab="times" class="on">کاتەکان</button><button type="button" data-tab="virtues">فەزڵ</button><button type="button" data-tab="qibla">قیبلە</button></div><div id="salahBody"><div class="card muted">بارکردن...</div></div>';
     main.appendChild(v);
     document.getElementById('salahBack').onclick=function(){stopQibla();if(tickTimer){clearInterval(tickTimer);tickTimer=null;}if(typeof showView==='function')showView('startScreen','بەشەکان');};
     document.getElementById('salahRefresh').onclick=async function(){times=null;await loadAndShow();};
@@ -207,7 +207,7 @@
     return v;
   }
   async function loadAndShow(){
-    ensureView();if(typeof showView==='function')showView('salahView','نویژەکانم');
+    ensureView();if(typeof showView==='function')showView('salahView','نوێژەکانم');
     try{var bottom=document.querySelector('.bottom');if(bottom)bottom.classList.add('hidden');}catch(e){}
     var cityInput=document.getElementById('salahCity');if(cityInput)cityInput.value=S.city||'';
     loadPlaces();
@@ -220,7 +220,7 @@
     if(!box||box.querySelector('.salah-choice'))return;
     var b=document.createElement('button');b.className='section-choice salah-choice';b.type='button';
     b.onclick=function(){window.enterSalah();};
-    b.innerHTML='<span class="choice-icon">🕌</span><span class="choice-copy"><b>نویژەکانم</b><small>کاتی نوێژ · قیبلە</small></span><span class="choice-arrow">‹</span>';
+    b.innerHTML='<span class="choice-icon">🕌</span><span class="choice-copy"><b>نوێژەکانم</b><small>کاتی نوێژ · قیبلە</small></span><span class="choice-arrow">‹</span>';
     box.appendChild(b);
   }
   function boot(){injectCss();injectStartCard();}
