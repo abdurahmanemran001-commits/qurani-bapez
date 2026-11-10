@@ -1,4 +1,4 @@
-document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=2"><\/script><script src="lang-ui-more.js?v=4"><\/script>');
+document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=2"><\/script><script src="lang-ui-more.js?v=5"><\/script>');
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
@@ -136,10 +136,10 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=8';
+    s7.src = 'salah.js?v=9';
     s7.onload = function () {
       var s8 = document.createElement('script');
-      s8.src = 'salah-settings.js?v=2';
+      s8.src = 'salah-settings.js?v=3';
       s8.async = true;
       document.head.appendChild(s8);
     };
