@@ -38,7 +38,7 @@ jobs:
       - name: Prepare web preview
         run: |
           mkdir -p dist
-          cp index.html home-clean.js topbar.js khatma.js srs.js lang-extra.js lang-tt.js lang-ui-more.js language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js hadith.js seerah.js seerah-data.js seerah-data-p2.js seerah-data-p3.js companions.js companions-data.js companions-data-p2.js knowledge.js knowledge-data.js scholars.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
+          cp index.html home-clean.js topbar.js khatma.js srs.js lang-extra.js lang-tt.js lang-shell.js lang-ui-more.js language.js language-ui.js madani-ayah.js zikr-enhance.js zikr-streak.js tasbih.js ruqyah.js ruqyah-reciters.js ruqyah-youtube.js ai-shari.js hadith.js seerah.js seerah-data.js seerah-data-p2.js seerah-data-p3.js companions.js companions-data.js companions-data-p2.js knowledge.js knowledge-data.js scholars.js ai-shari-kb.js ai-shari-kb-p2.js ai-shari-kb-p3.js ai-shari-kb-p4.js salah.js salah-settings.js salah-places.json salah-places-data.js icon.svg manifest.webmanifest sw.js dist/ 2>/dev/null || true
           for f in index.html language-ui.js lang-ui-more.js madani-ayah.js salah.js; do
             test -f dist/$f || cp $f dist/
           done
