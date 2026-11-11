@@ -17,6 +17,14 @@ if [ ! -s "$OUT/index.html" ] || [ "$(wc -c < "$OUT/index.html")" -lt 10000 ]; t
   curl -fsSL -o "$OUT/index.html" "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
 fi
 if grep -q "location.replace" "$OUT/index.html"; then echo "ERROR: app index.html still redirects to the website"; exit 1; fi
+# The Capacitor app server answers any URL whose last segment has no "." (like "mushaf/") with the
+# ROOT index.html (SPA fallback). That is why tapping the coloured mushaf sent the user back to the
+# start screen. Point those links at the real file instead: mushaf/ -> mushaf/index.html
+for f in "$OUT/index.html" "$OUT"/*.js; do
+  [ -f "$f" ] || continue
+  sed -i.bak -e "s#mushaf/'#mushaf/index.html'#g" -e 's#mushaf/"#mushaf/index.html"#g' -e "s#mushaf/?#mushaf/index.html?#g" "$f"
+  rm -f "$f.bak"
+done
 # ayah tap areas for the reader (without these, tapping an ayah does nothing)
 bash tools/build_madani_bounds.sh "$OUT/madani-bounds"
 test -s "$OUT/index.html"
