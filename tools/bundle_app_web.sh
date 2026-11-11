@@ -11,6 +11,12 @@ cp *.js "$OUT/" 2>/dev/null || true; rm -f "$OUT/sw.js"
 if [ -d madani-timing ]; then cp -r madani-timing "$OUT/"; fi
 # mushaf/, azkar*.json ... produced by assemble_web.sh
 cp -r "$SRC/." "$OUT/"
+# If the repo's index.html is only the tiny redirect stub (it sends people to the website),
+# the app would just open the website. pages.yml restores the real home page the same way.
+if [ ! -s "$OUT/index.html" ] || [ "$(wc -c < "$OUT/index.html")" -lt 10000 ]; then
+  curl -fsSL -o "$OUT/index.html" "https://raw.githubusercontent.com/abdurahmanemran001-commits/qurani-bapez/2434124b18c3d94b10146a9c9956723fb1adb06b/index.html"
+fi
+if grep -q "location.replace" "$OUT/index.html"; then echo "ERROR: app index.html still redirects to the website"; exit 1; fi
 # ayah tap areas for the reader (without these, tapping an ayah does nothing)
 bash tools/build_madani_bounds.sh "$OUT/madani-bounds"
 test -s "$OUT/index.html"
