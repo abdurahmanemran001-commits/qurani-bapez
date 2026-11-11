@@ -71,6 +71,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sy.async = true;
   document.head.appendChild(sy);
 
+  var sL = document.createElement('script');
+  sL.src = 'ruqyah-layout.js?v=1';
+  sL.async = true;
+  document.head.appendChild(sL);
+
   var BUILD = '__BUILD__'; // replaced with the commit id by the Pages workflow so every deploy bypasses cached scripts
   function loadScript(src) {
     return new Promise(function (resolve) {
@@ -91,7 +96,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('ai-shari-kb-p2.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p3.js?v=1'); })
     .then(function () { return loadScript('ai-shari-kb-p4.js?v=1'); })
-    .then(function () { return loadScript('ai-shari.js?v=13'); })
+    .then(function () { return loadScript('ai-shari.js?v=14'); })
     .then(function () { return loadScript('hadith.js?v=6'); })
     .then(function () { return loadScript('hadith-ai.js?v=1'); })
     .then(function () { return loadScript('seerah-data.js?v=5'); })
