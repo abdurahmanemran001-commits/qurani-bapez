@@ -41,12 +41,21 @@
     document.head.appendChild(st);
   }
   function parseHM(s){var m=String(s||'').match(/(\d{1,2}):(\d{2})/);return m?{h:+m[1],m:+m[2]}:null;}
-  function toDate(hm){if(!hm)return null;var d=new Date();d.setHours(hm.h,hm.m,0,0);return d;}
+  function inIraq(lat,lng){return lat>=28.9&&lat<=37.5&&lng>=38.7&&lng<=48.8;}
+  function tzOf(){return S.tz||(inIraq(S.lat,S.lng)?'Asia/Baghdad':'');}
+  /* wall-clock "now" of the chosen place (a Date whose local fields equal the place's clock) */
+  function placeNow(){
+    var tz=tzOf();
+    if(tz){try{return new Date(new Date().toLocaleString('en-US',{timeZone:tz}));}catch(e){}}
+    return new Date();
+  }
+  function ymd(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function toDate(hm){if(!hm)return null;var d=placeNow();d.setHours(hm.h,hm.m,0,0);return d;}
   function fmtHM(d){if(!d)return'--:--';var h=d.getHours(),m=d.getMinutes();return(h<10?'0':'')+h+':'+(m<10?'0':'')+m;}
   function fmtClock(ms){if(ms<0)ms=0;var t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60;function p(n){return(n<10?'0':'')+n;}return p(h)+':'+p(m)+':'+p(s);}
   function fmtDurWords(ms){if(ms<0)ms=0;var t=Math.floor(ms/60000),h=Math.floor(t/60),m=t%60;return h>0?(h+' کاتژمێر و '+m+' خولەک'):(m+' خولەک');}
   function getTimeline(){
-    if(!times)return null;var now=new Date();
+    if(!times)return null;var now=placeNow();
     var list=NAMES.map(function(n){var d=toDate(parseHM(times[n.id]));return{id:n.id,ku:n.ku,ar:n.ar,date:d};}).filter(function(x){return x.date;});
     var current=null,next=null;
     for(var i=0;i<list.length;i++){if(list[i].date<=now)current=list[i];if(list[i].date>now&&!next)next=list[i];}
@@ -78,19 +87,21 @@
     return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
   }
   async function fetchTimes(){
-    var off = getOffsets();
+    var off = inIraq(S.lat, S.lng) ? getOffsets() : { Fajr: 0, Sunrise: 0, Dhuhr: 0, Asr: 0, Maghrib: 0, Isha: 0 };
+    if (!inIraq(S.lat, S.lng)) getOffsets();
     var school = 0;
     try { var c = JSON.parse(localStorage.getItem('salah_settings_v1')||'{}'); if (c.school!=null) school=+c.school; } catch(e){}
-    var tz = (S.country === 'Iraq' || !S.country || S.country === '') ? 'Asia/Baghdad' : '';
-    var url='https://api.aladhan.com/v1/timings?latitude='+encodeURIComponent(S.lat)
+    var pn = placeNow(), dd = ('0'+pn.getDate()).slice(-2)+'-'+('0'+(pn.getMonth()+1)).slice(-2)+'-'+pn.getFullYear();
+    var url='https://api.aladhan.com/v1/timings/'+dd+'?latitude='+encodeURIComponent(S.lat)
       +'&longitude='+encodeURIComponent(S.lng)
       +'&method='+encodeURIComponent(S.method||3)
       +'&school='+encodeURIComponent(school)
-      +(tz ? '&timezonestring='+encodeURIComponent(tz) : '')
       +'&_='+Date.now();
     var r=await fetch(url);if(!r.ok)throw new Error('net');
     var j=await r.json();if(!j.data||!j.data.timings)throw new Error('empty');
     var raw = j.data.timings;
+    try { if (j.data.meta && j.data.meta.timezone) S.tz = j.data.meta.timezone; } catch (e) {}
+    S.fetchedDay = ymd(placeNow());
     times = {};
     ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha','Sunset','Imsak','Midnight'].forEach(function(k){
       if (raw[k] != null) times[k] = addMinutes(raw[k], off[k] || 0);
@@ -98,7 +109,7 @@
     return times;
   }
   async function applyPlace(p){
-    S.lat=+p.lat;S.lng=+p.lng;S.city=p.ku;S.country='Iraq';times=null;save();await fetchTimes();
+    S.lat=+p.lat;S.lng=+p.lng;S.city=p.ku;S.country=inIraq(S.lat,S.lng)?'Iraq':(p.en||'');S.tz='';times=null;save();await fetchTimes();
   }
   function filterPlaces(q){
     q=(q||'').trim().toLowerCase();var all=window.__SALAH_PLACES||[];
@@ -124,7 +135,7 @@
   async function useGPSAndLoad(){
     if(!navigator.geolocation)throw new Error('no-geo');
     var pos=await new Promise(function(res,rej){navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:15000});});
-    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city='شوێنی ئێستا';S.country='Iraq';times=null;save();await fetchTimes();
+    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city='شوێنی ئێستا';S.country=inIraq(S.lat,S.lng)?'Iraq':'';S.tz='';times=null;save();await fetchTimes();
   }
   function qiblaBearing(lat,lng){
     var kLat=21.4225*Math.PI/180,kLng=39.8262*Math.PI/180;
@@ -152,6 +163,7 @@
     box.innerHTML=hero+'<div class="salah-list">'+rows+'</div>';
   }
   function tickLive(){
+    if(times&&S.fetchedDay&&S.fetchedDay!==ymd(placeNow())&&!S.__refetch){S.__refetch=1;fetchTimes().then(function(){S.__refetch=0;try{renderTimes();}catch(e){}}).catch(function(){S.__refetch=0;});}
     if(S.tab!=='times')return;var view=document.getElementById('salahView');
     if(!view||!view.classList.contains('active'))return;
     var tl=getTimeline();if(!tl)return;
