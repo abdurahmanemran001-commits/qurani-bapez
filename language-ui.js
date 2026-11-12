@@ -1,4 +1,4 @@
-document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=4"><\/script><script src="lang-shell.js?v=1"><\/script>');
+document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=4"><\/script><script src="ruqyah-i18n2.js?v=1"><\/script><script src="lang-shell.js?v=1"><\/script>');
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
