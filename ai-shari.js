@@ -49,24 +49,30 @@
       .trim();
   }
 
+  function uiLang() { var l = window.appLang || ''; try { l = l || localStorage.getItem('app_language') || ''; } catch (e) {} return (!l || l === 'ckb' || l === 'bad') ? '' : l; }
+  function trs(k) { var l = uiLang(); if (!l) return k; var T = window.LANG_TT || {}; return (T[l] && T[l][k]) || (T.en && T.en[k]) || k; }
   function offlineAnswer(q) {
-    var nq = norm(q);
-    if (!nq) return 'تکایە پرسیارێک بنووسە.';
-    var KB = getKB();
-    if (!KB.length) return 'زانیاری ناوخۆیی بار نەبووە.';
+    var nq = norm(q), lang = uiLang(), I = window.__AI_SHARI_KB_I18N, isAr = lang === 'ar';
+    if (!nq) return trs('تکایە پرسیارێک بنووسە.');
+    var KB = (lang && I) ? (I[isAr ? 'ar' : 'en'] || []) : getKB();
+    if (!KB.length) return trs('زانیاری ناوخۆیی بار نەبووە.');
     var best = null, bestScore = 0;
+    function has(text, k) {
+      if (lang && !isAr) { try { return new RegExp('(^|[^a-z0-9])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(s|es)?($|[^a-z0-9])').test(text); } catch (e) { return false; } }
+      return text.indexOf(k) >= 0;
+    }
     for (var i = 0; i < KB.length; i++) {
       var item = KB[i], score = 0;
       var keys = item.keys || [];
       for (var j = 0; j < keys.length; j++) {
         var k = norm(keys[j]);
         if (!k || k.length < 2) continue;
-        if (nq.indexOf(k) >= 0) { score += 50 + k.length * 3; continue; }
+        if (has(nq, k)) { score += 50 + k.length * 3; continue; }
         var parts = k.split(' ').filter(function (p) { return p.length > 1; });
         if (!parts.length) continue;
         var hit = 0;
         for (var p = 0; p < parts.length; p++) {
-          if (nq.indexOf(parts[p]) >= 0) hit++;
+          if (has(nq, parts[p])) hit++;
         }
         if (hit === parts.length && parts.length > 1) score += 40 + hit * 8;
         else if (hit >= Math.ceil(parts.length * 0.7) && parts.length > 1) score += 15 + hit * 5;
@@ -75,10 +81,12 @@
       if (score > bestScore) { bestScore = score; best = item; }
     }
     if (best && bestScore >= 20) {
-      return best.a + '\n\n—\n📚 ناوخۆیی (بێ پارە). بۆ فەتوای ورد بۆ زانا بڕۆ.';
+      return best.a + '\n\n—\n' + trs('📚 ناوخۆیی (بێ پارە). بۆ فەتوای ورد بۆ زانا بڕۆ.');
     }
-    return 'لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nتکایە پرسیارەکە بە شێوەیەکی تر بنووسە، یان ئینتەرنێتەکەت بپشکنە بۆ وەڵامی زیرەک.';
+    return trs('لە زانیاری ناوخۆییدا وەڵام نەدۆزرایەوە.\n\nتکایە پرسیارەکە بە شێوەیەکی تر بنووسە، یان ئینتەرنێتەکەت بپشکنە بۆ وەڵامی زیرەک.');
   }
+
+  window.__aiOffline = offlineAnswer;
 
   function withTimeout(promise, ms, label) {
     return new Promise(function (resolve, reject) {

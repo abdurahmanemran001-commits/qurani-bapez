@@ -67,6 +67,7 @@ jobs:
           test -f ai-shari-kb-p2.js && cp ai-shari-kb-p2.js dist/
           test -f ai-shari-kb-p3.js && cp ai-shari-kb-p3.js dist/
           test -f ai-shari-kb-p4.js && cp ai-shari-kb-p4.js dist/
+          test -f ai-shari-kb-i18n.js && cp ai-shari-kb-i18n.js dist/
           test -f salah-places.json && cp salah-places.json dist/
           test -f salah-places-data.js && cp salah-places-data.js dist/
           test -f salah-settings.js && cp salah-settings.js dist/
