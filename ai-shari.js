@@ -242,6 +242,7 @@
     var el = e.target.closest('[data-act], [data-q]');
     if (!el || !$('aiShari') || !$('aiShari').contains(el)) return;
     var act = el.getAttribute('data-act'), q = el.getAttribute('data-q');
+    if (q) { var tt = window.LANG_TT || {}, tb = tt[window.appLang] || tt.en || {}; q = tb[q] || (tt.en || {})[q] || q; if (window.appLang === 'ckb' || window.appLang === 'bad') q = el.getAttribute('data-q'); }
     if (q) { $('aiInput').value = q; send(); return; }
     if (act === 'back') { if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'clear') { history = []; saveHist(); renderMsgs(); return; }
