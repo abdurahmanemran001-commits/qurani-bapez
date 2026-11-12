@@ -1,4 +1,4 @@
-/* seerah.js v7 — سیرە + کتێبخانەی کلاسیکی (داگرتن / نیشانە / سڕینەوە) */
+/* seerah.js v8 — سیرە + کتێبخانەی کلاسیکی (داگرتن / نیشانە / سڕینەوە) */
 (function () {
   if (window.__seerahV7) return;
   window.__seerahV7 = true;
@@ -18,6 +18,7 @@
     { id: 'mukhtasar_rahiq', ku: 'کورتکراوەی الرحیق', ar: 'مختصر الرحيق', author: 'موبارکپوری', size: '~١–٣ مێگابایت', desc: 'وەشانی کورتکراوە.', descAr: 'مختصر للرحيق.', url: 'https://archive.org/details/20221011_20221011_1915' }
   ];
 
+  window.__SEERAH_BOOKS = BOOKS; window.__SEERAH_STATE = state;
   function data() {
     var d = window.__SEERAH_DATA || { periods: [], chapters: [] };
     if (window.__SEERAH_DATA_P2 && window.__SEERAH_DATA_P2.chapters) {
@@ -115,6 +116,7 @@
     v = document.createElement('div');
     v.id = 'seerahView';
     v.className = 'view';
+    v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1');
     main.appendChild(v);
     return v;
   }
