@@ -37,10 +37,44 @@
   function find(ku) { var l = chapters(); for (var i = 0; i < l.length; i++) if (l[i].ku === ku) return l[i]; return null; }
   function esc(s) { return String(s || '').replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ep() { try { return String(window.AI_SHARI_ENDPOINT || localStorage.getItem('ai_endpoint') || '').replace(/\/+$/, ''); } catch (e) { return ''; } }
+  var MT = { tr: 'Translating…', fail: 'Translation is unavailable right now. The Arabic text is shown instead.', note: 'AI translation from the Arabic text; it may contain mistakes.', ph: 'Search sections…', sub: 'Biography · {0} sections · Arabic & English', lib: '{0} books · offline download', books: '{0} books', sec: '{0} sections', saved: '{0} books · {1} marked as downloaded' };
+  function mkM(m) { function f(k) { return function (a, b) { return String(m[k]).replace('{0}', a).replace('{1}', b); }; } return { tr: m.tr, fail: m.fail, note: m.note, ph: m.ph, sub: f('sub'), lib: f('lib'), books: f('books'), sec: f('sec'), saved: f('saved') }; }
   var MSG = {
-    en: { tr: 'Translating…', fail: 'Translation is unavailable right now. The Arabic text is shown instead.', note: 'AI translation from the Arabic text; it may contain mistakes.', ph: 'Search sections…', sub: function (n) { return 'Biography · ' + n + ' sections · Arabic & English'; }, lib: function (n) { return n + ' books · offline download'; }, books: function (n) { return n + ' books'; }, sec: function (n) { return n + ' sections'; }, saved: function (n, m) { return n + ' books · ' + m + ' marked as downloaded'; } },
+    en: mkM(MT),
     ar: { tr: '', fail: '', note: '', ph: 'ابحث في الأقسام...', sub: function (n) { return 'السيرة · ' + n + ' قسمًا · عربي'; }, lib: function (n) { return n + ' كتبًا · تحميل دون اتصال'; }, books: function (n) { return n + ' كتب'; }, sec: function (n) { return n + ' قسمًا'; }, saved: function (n, m) { return n + ' كتب · ' + m + ' معلَّمة كمُحمَّلة'; } }
   };
+  // other languages: translate the English strings once through the worker, cache them
+  var O = { D: EN, P: EN_P, T: EN_T, B: EN_B, M: MT }, WL = { tr: 1, fa: 1, ur: 1, fr: 1, de: 1, id: 1, ru: 1, es: 1 }, uiBusy = {}, uiFail = {};
+  function walk(o, f) { if (typeof o === 'string') return f(o); if (Array.isArray(o)) return o.map(function (x) { return walk(x, f); }); var r = {}; for (var k in o) r[k] = walk(o[k], f); return r; }
+  function useLang(l) {
+    var X = O;
+    if (l !== 'ar' && WL[l]) {
+      var arr = null; try { arr = JSON.parse(localStorage.getItem('sr_ui_' + l)); } catch (e) {}
+      var n = 0; walk(O, function () { n++; return ''; });
+      if (arr && arr.length === n) { var i = 0; X = walk(O, function () { return arr[i++]; }); }
+      else fetchUi(l);
+    }
+    EN = X.D; EN_P = X.P; EN_T = X.T; EN_B = X.B; MSG.en = mkM(X.M);
+  }
+  function fetchUi(l) {
+    if (uiBusy[l] || uiFail[l] || !ep()) return; uiBusy[l] = 1;
+    var lines = []; walk(O, function (s) { lines.push(s); return s; });
+    var batches = [], cur = [], len = 0;
+    lines.forEach(function (s) { if (len + s.length > 2800) { batches.push(cur); cur = []; len = 0; } cur.push(s); len += s.length + 1; });
+    if (cur.length) batches.push(cur);
+    var out = [], bi = 0;
+    (function next() {
+      if (bi >= batches.length) {
+        uiBusy[l] = 0; try { localStorage.setItem('sr_ui_' + l, JSON.stringify(out)); } catch (e) {}
+        var v = document.getElementById('seerahView'); if (v && v.classList.contains('active') && lang() === l && typeof window.enterSeerah === 'function') window.enterSeerah(); return;
+      }
+      var bt = batches[bi];
+      fetch(ep() + '/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ar: bt.join('\n'), lang: l, kind: 'lines' }) })
+        .then(function (r) { return r.json().then(function (d) { if (!r.ok || !(d.text || d.ku)) throw new Error('x'); return String(d.text || d.ku).split('\n'); }); })
+        .then(function (ls) { if (ls.length !== bt.length) throw new Error('n'); out = out.concat(ls.map(function (x) { return x.trim() || ''; })); bi++; next(); })
+        .catch(function () { uiBusy[l] = 0; uiFail[l] = 1; });
+    })();
+  }
   function trKey(id, l) { return 'sr_tr_' + l + '_' + id; }
   function getTr(id, l) { try { return localStorage.getItem(trKey(id, l)) || ''; } catch (e) { return ''; } }
   function setTr(id, l, t) { try { localStorage.setItem(trKey(id, l), t); } catch (e) { try { for (var k in localStorage) if (k.indexOf('sr_tr_') === 0) { localStorage.removeItem(k); break; } localStorage.setItem(trKey(id, l), t); } catch (x) {} } }
@@ -60,8 +94,8 @@
     var l = lang(); if (isKu(l)) { return; }
     inL = true; if (obs) obs.disconnect();
     try {
-      var ar = l === 'ar', D = ar ? AR : EN, M = ar ? MSG.ar : MSG.en;
-      v.setAttribute('data-no-translate', '1'); v.dir = ar ? 'rtl' : 'ltr';
+      useLang(l); var ar = l === 'ar', D = ar ? AR : EN, M = ar ? MSG.ar : MSG.en;
+      v.setAttribute('data-no-translate', '1'); v.dir = (ar || l === 'fa' || l === 'ur') ? 'rtl' : 'ltr';
       var w = document.createTreeWalker(v, 4), n, nodes = [];
       while (n = w.nextNode()) nodes.push(n);
       // chapter cards + detail
