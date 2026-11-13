@@ -1,7 +1,9 @@
 /* sira-story.js v2 — "ژیاننامەی تەواوی پێغەمبەر ﷺ": a continuous, long, chronological biography split into parts.
  * Content lives in sira-story-pN.js files that push {id,ku,intro,chapters:[{id,ku,body}]} onto window.__SIRA_STORY.
  * The text is written in Kurdish. In any other app language the interface, titles and every chapter are translated on demand
- * (chunked + cached) through the shared module window.__siL defined in sira-library.js. */
+ * (chunked + cached) through the shared module window.__siL defined in sira-library.js.
+ * The second part of this file adds "Download for offline" cards (hadith translations + the translated biography) for the
+ * language that is selected in the app. */
 (function () {
   if (window.__siraStoryV2) return;
   window.__siraStoryV2 = true;
@@ -25,6 +27,7 @@
     ['p12', 'دوازدەیەم: حەججەتولوداع و کۆچی دوایی'],
     ['p13', 'سێزدەیەم: ئەخلاق و شەمائلی پێغەمبەر ﷺ']
   ];
+  window.__SIRA_PLAN = PLAN;
   var st = { view: 'home', part: null, ch: 0, size: 19, trKey: '', trText: '', trBusy: false, trErr: '', trProg: null, introKey: '', intro: '' };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -206,5 +209,192 @@
   }
   document.addEventListener('click', onClick);
   function start() { css(); new MutationObserver(inject).observe(document.body, { childList: true, subtree: true }); inject(); }
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();
+
+/* ===================== offline download cards, for the selected language ===================== */
+(function () {
+  if (window.__offV1) return;
+  window.__offV1 = true;
+  var S = window.__siL;
+  if (!S) return;
+
+  var OFF = {};
+  OFF.ckb = {
+    t: `داگرتن بۆ ئۆفلاین`, hs: `وەرگێڕانە مرۆڤییەکانی حەدیس ({l}) — قەبارەی گەورە، وای‌فای بەکاربهێنە`, ss: `ژیاننامە و ناونیشانەکان بە {l}، بۆ خوێندنەوە بێ ئینتەرنێت`,
+    run: `… داگرتن {i} / {n}`, done: `✓ بۆ ئۆفلاین ئامادەیە`, stop: `ڕاگرتن`,
+    limit: `ڕاگیرا (سنووری ڕۆژانە یان کێشەی تۆڕ). دووبارە کرتە بکە بۆ بەردەوامبوون.`, fail: `داگرتن سەرنەکەوت — ئینتەرنێتەکەت بپشکنە و دووبارە کرتە بکە.`
+  };
+  OFF.bad = OFF.ckb;
+  OFF.en = {
+    t: `Download for offline`, hs: `Hadith translations ({l}) — large download, use Wi-Fi`, ss: `The biography and its titles in {l}, for reading without internet`,
+    run: `… Downloading {i} / {n}`, done: `✓ Available offline`, stop: `Stop`,
+    limit: `Stopped (daily limit or network problem). Tap again to continue.`, fail: `Download failed — check your internet and tap again.`
+  };
+  OFF.ar = {
+    t: `تحميل للاستخدام دون إنترنت`, hs: `ترجمات الحديث ({l}) — حجم كبير، استخدم الواي فاي`, ss: `السيرة وعناوينها بـ{l} للقراءة دون إنترنت`,
+    run: `… جارٍ التحميل {i} / {n}`, done: `✓ متاح دون إنترنت`, stop: `إيقاف`,
+    limit: `توقّف (بلوغ الحد اليومي أو مشكلة في الشبكة). اضغط مجددًا للمتابعة.`, fail: `فشل التحميل — تحقق من الإنترنت واضغط مجددًا.`
+  };
+  OFF.tr = {
+    t: `Çevrimdışı için indir`, hs: `Hadis çevirileri ({l}) — büyük indirme, Wi-Fi kullanın`, ss: `Hayat hikâyesi ve başlıkları {l} dilinde, internetsiz okumak için`,
+    run: `… İndiriliyor {i} / {n}`, done: `✓ Çevrimdışı kullanılabilir`, stop: `Durdur`,
+    limit: `Durdu (günlük sınır veya ağ sorunu). Devam etmek için tekrar dokunun.`, fail: `İndirme başarısız — internetinizi kontrol edip tekrar dokunun.`
+  };
+  OFF.fa = {
+    t: `دانلود برای استفاده آفلاین`, hs: `ترجمه‌های حدیث ({l}) — حجم زیاد، از وای‌فای استفاده کنید`, ss: `زندگی‌نامه و عنوان‌ها به {l} برای مطالعه بدون اینترنت`,
+    run: `… در حال دانلود {i} / {n}`, done: `✓ آفلاین در دسترس است`, stop: `توقف`,
+    limit: `متوقف شد (محدودیت روزانه یا مشکل شبکه). برای ادامه دوباره بزنید.`, fail: `دانلود ناموفق بود — اینترنت را بررسی کنید و دوباره بزنید.`
+  };
+  OFF.ur = {
+    t: `آف لائن کے لیے ڈاؤن لوڈ`, hs: `احادیث کے تراجم ({l}) — بڑا ڈاؤن لوڈ، وائی فائی استعمال کریں`, ss: `سیرت اور اس کے عنوانات {l} میں، بغیر انٹرنیٹ پڑھنے کے لیے`,
+    run: `… ڈاؤن لوڈ {i} / {n}`, done: `✓ آف لائن دستیاب`, stop: `روکیں`,
+    limit: `رک گیا (روزانہ حد یا نیٹ ورک مسئلہ)۔ جاری رکھنے کے لیے دوبارہ دبائیں۔`, fail: `ڈاؤن لوڈ ناکام — انٹرنیٹ چیک کریں اور دوبارہ دبائیں۔`
+  };
+  OFF.fr = {
+    t: `Télécharger pour le hors ligne`, hs: `Traductions des hadiths ({l}) — gros téléchargement, utilisez le Wi-Fi`, ss: `La biographie et ses titres en {l}, pour lire sans internet`,
+    run: `… Téléchargement {i} / {n}`, done: `✓ Disponible hors ligne`, stop: `Arrêter`,
+    limit: `Arrêté (limite quotidienne ou problème réseau). Touchez à nouveau pour continuer.`, fail: `Échec du téléchargement — vérifiez votre connexion et touchez à nouveau.`
+  };
+  OFF.ru = {
+    t: `Скачать для офлайн`, hs: `Переводы хадисов ({l}) — большой объём, используйте Wi-Fi`, ss: `Жизнеописание и заголовки ({l}) для чтения без интернета`,
+    run: `… Загрузка {i} / {n}`, done: `✓ Доступно офлайн`, stop: `Остановить`,
+    limit: `Остановлено (дневной лимит или проблема сети). Нажмите снова, чтобы продолжить.`, fail: `Не удалось скачать — проверьте интернет и нажмите снова.`
+  };
+  OFF.id = {
+    t: `Unduh untuk offline`, hs: `Terjemahan hadis ({l}) — unduhan besar, gunakan Wi-Fi`, ss: `Biografi dan judulnya dalam {l}, untuk dibaca tanpa internet`,
+    run: `… Mengunduh {i} / {n}`, done: `✓ Tersedia offline`, stop: `Hentikan`,
+    limit: `Berhenti (batas harian atau masalah jaringan). Ketuk lagi untuk melanjutkan.`, fail: `Unduhan gagal — periksa internet Anda dan ketuk lagi.`
+  };
+  var LN = { ckb: 'کوردی', bad: 'کوردی', ar: 'العربية', en: 'English', tr: 'Türkçe', fa: 'فارسی', ur: 'اردو', fr: 'Français', ru: 'Русский', id: 'Indonesia' };
+  function T(k, o) {
+    var v = (OFF[S.lang()] || OFF.en)[k]; if (v == null) v = OFF.en[k];
+    return o ? String(v).replace(/\{(\w+)\}/g, function (m, x) { return o[x] != null ? o[x] : m; }) : v;
+  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function flag(kind, L) { try { return localStorage.getItem('off_' + kind + '_' + L) === '1'; } catch (e) { return false; } }
+  function setFlag(kind, L) { try { localStorage.setItem('off_' + kind + '_' + L, '1'); } catch (e) {} }
+  function clrFlag(kind, L) { try { localStorage.removeItem('off_' + kind + '_' + L); } catch (e) {} }
+
+  /* ---- hadith editions (hadith-api): kept in the Cache API so they work without internet ---- */
+  var CN = 'hadith-ed-v1', BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/';
+  var BOOKS = ['nawawi', 'bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah'];
+  var ED = { tr: 'tur', ur: 'urd', fr: 'fra', id: 'ind', ru: 'rus' };
+  var EDB = {
+    tur: 'abudawud,bukhari,ibnmajah,malik,muslim,nasai,nawawi,tirmidhi',
+    urd: 'abudawud,bukhari,ibnmajah,malik,muslim,nasai,tirmidhi',
+    fra: 'abudawud,bukhari,dehlawi,ibnmajah,malik,muslim,nasai,nawawi,qudsi',
+    ind: 'abudawud,bukhari,ibnmajah,malik,muslim,nasai,tirmidhi',
+    rus: 'abudawud,bukhari,muslim'
+  };
+  function edUrl(name) { return BASE + name + '.min.json'; }
+  function hList(L) {
+    var l = BOOKS.map(function (b) { return 'eng-' + b; }), p = ED[L];
+    if (p) BOOKS.forEach(function (b) { if (EDB[p].split(',').indexOf(b) >= 0) l.push(p + '-' + b); });
+    return l;
+  }
+  var origFetch = window.fetch ? window.fetch.bind(window) : null;
+  if (origFetch && window.caches) {
+    /* cache-first for the hadith editions (the smaller .min.json is used for the same data) */
+    window.fetch = function (input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url) || '';
+      var m = url.match(/hadith-api@1\/editions\/([a-z]{3}-[a-z]+)(?:\.min)?\.json$/);
+      if (!m) return origFetch(input, init);
+      var u = edUrl(m[1]);
+      return caches.open(CN).then(function (c) {
+        return c.match(u).then(function (hit) {
+          if (hit) return hit;
+          return origFetch(u).then(function (r) { if (r && r.ok) { try { c.put(u, r.clone()); } catch (e) {} } return r; });
+        });
+      }).catch(function () { return origFetch(input, init); });
+    };
+  }
+
+  var jobs = { h: { run: false, stop: false, i: 0, n: 0, msg: '' }, s: { run: false, stop: false, i: 0, n: 0, msg: '' } };
+
+  function hJob() {
+    var J = jobs.h, L = S.lang();
+    if (J.run) { J.stop = true; return; }
+    if (!origFetch || !window.caches) { J.msg = 'fail'; paint(); return; }
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    var list = hList(L), i = 0;
+    J.run = true; J.stop = false; J.i = 0; J.n = list.length; J.msg = ''; clrFlag('h', L); paint();
+    caches.open(CN).then(function (c) {
+      (function next() {
+        if (J.stop) { J.run = false; J.msg = 'limit'; paint(); return; }
+        if (i >= list.length) { J.run = false; setFlag('h', L); paint(); return; }
+        var u = edUrl(list[i]);
+        c.match(u).then(function (hit) {
+          if (hit) return;
+          return origFetch(u).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return c.put(u, r); });
+        }).then(function () { i++; J.i = i; paint(); next(); }, function () { J.run = false; J.msg = 'fail'; paint(); });
+      })();
+    }, function () { J.run = false; J.msg = 'fail'; paint(); });
+  }
+
+  /* ---- the translated biography: titles + every chapter, resumable (everything is cached piece by piece) ---- */
+  function parts() { var seen = {}; return (window.__SIRA_STORY || []).filter(function (p) { if (seen[p.id]) return false; seen[p.id] = 1; return true; }); }
+  function sJob() {
+    var J = jobs.s, L = S.lang();
+    if (J.run) { J.stop = true; return; }
+    if (S.isKu()) return;
+    var items = [], lines = [];
+    (window.__SIRA_PLAN || []).forEach(function (pl) { lines.push(pl[1]); });
+    parts().forEach(function (p) {
+      lines.push(p.ku);
+      if (p.intro) items.push({ t: p.intro, id: 'i:' + p.id });
+      p.chapters.forEach(function (c, ci) { lines.push(c.ku); items.push({ t: c.body, id: 's:' + p.id + ':' + ci }); });
+    });
+    var i = 0;
+    J.run = true; J.stop = false; J.i = 0; J.n = items.length; J.msg = ''; clrFlag('s', L); paint();
+    function end(msg) { J.run = false; J.msg = msg; paint(); }
+    S.trLines(lines).then(function () {}, function () {}).then(function () {
+      (function next() {
+        if (J.stop) return end('limit');
+        if (i >= items.length) { J.run = false; setFlag('s', L); paint(); return; }
+        S.trText(items[i].t, items[i].id, { cancelled: function () { return J.stop; } }).then(function () {
+          i++; J.i = i; paint(); next();
+        }, function (e) { end(e && e.message === 'cancelled' ? 'limit' : 'limit'); });
+      })();
+    });
+  }
+
+  /* ---- the cards ---- */
+  function cardHTML(kind) {
+    var J = jobs[kind], L = S.lang(), done = flag(kind, L);
+    var l = kind === 'h' ? (ED[L] ? LN[L] : LN.en) : LN[L];
+    var h = '<b>⬇ ' + esc(T('t')) + '</b><small>' + esc(T(kind === 'h' ? 'hs' : 'ss', { l: l })) + '</small>';
+    if (J.run) {
+      var pct = J.n ? Math.round(100 * J.i / J.n) : 0;
+      h += '<div style="height:5px;background:#e4d5ad;border-radius:3px;margin-top:8px"><div style="height:5px;width:' + pct + '%;background:#176b4b;border-radius:3px"></div></div>' +
+        '<small style="display:block;margin-top:4px">' + esc(T('run', { i: J.i, n: J.n })) + ' · ' + esc(T('stop')) + '</small>';
+    } else if (J.msg) h += '<small style="display:block;margin-top:6px;color:#a33">' + esc(T(J.msg)) + '</small>';
+    else if (done) h += '<small style="display:block;margin-top:6px;color:#176b4b">' + esc(T('done')) + '</small>';
+    return h;
+  }
+  function paint() {
+    var a = document.getElementById('offH'), b = document.getElementById('offS');
+    if (a) a.innerHTML = cardHTML('h');
+    if (b) b.innerHTML = cardHTML('s');
+  }
+  function inject() {
+    var L = S.lang();
+    var hb = document.querySelector('#hadithView.active .hd-body');
+    if (hb && hb.querySelector('.hd-chips') && !document.getElementById('offH') && L !== 'ar') {
+      var d = document.createElement('div'); d.id = 'offH'; d.className = 'hd-card'; d.setAttribute('data-off', 'h'); d.innerHTML = cardHTML('h');
+      var bm = hb.querySelector('.hd-card[data-act="bm"]');
+      if (bm) hb.insertBefore(d, bm); else hb.appendChild(d);
+    }
+    var sb = document.querySelector('#siraStory.active #ssBody');
+    if (sb && sb.querySelector('.ss-note') && !document.getElementById('offS') && !S.isKu()) {
+      var e = document.createElement('div'); e.id = 'offS'; e.className = 'ss-item'; e.setAttribute('data-off', 's'); e.innerHTML = cardHTML('s');
+      sb.insertBefore(e, sb.querySelector('.ss-note'));
+    }
+  }
+  document.addEventListener('click', function (ev) {
+    var c = ev.target.closest ? ev.target.closest('[data-off]') : null; if (!c) return;
+    if (c.getAttribute('data-off') === 'h') hJob(); else sJob();
+  });
+  function start() { new MutationObserver(inject).observe(document.body, { childList: true, subtree: true }); inject(); }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
