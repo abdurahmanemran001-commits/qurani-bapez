@@ -76,7 +76,7 @@
     })();
   }
   function trKey(id, l) { return 'sr_tr_' + l + '_' + id; }
-  function getTr(id, l) { try { return localStorage.getItem(trKey(id, l)) || ''; } catch (e) { return ''; } }
+  function getTr(id, l) { try { var v = localStorage.getItem(trKey(id, l)) || ''; if (v && l !== 'ckb' && l !== 'bad' && /[ەڵێڕۆ]/.test(v)) { localStorage.removeItem(trKey(id, l)); return ''; } return v; } catch (e) { return ''; } }
   function setTr(id, l, t) { try { localStorage.setItem(trKey(id, l), t); } catch (e) { try { for (var k in localStorage) if (k.indexOf('sr_tr_') === 0) { localStorage.removeItem(k); break; } localStorage.setItem(trKey(id, l), t); } catch (x) {} } }
   var busy = {};
   function fetchTr(c, l, done) {
@@ -85,7 +85,7 @@
     var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 60000);
     fetch(ep() + '/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ar: c.ar_body, lang: l, kind: 'sira' }), signal: ctl ? ctl.signal : undefined })
       .then(function (r) { return r.json().then(function (d) { if (!r.ok || !(d.text || d.ku)) throw new Error('x'); return d.text || d.ku; }); })
-      .then(function (t) { clearTimeout(to); busy[k] = 0; setTr(c.id, l, t); done(true); })
+      .then(function (t) { clearTimeout(to); busy[k] = 0; if (/[ەڵێڕۆ]/.test(t)) { done(false); return; } setTr(c.id, l, t); done(true); })
       .catch(function () { clearTimeout(to); busy[k] = 0; done(false); });
   }
   var inL = false, failed = {}, obs0;
