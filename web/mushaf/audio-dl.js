@@ -19,6 +19,13 @@
     for (i = 1; i <= AC[s - 1]; i++) out.push(base + pad(s, 3) + pad(i, 3) + '.mp3');
     return out;
   }
+  /* GitHub release assets (the Kurdish reciters) send no CORS headers: go through the Worker's /audio proxy */
+  function viaProxy(u) {
+    if (u.indexOf('https://github.com/Hiwaselah/') !== 0) return u;
+    var ep = ''; try { ep = String(window.AI_SHARI_ENDPOINT || localStorage.getItem('ai_endpoint') || '').replace(/\/+$/, ''); } catch (e) {}
+    ep = ep || 'https://qurani-ai-shari.abdurahmanemran03.workers.dev';
+    return ep + '/audio?u=' + encodeURIComponent(u);
+  }
   function curRec() { var e = document.getElementById('madaniReciter') || document.getElementById('rc'); return e ? e.value : ''; }
   function fmt(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.round(b / 1024) + ' KB'; }
 
@@ -76,7 +83,7 @@
         try {
           for (i = 0; i < l.length; i++) {
             st.textContent = 'دابەزاندن… ' + (i + 1) + '/' + l.length;
-            var r = await fetch(l[i], { mode: 'cors' });
+            var r = await fetch(viaProxy(l[i]), { mode: 'cors' });
             if (!r.ok) throw new Error('http ' + r.status);
             var b = await r.blob(); tot += b.size;
             await c.put(l[i], new Response(b, { headers: { 'Content-Type': 'audio/mpeg' } }));
