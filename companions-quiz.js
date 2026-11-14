@@ -24,6 +24,7 @@
     if (fresh.length < Math.min(n, all.length)) { all.forEach(function (q) { delete st.seen[q.id]; }); fresh = all; }
     return shuffle(fresh).slice(0, n);
   }
+  window.__cqRe = function () { var v = $('cqView'); if (v && v.classList.contains('active') && !(R && R.answered && false)) render(); };
   function startRound() {
     var surv = SEL.mode === 'surv', qs = pick(SEL.level, SEL.cat, surv ? 200 : ROUND); if (!qs.length) return;
     R = { level: SEL.level, cat: SEL.cat, surv: surv, lives: 3, qs: qs, i: 0, score: 0, streak: 0, bestStreak: 0, right: 0, wrong: [], done: false, answered: false, t: TIME };
@@ -137,7 +138,8 @@
       }
     }
     v.innerHTML = h + '</div>';
-    if (R && !R.done && !R.answered) startTimer();
+    if (window.__cpGenLoc) window.__cpGenLoc(v, window.__cqRe);
+    if (R && !R.done && !R.answered && !timer) startTimer();
     var m = v.closest('.main'); if (m) m.scrollTop = 0;
   }
   function onClick(e) {
@@ -159,7 +161,7 @@
   }
   window.enterCompanionsQuiz = function () {
     css(); var z = $('zikr'); if (!z || !z.parentNode) return;
-    if (!$('cqView')) { var v = document.createElement('section'); v.id = 'cqView'; v.className = 'view'; z.parentNode.appendChild(v); v.addEventListener('click', onClick); }
+    if (!$('cqView')) { var v = document.createElement('section'); v.id = 'cqView'; v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1'); z.parentNode.appendChild(v); v.addEventListener('click', onClick); }
     if (typeof window.showView === 'function') window.showView('cqView', 'پێشبڕکێی هاوەڵان');
     var bt = document.querySelector('.bottom'); if (bt) bt.classList.add('hidden');
     R = null; render();
