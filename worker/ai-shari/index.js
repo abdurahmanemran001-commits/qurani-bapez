@@ -124,6 +124,16 @@ export default {
     const json = (obj, status = 200) => new Response(JSON.stringify(obj), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8' } });
     if (!okOrigin) return json({ error: 'origin' }, 403);
     const url = new URL(req.url);
+    if (req.method === 'GET' && url.pathname === '/audio') {
+      /* CORS proxy for the Kurdish reciters' mp3 release assets (GitHub release hosts send no CORS headers), used for offline download only */
+      const u = url.searchParams.get('u') || '';
+      if (!/^https:\/\/github\.com\/Hiwaselah\/[\w.-]+\/releases\/download\/[\w.%-]+\/[\w.%-]+\.mp3$/.test(u)) return json({ error: 'bad url' }, 400);
+      const up = await fetch(u, { redirect: 'follow', headers: req.headers.get('Range') ? { Range: req.headers.get('Range') } : {}, cf: { cacheEverything: true, cacheTtl: 31536000 } });
+      if (!up.ok && up.status !== 206) return json({ error: 'upstream', status: up.status }, 502);
+      const h = new Headers({ ...cors, 'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000', 'Accept-Ranges': 'bytes', 'Access-Control-Expose-Headers': 'Content-Length, Content-Range' });
+      ['Content-Length', 'Content-Range'].forEach(k => { const v = up.headers.get(k); if (v) h.set(k, v); });
+      return new Response(up.body, { status: up.status, headers: h });
+    }
     if (req.method === 'GET' && url.pathname === '/health') return json({ ok: true, key: !!env.GEMINI_API_KEY, kv: !!env.RL, models: env.MODELS || null });
     if (req.method === 'GET' && url.pathname === '/diag') {
       if (!env.GEMINI_API_KEY) return json({ ok: false, problem: 'GEMINI_API_KEY secret is not set' });
