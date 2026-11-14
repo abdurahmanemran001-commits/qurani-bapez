@@ -4,7 +4,7 @@
   window.__companionsV1 = true;
 
   var BM_KEY = 'companions_bm_v1';
-  var state = { view: 'home', chapter: null, period: 'all', query: '' };
+  var state = { view: 'home', chapter: null, period: 'all', query: '' }; window.__COMP_STATE = state;
 
   function data() {
     return window.__COMPANIONS_DATA || { periods: [], chapters: [] };
@@ -74,7 +74,7 @@
     if (v) return v;
     v = document.createElement('div');
     v.id = 'companionsView';
-    v.className = 'view';
+    v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1');
     main.appendChild(v);
     return v;
   }
