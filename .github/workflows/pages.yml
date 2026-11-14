@@ -52,6 +52,7 @@ jobs:
           test -f seerah-data-p2.js && cp seerah-data-p2.js dist/
           test -f seerah-data-p3.js && cp seerah-data-p3.js dist/
           test -f companions.js && cp companions.js dist/
+          test -f companions-i18n.js && cp companions-i18n.js dist/
           test -f companions-data.js && cp companions-data.js dist/
           test -f companions-data-p2.js && cp companions-data-p2.js dist/
           test -f knowledge.js && cp knowledge.js dist/
