@@ -111,31 +111,68 @@
   async function applyPlace(p){
     S.lat=+p.lat;S.lng=+p.lng;S.city=p.ku;S.country=inIraq(S.lat,S.lng)?'Iraq':(p.en||'');S.tz='';times=null;save();await fetchTimes();
   }
+  function norm(x){return String(x||'').toLowerCase().replace(/[\u064b-\u065f\u0670]/g,'').replace(/[كڪ]/g,'ک').replace(/[يىێ]/g,'ی').replace(/[ڵ]/g,'ل').replace(/[ڕ]/g,'ر').replace(/[ۆۊ]/g,'و').replace(/[ەهۀة]/g,'ه').replace(/[أإآ]/g,'ا').replace(/\s+/g,' ').trim();}
+  var TXT={en:{srch:'Searching online…',nores:'No place found',net:'Search needs internet',gpsErr:'Could not get your location. Allow Location for this app/browser in the phone settings, or search for your town above.',cur:'Current location'},ar:{srch:'جارٍ البحث عبر الإنترنت…',nores:'لم يتم العثور على مكان',net:'البحث يحتاج إلى اتصال بالإنترنت',gpsErr:'تعذّر تحديد موقعك. فعّل إذن الموقع للتطبيق/المتصفح من إعدادات الهاتف، أو ابحث عن مدينتك أعلاه.',cur:'الموقع الحالي'},ckb:{srch:'گەڕان لە ئینتەرنێت…',nores:'هیچ شوێنێک نەدۆزرایەوە',net:'گەڕان پێویستی بە ئینتەرنێت هەیە',gpsErr:'نەتوانرا شوێنەکەت بدۆزرێتەوە. لە ڕێکخستنی مۆبایل/براوزەر ڕێگە بە شوێن (Location) بدە، یان لە سەرەوە ناوی شارۆچکەکەت بگەڕێ.',cur:'شوێنی ئێستا'}};
+  function tx(k){var l=window.appLang||'ckb';var t=TXT[l]||(l==='bad'?TXT.ckb:TXT.en);return t[k]||TXT.ckb[k];}
   function filterPlaces(q){
-    q=(q||'').trim().toLowerCase();var all=window.__SALAH_PLACES||[];
+    q=norm(q);var all=window.__SALAH_PLACES||[];
     if(!q)return all.slice();
-    return all.filter(function(p){return (p.ku||'').toLowerCase().indexOf(q)>=0||(p.ar||'').toLowerCase().indexOf(q)>=0||(p.en||'').toLowerCase().indexOf(q)>=0;});
+    return all.filter(function(p){return norm(p.ku).indexOf(q)>=0||norm(p.ar).indexOf(q)>=0||norm(p.en).indexOf(q)>=0;});
   }
+  function gcache(){try{return JSON.parse(localStorage.getItem('salah_geo_v1')||'{}');}catch(e){return {};}}
+  function gset(k,v){try{var c=gcache();c[k]=v;var ks=Object.keys(c);if(ks.length>80)delete c[ks[0]];localStorage.setItem('salah_geo_v1',JSON.stringify(c));}catch(e){}}
+  function gl(){var l=window.appLang||'ckb';return l==='ckb'||l==='bad'?'ku,ar,en':(l==='ar'?'ar,en':l+',en');}
+  async function searchOnline(q){
+    var key='s:'+gl()+':'+norm(q),c=gcache();if(c[key])return c[key];
+    var out=[];
+    for(var pass=0;pass<2&&!out.length;pass++){
+      var u='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&addressdetails=1&accept-language='+encodeURIComponent(gl())+(pass===0?'&countrycodes=iq':'')+'&q='+encodeURIComponent(q);
+      var r=await fetch(u);if(!r.ok)throw new Error('geo');var d=await r.json();
+      out=d.filter(function(x){return x.lat&&x.lon;}).map(function(x){var parts=String(x.display_name||'').split(',').map(function(t){return t.trim();});return {ku:x.name||parts[0],ar:parts.slice(1,3).join(' · '),en:'',lat:+x.lat,lng:+x.lon,online:1};});
+    }
+    gset(key,out);return out;
+  }
+  async function placeName(lat,lng){
+    var key='r:'+gl()+':'+lat.toFixed(2)+','+lng.toFixed(2),c=gcache();if(c[key])return c[key];
+    try{var r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=13&accept-language='+encodeURIComponent(gl())+'&lat='+lat+'&lon='+lng);if(!r.ok)return '';var d=await r.json();var a=d.address||{};var n=a.village||a.town||a.suburb||a.city_district||a.city||a.municipality||a.county||d.name||'';if(n)gset(key,n);return n;}catch(e){return '';}
+  }
+  var searchTimer=null,searchSeq=0;
   function renderProvList(q){
     var list=document.getElementById('salahProvList');if(!list)return;
     loadPlaces(function(){
       var items=filterPlaces(q);var all=window.__SALAH_PLACES||[];
-      if(!items.length){list.innerHTML='<div class="salah-prov-item"><span>هیچ شوێنێک نەدۆزرایەوە</span></div>';list.classList.add('open');return;}
-      list.innerHTML=items.map(function(p){var idx=all.indexOf(p);return '<div class="salah-prov-item" data-i="'+idx+'"><b>'+p.ku+'</b><span>'+p.ar+' · '+p.en+'</span></div>';}).join('');
+      var qq=(q||'').trim();var seq=++searchSeq;clearTimeout(searchTimer);
+      if(qq.length>=2&&items.length<4){
+        searchTimer=setTimeout(async function(){
+          if(seq!==searchSeq)return;
+          var cur=document.getElementById('salahProvList');if(!cur)return;
+          var hint=document.createElement('div');hint.className='salah-prov-item';hint.innerHTML='<span>'+tx('srch')+'</span>';cur.appendChild(hint);
+          try{var on=await searchOnline(qq);if(seq!==searchSeq)return;hint.remove();
+            if(on.length){var shown=items.map(function(p){return p;});on.forEach(function(p){shown.push(p);});draw(shown);}
+            else if(!items.length){cur.innerHTML='<div class="salah-prov-item"><span>'+tx('nores')+'</span></div>';}
+          }catch(e){hint.innerHTML='<span>'+tx('net')+'</span>';}
+        },450);
+      }
+      draw(items);
+      function draw(arr){
+      if(!arr.length){list.innerHTML='<div class="salah-prov-item"><span>'+tx('nores')+'</span></div>';list.classList.add('open');return;}
+      list.innerHTML=arr.map(function(p,i){var idx=all.indexOf(p);return '<div class="salah-prov-item" data-i="'+idx+'" data-o="'+i+'"><b>'+(p.online?'🌐 ':'')+p.ku+'</b><span>'+(p.ar||'')+(p.en?' · '+p.en:'')+'</span></div>';}).join('');
       list.classList.add('open');
       list.querySelectorAll('.salah-prov-item').forEach(function(el){
         el.onclick=async function(){
-          var p=all[+el.getAttribute('data-i')];if(!p)return;list.classList.remove('open');
+          var p=arr[+el.getAttribute('data-o')];if(!p)return;list.classList.remove('open');
           var input=document.getElementById('salahCity');if(input)input.value=p.ku;
           try{await applyPlace(p);setTab('times');startTick();}catch(e){alert('نەتوانرا کاتەکان بهێنرێن.');}
         };
       });
+      }
     });
   }
   async function useGPSAndLoad(){
     if(!navigator.geolocation)throw new Error('no-geo');
     var pos=await new Promise(function(res,rej){navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:15000});});
-    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city='شوێنی ئێستا';S.country=inIraq(S.lat,S.lng)?'Iraq':'';S.tz='';times=null;save();await fetchTimes();
+    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;S.city=tx('cur');S.country=inIraq(S.lat,S.lng)?'Iraq':'';S.tz='';times=null;save();await fetchTimes();
+    placeName(S.lat,S.lng).then(function(n){if(n&&S.city===tx('cur')){S.city=n;save();var ci=document.getElementById('salahCity');if(ci)ci.value=n;if(typeof renderTimes==='function'&&document.getElementById('salahBody')&&(S.tab||'times')==='times')try{renderTimes();}catch(e){}}});
   }
   function qiblaBearing(lat,lng){
     var kLat=21.4225*Math.PI/180,kLng=39.8262*Math.PI/180;
@@ -213,7 +250,7 @@
     cityInput.addEventListener('focus',function(){renderProvList(cityInput.value);});
     cityInput.addEventListener('input',function(){renderProvList(cityInput.value);});
     document.getElementById('salahGps').onclick=async function(){
-      try{await useGPSAndLoad();cityInput.value=S.city;setTab('times');startTick();}catch(e){alert('ڕێگە بە شوێن بدە.');}
+      try{await useGPSAndLoad();cityInput.value=S.city;setTab('times');startTick();}catch(e){alert(tx('gpsErr'));}
     };
     document.querySelectorAll('.salah-tabs button').forEach(function(b){b.onclick=function(){setTab(b.getAttribute('data-tab'));};});
     return v;
