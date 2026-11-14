@@ -46,7 +46,7 @@
     return null;
   }
 
-  function ask(q, status) {
+  function askKu(q, status) {
     status = status || function () {};
     if (!endpoint()) return Promise.resolve({ text: NET, kind: 'error', sources: [] });
     status('… شیکردنەوەی پرسیار');
@@ -83,6 +83,18 @@
     }).catch(function () { return { text: NET, kind: 'error', sources: [] }; });
   }
 
+  /* answer + source labels follow the app language (the Worker answers in Kurdish) */
+  function ask(q, status) {
+    return askKu(q, status).then(function (r) {
+      var S = window.__siL; if (!S || S.isKu()) return r;
+      var labels = (r.sources || []).map(function (x) { return x.label; });
+      (r.sources || []).forEach(function (x) { if (x.ku) x.ku = ''; });
+      return S.trLines(labels).catch(function () {}).then(function () {
+        (r.sources || []).forEach(function (x) { var t = S.tl(x.label); if (t) x.label = t; });
+        return S.trText(r.text, 'ca:' + S.hash(r.text)).then(function (t) { r.text = t; return r; }, function () { return r; });
+      });
+    });
+  }
   var msgs = [], busy = false;
   try { msgs = JSON.parse(localStorage.getItem(HKEY) || '[]') || []; } catch (e) {}
   function saveH() { try { localStorage.setItem(HKEY, JSON.stringify(msgs.slice(-12))); } catch (e) {} }
@@ -111,7 +123,7 @@
   function ensureView() {
     if ($('companionsAi')) return $('companionsAi');
     var z = $('zikr'); if (!z || !z.parentNode) return null;
-    var v = document.createElement('section'); v.id = 'companionsAi'; v.className = 'view'; z.parentNode.appendChild(v);
+    var v = document.createElement('section'); v.id = 'companionsAi'; v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1'); z.parentNode.appendChild(v);
     v.addEventListener('click', onClick);
     return v;
   }
@@ -132,6 +144,7 @@
     h += '</div><div class="ca-bar"><textarea id="caQ" placeholder="ناوی هاوەڵ یان پرسیارەکەت بنووسە…"></textarea><button class="ca-send" data-a="send"' + (busy ? ' disabled' : '') + '>ناردن</button></div>';
     var keep = $('caQ') ? $('caQ').value : '';
     v.innerHTML = h; if ($('caQ')) $('caQ').value = keep;
+    if (window.__cpAiLoc) window.__cpAiLoc(v);
     var m2 = v.closest('.main'); if (m2) m2.scrollTop = busy || !msgs.length ? m2.scrollHeight : m2.scrollTop;
   }
   function send(text) {
@@ -157,7 +170,7 @@
     var bt = document.querySelector('.bottom'); if (bt) bt.classList.add('hidden');
     render();
   };
-  window.__companionsAiSearch = searchCompanions;
+  window.__companionsAiSearch = searchCompanions; window.__cpAiRe = function () { if ($('companionsAi') && $('companionsAi').classList.contains('active')) render(); };
   function inject() {
     var body = document.querySelector('#companionsView .cp-body');
     if (!body || body.querySelector('#cpAiEntry') || !body.querySelector('.cp-search')) return;
