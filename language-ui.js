@@ -148,7 +148,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     s7.src = 'salah.js?v=10';
     s7.onload = function () {
       var s8 = document.createElement('script');
-      s8.src = 'salah-settings.js?v=3';
+      s8.src = 'salah-settings.js?v=4';
       s8.async = true;
       document.head.appendChild(s8);
     };
@@ -160,7 +160,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     s7.src = 'salah.js?v=9';
     s7.onload = function () {
       var s8 = document.createElement('script');
-      s8.src = 'salah-settings.js?v=3';
+      s8.src = 'salah-settings.js?v=4';
       document.head.appendChild(s8);
     };
     document.head.appendChild(s7);
