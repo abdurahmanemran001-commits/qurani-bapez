@@ -21,6 +21,13 @@
         if (typeof cfg.offsets[k] !== 'number') cfg.offsets[k] = defO[k];
       });
     }
+    // v2 (2026-11): Kurdistan Awqaf-style defaults, fitted to the published Kalak table (Shafi'i, Fajr 16.5°, Isha 16°)
+    if (cfg.awqafV !== 1) {
+      cfg.awqafV = 1; cfg.method = 99; cfg.school = 0;
+      cfg.offsets = { Fajr: 0, Sunrise: 1, Dhuhr: 8, Asr: 0, Maghrib: 4, Isha: 0 };
+      localStorage.setItem(KEY, JSON.stringify(cfg));
+      try { localStorage.setItem('salah_v1', JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('salah_v1') || '{}'), { method: 99 }))); } catch (e) {}
+    }
   } catch (e) {}
 
   var THEMES = {
@@ -38,6 +45,7 @@
     { id: 'soft', name: 'بانگی نەرم', url: 'https://cdn.aladhan.com/audio/adhans/a5.mp3' }
   ];
   var METHODS = [
+    { id: 99, name: 'ئەوقافی کوردستان (شافیعی)' },
     { id: 3, name: 'Muslim World League' },
     { id: 4, name: 'Umm Al-Qura' },
     { id: 5, name: 'Egyptian' },
@@ -185,7 +193,12 @@
     if (typeof url === 'string' && url.indexOf('api.aladhan.com/v1/timings') >= 0) {
       try {
         var u = new URL(url);
-        u.searchParams.set('method', String(cfg.method || 3));
+        var m = cfg.method || 3;
+        if (m == 99) {
+          var la = +u.searchParams.get('latitude'), lo = +u.searchParams.get('longitude');
+          if (la >= 28.9 && la <= 37.5 && lo >= 38.7 && lo <= 48.8) u.searchParams.set('methodSettings', '16.5,null,16'); else m = 3;
+        }
+        u.searchParams.set('method', String(m));
         u.searchParams.set('school', String(cfg.school || 0));
         url = u.toString();
       } catch (e) {}
