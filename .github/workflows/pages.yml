@@ -74,6 +74,7 @@ jobs:
           test -f salah-settings.js && cp salah-settings.js dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
+          mkdir -p dist/mushaf/reciters; if ls reciter-photos/*.jpg >/dev/null 2>&1; then cp reciter-photos/*.jpg dist/mushaf/reciters/; fi
           sed -i "s/language-ui\.js?v=[0-9]*/language-ui.js?v=${GITHUB_SHA::7}/g" dist/index.html || true
 
       - name: Build AI Shar'i knowledge packs
