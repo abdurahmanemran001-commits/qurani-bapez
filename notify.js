@@ -92,7 +92,7 @@
   function isApp() { return !!plugin(); }
   function clearAll(LN) {
     return LN.getPending().then(function (r) {
-      var n = (r && r.notifications) || [];
+      var n = ((r && r.notifications) || []).filter(function (x) { return x.id < 3000; });
       return n.length ? LN.cancel({ notifications: n.map(function (x) { return { id: x.id }; }) }) : null;
     });
   }
