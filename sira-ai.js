@@ -115,14 +115,14 @@
   }
 
   /* ---------- UI ---------- */
-  var msgs = [], busy = false, wasOn = false;
-  try { localStorage.removeItem(HKEY); } catch (e) {}  /* conversation is never kept: starts empty every time */
+  var msgs = [], busy = false;
+  try { msgs = JSON.parse(localStorage.getItem(HKEY) || '[]') || []; } catch (e) {}
   function saveH() { try { localStorage.setItem(HKEY, JSON.stringify(msgs.slice(-20))); } catch (e) {} }
   function css() {
     if ($('saiCss')) return;
     var s = document.createElement('style'); s.id = 'saiCss';
     s.textContent = '.phone:has(#siraAi.active) .appbar,.phone:has(#siraAi.active) .bottom,.phone:has(#siraAi.active) .status{display:none!important}' +
-      '#siraAi{background:#f5f1e6;min-height:100%;display:flex;flex-direction:column}' +
+      '#siraAi{background:#f5f1e6;min-height:100%;flex-direction:column}#siraAi:not(.active){display:none!important}#siraAi.active{display:flex}' +
       '#siraAi .sa-top{display:flex;align-items:center;gap:10px;padding:14px;background:#173b66;color:#fff;position:sticky;top:0;z-index:3}' +
       '#siraAi .sa-top button{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px}#siraAi .sa-top b{font-size:17px}' +
       '#siraAi .sa-body{flex:1;padding:12px 12px 90px}' +
@@ -144,15 +144,6 @@
     var z = $('zikr'); if (!z || !z.parentNode) return null;
     var v = document.createElement('section'); v.id = 'siraAi'; v.className = 'view'; z.parentNode.appendChild(v);
     v.addEventListener('click', onClick);
-    /* leaving the chat in ANY way (back, home, bottom bar, other section) wipes it */
-    new MutationObserver(function () {
-      if (v.classList.contains('active')) { wasOn = true; return; }
-      if (!wasOn) return; wasOn = false;
-      msgs = []; busy = false; saveH();
-      try { var q = $('saQ'); if (q) q.value = ''; } catch (e) {}
-      render();
-      var bt = document.querySelector('.bottom'); if (bt) bt.classList.remove('hidden');
-    }).observe(v, { attributes: true, attributeFilter: ['class'] });
     return v;
   }
   function render() {
