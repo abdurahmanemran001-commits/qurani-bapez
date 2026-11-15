@@ -313,4 +313,5 @@
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,40);setTimeout(boot,400);});}
   else{setTimeout(boot,40);setTimeout(boot,400);}
   var tries=0;var t=setInterval(function(){boot();if(++tries>40)clearInterval(t);},300);
+  window.__salahCore={S:S,placeNow:placeNow,inIraq:inIraq,getOffsets:getOffsets,addMinutes:addMinutes,parseHM:parseHM,tzOf:tzOf};
 })();

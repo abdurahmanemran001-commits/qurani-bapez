@@ -84,7 +84,9 @@
     } catch (e) {}
   }
 
+  window.__salahPlayAdhan = function () { playAdhan(); };
   async function enableNotif() {
+    if (window.__salahNotify) return window.__salahNotify.enable();
     if (!('Notification' in window)) { alert('پشتگیری ناکرێت'); return false; }
     var p = Notification.permission;
     if (p !== 'granted') p = await Notification.requestPermission();
@@ -131,7 +133,8 @@
       '<div class="salah-card"><h3 style="margin:0 0 10px">نۆتیفیکەیشن و بانگ</h3>' +
       '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>ئاگاداری</span><button type="button" id="ssNotif" style="padding:8px 12px;border:0;border-radius:10px;background:#176b4b;color:#fff">' + (cfg.notifOn ? 'چالاکە ✓' : 'چالاک بکە') + '</button></div>' +
       '<div style="display:flex;justify-content:space-between;margin:8px 0;align-items:center"><span>بانگدەر</span><select id="ssAdhan">' + adhanOpts + '</select></div>' +
-      '<div><b>نوێژەکان:</b>' + checks + '</div>' +
+      '<label style="display:flex;gap:8px;margin:8px 0;align-items:center"><input type="checkbox" id="ssAPlay"' + (cfg.adhanPlay !== false ? ' checked' : '') + '> بانگ لێبدە کاتێک ئەپەکە کراوەیە</label><div><b>نوێژەکان:</b>' + checks + '</div>' +
+      '<button type="button" id="ssNTest" style="width:100%;margin-top:10px;padding:10px;border:0;border-radius:10px;background:#176b4b;color:#fff">🔔 تاقیکردنەوەی ئاگاداری (٥ چرکە)</button>' +
       '<button type="button" id="ssTest" style="width:100%;margin-top:10px;padding:10px;border:0;border-radius:10px;background:#444;color:#fff">▶ تاقیکردنەوەی بانگ</button></div>';
 
     document.getElementById('ssFont').oninput = function () { cfg.fontScale = +this.value; save(); applyTheme(); };
@@ -152,10 +155,12 @@
     };
     document.getElementById('ssAdhan').onchange = function () { cfg.adhanId = this.value; save(); };
     document.getElementById('ssNotif').onclick = async function () {
-      if (cfg.notifOn) { cfg.notifOn = false; save(); this.textContent = 'چالاک بکە'; }
+      if (cfg.notifOn) { cfg.notifOn = false; save(); if (window.__salahNotify) window.__salahNotify.disable(); this.textContent = 'چالاک بکە'; }
       else if (await enableNotif()) this.textContent = 'چالاکە ✓';
     };
     document.getElementById('ssTest').onclick = function () { playAdhan(); };
+    var nt = document.getElementById('ssNTest'); if (nt) nt.onclick = function () { if (window.__salahNotify) window.__salahNotify.test(); };
+    var ap = document.getElementById('ssAPlay'); if (ap) ap.onchange = function () { cfg.adhanPlay = ap.checked; save(); };
     body.querySelectorAll('input[data-p]').forEach(function (cb) {
       cb.onchange = function () {
         if (!cfg.notifPrayers) cfg.notifPrayers = {};

@@ -145,12 +145,16 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=16';
+    s7.src = 'salah.js?v=17';
     s7.onload = function () {
       var s8 = document.createElement('script');
-      s8.src = 'salah-settings.js?v=5';
+      s8.src = 'salah-settings.js?v=6';
       s8.async = true;
       document.head.appendChild(s8);
+      var s9 = document.createElement('script');
+      s9.src = 'salah-notify.js?v=1';
+      s9.async = true;
+      document.head.appendChild(s9);
     };
     s7.async = true;
     document.head.appendChild(s7);
@@ -160,7 +164,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     s7.src = 'salah.js?v=9';
     s7.onload = function () {
       var s8 = document.createElement('script');
-      s8.src = 'salah-settings.js?v=5';
+      s8.src = 'salah-settings.js?v=6';
       document.head.appendChild(s8);
     };
     document.head.appendChild(s7);
