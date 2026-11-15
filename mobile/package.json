@@ -4,7 +4,10 @@
   "private": true,
   "description": "Android + iOS app (Capacitor) wrapping the qurani-bapez web mushaf",
   "scripts": {
-    "icons": "node make-icon.mjs"
+    "icons": "node make-icon.mjs",
+    "capacitor:copy:after": "node after-sync.mjs",
+    "capacitor:update:after": "node after-sync.mjs",
+    "capacitor:sync:after": "node after-sync.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
