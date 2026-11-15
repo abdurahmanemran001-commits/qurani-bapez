@@ -213,24 +213,49 @@
     var box=document.getElementById('salahBody');if(!box)return;
     box.innerHTML='<div class="salah-card"><h3>نوێژ لە کاتی خۆیدا</h3><div class="ar">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا</div><div class="ku">بەڕاستی نوێژ لەسەر باوەڕداران فەرزێکی کاتدارە.</div></div>';
   }
-  function stopQibla(){if(qiblaWatch){window.removeEventListener('deviceorientation',qiblaWatch,true);qiblaWatch=null;}}
+  function stopQibla(){if(qiblaWatch){window.removeEventListener('deviceorientation',qiblaWatch,true);window.removeEventListener('deviceorientationabsolute',qiblaWatch,true);qiblaWatch=null;}}
+  var TQ={ckb:{qibla:'قیبلە',start:'چالاککردن',move:'مۆبایلەکە ڕاستەخۆ (تەخت) بگرە و بە شێوەی ٨ بیجوڵێنە بۆ ڕێکخستنی کۆمپاس. ئاسنی نزیک لێی دووربخەرەوە.',nosensor:'ئەم مۆبایل/براوزەرە کۆمپاسی نییە. دەتوانیت بە کۆمپاسێکی تر، ڕووت بکە لای {0}° لە باکوورەوە.',deny:'ڕێگە نەدرا.'},en:{qibla:'Qibla',start:'Activate',move:'Hold the phone flat and move it in a figure-8 to calibrate. Keep it away from metal.',nosensor:'This phone/browser has no compass. Use another compass and face {0}° from North.',deny:'Permission denied.'},ar:{qibla:'القبلة',start:'تفعيل',move:'أمسك الهاتف أفقيًا وحرّكه على شكل ٨ للمعايرة، وأبعده عن المعادن.',nosensor:'هذا الهاتف/المتصفح لا يملك بوصلة. استخدم بوصلة أخرى واتجه {0}° من الشمال.',deny:'تم رفض الإذن.'}};
+  function tq(k){var l=window.appLang||'ckb';var t=TQ[l]||(l==='bad'?TQ.ckb:TQ.en);var v=t[k]||TQ.ckb[k]||'';return v.replace('{0}',qiblaBearing(S.lat,S.lng).toFixed(0));}
   function renderQibla(){
     var box=document.getElementById('salahBody');if(!box)return;stopQibla();
     var bearing=qiblaBearing(S.lat,S.lng);
-    box.innerHTML='<div class="salah-card" style="text-align:center"><b>قیبلەنما</b><div>📍 '+(S.city||'')+' · <b dir="ltr">'+bearing.toFixed(1)+'°</b></div><div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div><div class="qibla-deg" id="qiblaDeg">'+bearing.toFixed(0)+'°</div><button type="button" id="qiblaCalib" style="margin-top:12px;padding:10px 16px;border:0;border-radius:10px;background:#176b4b;color:#fff">چالاککردن</button></div>';
+    box.innerHTML='<div class="salah-card" style="text-align:center"><b>قیبلەنما</b><div>📍 '+(S.city||'')+' · <b dir="ltr">'+bearing.toFixed(1)+'°</b></div><div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div><div class="qibla-deg" id="qiblaDeg">'+bearing.toFixed(0)+'°</div><div id="qiblaMsg" style="font-size:12px;opacity:.75;margin-top:6px"></div><button type="button" id="qiblaCalib" style="margin-top:12px;padding:10px 16px;border:0;border-radius:10px;background:#176b4b;color:#fff">'+tq('start')+'</button></div>';
     var needle=document.getElementById('qiblaNeedle'),degEl=document.getElementById('qiblaDeg');
-    function onOrient(e){
-      var heading=null;
-      if(typeof e.webkitCompassHeading==='number')heading=e.webkitCompassHeading;
-      else if(typeof e.alpha==='number')heading=(360-e.alpha)%360;
-      if(heading==null)return;
-      if(needle)needle.style.transform='rotate('+(bearing-heading)+'deg)';
-      if(degEl)degEl.textContent=heading.toFixed(0)+'° · قیبلە '+bearing.toFixed(0)+'°';
+    var sm=null,got=false,lastT=0;
+    function decl(){return inIraq(S.lat,S.lng)?5:0;} /* magnetic declination: about +5° east in Iraq */
+    function headingOf(e){
+      if(typeof e.webkitCompassHeading==='number'&&!isNaN(e.webkitCompassHeading))return e.webkitCompassHeading;
+      if(typeof e.alpha!=='number'||typeof e.beta!=='number'||typeof e.gamma!=='number')return null;
+      var d=Math.PI/180,x=e.beta*d,y=e.gamma*d,z=e.alpha*d,h;
+      if(Math.cos(x)*Math.cos(y)>0.6){h=Math.atan2(-Math.sin(z)*Math.cos(x),Math.cos(z)*Math.cos(x));} /* phone (mostly) flat: direction of the top edge */
+      else{var cY=Math.cos(y),cZ=Math.cos(z),sX=Math.sin(x),sY=Math.sin(y),sZ=Math.sin(z);h=Math.atan2(-cZ*sY-sZ*sX*cY,-sZ*sY+cZ*sX*cY);} /* held upright: direction the back faces */
+      if(h<0)h+=2*Math.PI;return h/d;
     }
-    document.getElementById('qiblaCalib').onclick=async function(){
-      try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){var p=await DeviceOrientationEvent.requestPermission();if(p!=='granted'){alert('ڕێگە نەدرا.');return;}}}catch(e){}
-      stopQibla();qiblaWatch=onOrient;window.addEventListener('deviceorientation',onOrient,true);
+    function onOrient(e){
+      if(window.__qAbs&&e.type==='deviceorientation')return; /* Android: only use the absolute (north-referenced) stream */
+      var h=headingOf(e);if(h==null)return;
+      h=(h+decl()+360)%360;got=true;
+      var r=h*Math.PI/180;
+      if(!sm)sm={s:Math.sin(r),c:Math.cos(r)};else{sm.s+=(Math.sin(r)-sm.s)*0.2;sm.c+=(Math.cos(r)-sm.c)*0.2;}
+      var now=Date.now();if(now-lastT<60)return;lastT=now;
+      var hh=(Math.atan2(sm.s,sm.c)*180/Math.PI+360)%360,diff=((bearing-hh)+540)%360-180;
+      if(needle){needle.style.transform='rotate('+(bearing-hh)+'deg)';needle.style.background=Math.abs(diff)<4?'#16a34a':'';}
+      if(degEl)degEl.textContent=hh.toFixed(0)+'° · '+(Math.abs(diff)<4?'✅ ':'')+tq('qibla')+' '+bearing.toFixed(0)+'°';
+    }
+    function startCompass(){
+      stopQibla();window.__qAbs=('ondeviceorientationabsolute' in window);
+      qiblaWatch=onOrient;
+      if(window.__qAbs)window.addEventListener('deviceorientationabsolute',onOrient,true);
+      window.addEventListener('deviceorientation',onOrient,true);
+      var msg=document.getElementById('qiblaMsg');if(msg)msg.textContent=tq('move');
+      setTimeout(function(){if(!got&&msg)msg.textContent=tq('nosensor');},2500);
+    }
+    var cb=document.getElementById('qiblaCalib');
+    cb.onclick=async function(){
+      try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){var p=await DeviceOrientationEvent.requestPermission();if(p!=='granted'){alert(tq('deny'));return;}}}catch(e){}
+      startCompass();
     };
+    if(!(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function')){startCompass();cb.style.display='none';}
   }
   function setTab(tab){
     S.tab=tab;
