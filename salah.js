@@ -220,7 +220,9 @@
   }
   function renderVirtues(){
     var box=document.getElementById('salahBody');if(!box)return;
-    box.innerHTML='<div class="salah-card"><h3>نوێژ لە کاتی خۆیدا</h3><div class="ar">إِنَّ الصَّلَاةَ كَانَتْ عَلَى الْمُؤْمِنِينَ كِتَابًا مَوْقُوتًا</div><div class="ku">بەڕاستی نوێژ لەسەر باوەڕداران فەرزێکی کاتدارە.</div></div>';
+    box.setAttribute('data-no-translate','1');
+    if(window.__salahVirtues){window.__salahVirtues(box);return;}
+    var sc=document.createElement('script');sc.src='salah-virtues.js?v=1';sc.onload=function(){if(window.__salahVirtues&&document.getElementById('salahBody')===box)window.__salahVirtues(box);};document.head.appendChild(sc);
   }
   function stopQibla(){if(qiblaWatch){window.removeEventListener('deviceorientation',qiblaWatch,true);window.removeEventListener('deviceorientationabsolute',qiblaWatch,true);qiblaWatch=null;}}
   var TQ={ckb:{qibla:'قیبلە',start:'چالاککردن',move:'مۆبایلەکە ڕاستەخۆ (تەخت) بگرە و بە شێوەی ٨ بیجوڵێنە بۆ ڕێکخستنی کۆمپاس. ئاسنی نزیک لێی دووربخەرەوە.',nosensor:'ئەم مۆبایل/براوزەرە کۆمپاسی نییە. دەتوانیت بە کۆمپاسێکی تر، ڕووت بکە لای {0}° لە باکوورەوە.',deny:'ڕێگە نەدرا.'},en:{qibla:'Qibla',start:'Activate',move:'Hold the phone flat and move it in a figure-8 to calibrate. Keep it away from metal.',nosensor:'This phone/browser has no compass. Use another compass and face {0}° from North.',deny:'Permission denied.'},ar:{qibla:'القبلة',start:'تفعيل',move:'أمسك الهاتف أفقيًا وحرّكه على شكل ٨ للمعايرة، وأبعده عن المعادن.',nosensor:'هذا الهاتف/المتصفح لا يملك بوصلة. استخدم بوصلة أخرى واتجه {0}° من الشمال.',deny:'تم رفض الإذن.'}};
