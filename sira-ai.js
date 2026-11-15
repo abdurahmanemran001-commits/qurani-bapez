@@ -115,8 +115,8 @@
   }
 
   /* ---------- UI ---------- */
-  var msgs = [], busy = false;
-  try { msgs = JSON.parse(localStorage.getItem(HKEY) || '[]') || []; } catch (e) {}
+  var msgs = [], busy = false, wasOn = false;
+  try { localStorage.removeItem(HKEY); } catch (e) {}  /* conversation is never kept: starts empty every time */
   function saveH() { try { localStorage.setItem(HKEY, JSON.stringify(msgs.slice(-20))); } catch (e) {} }
   function css() {
     if ($('saiCss')) return;
@@ -144,6 +144,15 @@
     var z = $('zikr'); if (!z || !z.parentNode) return null;
     var v = document.createElement('section'); v.id = 'siraAi'; v.className = 'view'; z.parentNode.appendChild(v);
     v.addEventListener('click', onClick);
+    /* leaving the chat in ANY way (back, home, bottom bar, other section) wipes it */
+    new MutationObserver(function () {
+      if (v.classList.contains('active')) { wasOn = true; return; }
+      if (!wasOn) return; wasOn = false;
+      msgs = []; busy = false; saveH();
+      try { var q = $('saQ'); if (q) q.value = ''; } catch (e) {}
+      render();
+      var bt = document.querySelector('.bottom'); if (bt) bt.classList.remove('hidden');
+    }).observe(v, { attributes: true, attributeFilter: ['class'] });
     return v;
   }
   function render() {
