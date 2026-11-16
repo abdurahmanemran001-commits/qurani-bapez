@@ -211,7 +211,8 @@
       var isCur=cur&&x.id===cur.id&&!cur.yesterday;var past=x.date<tl.now&&!isCur;
       return '<div class="salah-row'+(isCur?' current':'')+(past?' past':'')+'"><div><div class="nm">'+pn(x)+(isCur?' · '+tx('now'):'')+'</div><div class="ar">'+pn2(x)+'</div></div><div style="display:flex;align-items:center;gap:10px">'+(x.id!=='Sunrise'?'<button type="button" class="trk-b" data-trk="'+x.id+'" aria-label="✓" style="width:30px;height:30px;border-radius:50%;border:2px solid '+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'#176b4b':'#b9c8c1')+';background:'+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'#176b4b':'transparent')+';color:#fff;font-size:15px;line-height:1;padding:0">'+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'✓':'')+'</button>':'')+'<div class="tm">'+fmtHM(x.date)+'</div></div></div>';
     }).join('');
-    box.innerHTML=hero+'<div class="salah-list">'+rows+'</div>'+trkCard();
+    box.innerHTML=hero+'<div class="salah-list">'+rows+'</div>'+trkCard()+(window.__salahHijri?window.__salahHijri.card():'');
+    if(window.__salahHijri)window.__salahHijri.bind(box,renderTimes);else if(!window.__hjLoading){window.__hjLoading=1;var hs=document.createElement('script');hs.src='salah-hijri.js?v=2';hs.onload=function(){if(document.getElementById('salahBody')===box&&S.tab==='times')renderTimes();};document.head.appendChild(hs);}
     box.querySelectorAll('.trk-b').forEach(function(b){b.onclick=function(){trkToggle(b.getAttribute('data-trk'));var y=box.scrollTop,w=window.scrollY;renderTimes();box.scrollTop=y;window.scrollTo(0,w);};});
   }
   function tickLive(){
