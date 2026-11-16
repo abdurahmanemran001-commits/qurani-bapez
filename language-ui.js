@@ -113,7 +113,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('knowledge-data-prophets.js?v=1'); })
     .then(function () { return loadScript('knowledge-data-more.js?v=1'); })
     .then(function () { return loadScript('knowledge-endless.js?v=2'); })
-    .then(function () { return loadScript('knowledge.js?v=6'); })
+    .then(function () { return loadScript('knowledge.js?v=7'); })
     .then(function () { return loadScript('scholars-firebase-config.js?v=1'); })
     .then(function () { return loadScript('scholars.js?v=4'); })
     .then(function () { return loadScript('sira-library.js?v=2'); })
@@ -139,7 +139,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('sira-story.js?v=3'); })
     .then(function () { return loadScript('notify-content.js?v=1'); })
     .then(function () { return loadScript('notify-content2.js?v=1'); })
-    .then(function () { return loadScript('notify.js?v=2'); });
+    .then(function () { return loadScript('notify.js?v=2'); })
+    .then(function () { return loadScript('lang-fix-leaks.js?v=1'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
