@@ -1,6 +1,7 @@
 /* knowledge.js — ناوەندی زانیاریی قورئان */
 (function () {
-  if (window.__knowledgeV1) return;
+  function kl(en,ar,ku){var l=window.appLang||'ckb';return l==='ckb'||l==='bad'?ku:(l==='ar'?ar:en);}
+    if (window.__knowledgeV1) return;
   window.__knowledgeV1 = true;
   var STORE = 'quran_knowledge_v1';
   var PATHS = [
@@ -202,12 +203,12 @@
       var sample=itemsFor('spark')[0];
       html+=head('ناوەندی زانیاری','تەنها خوێندن · '+rankName(days));
       html+='<div class="kn-body">';
-      html+='<div class="kn-spark"><div class="kn-kicker">ئەمڕۆ · '+esc(String(days))+' ڕۆژی پریشکە</div>';
+      html+='<div class="kn-spark"><div class="kn-kicker">'+kl('Today · '+days+' day streak','اليوم · '+days+' يوم متتالٍ','ئەمڕۆ · '+days+' ڕۆژی پریشکە')+'</div>';
       if(sample){
         html+='<div class="kn-ar">'+esc(sample.ar)+'</div><div class="kn-ref">'+esc(sample.ref)+'</div>';
       }
       html+='<button type="button" class="kn-primary" data-k="start" data-path="spark">دەستپێکردن · ٣ خولەک</button></div>';
-      html+='<div class="kn-modebar"><button type="button" class="kn-btn" data-k="lightning">⚡ تاقیکردنەوەی ٣ خولەک</button><button type="button" class="kn-btn" data-k="review">📚 گەنجینەی پێداچوونەوە ('+((p.revisit||[]).length)+')</button></div>';
+      html+='<div class="kn-modebar"><button type="button" class="kn-btn" data-k="lightning">⚡ تاقیکردنەوەی ٣ خولەک</button><button type="button" class="kn-btn" data-k="review">'+kl('📚 Review vault (','📚 خزانة المراجعة (','📚 گەنجینەی پێداچوونەوە (')+((p.revisit||[]).length)+')</button></div>';
       html+='<div class="kn-spark"><div class="kn-kicker">پرسیاری نوێی زیرەک · AI</div><p style="font-size:13px;color:#9AAB9F;line-height:1.6">بابەتێک بنووسە یان بەتاڵی بهێڵە بۆ پرسیاری جۆراوجۆر. پرسیارەکە لەسەر سەرچاوەی قورئان و حەدیث دروست دەکرێت.</p><input id="knAiTopic" class="kn-ask" placeholder="بابەت: تەوحید، نوێژ، سیرە، ڕۆژوو..." value="'+esc(state.aiTopic||'')+'"><button type="button" class="kn-primary" data-k="aiGenerate">دروستکردنی پرسیاری نوێ</button></div>';
       html+='<div class="kn-grid">';
       PATHS.forEach(function(x){
@@ -217,7 +218,7 @@
       html+='<div class="kn-spark" style="margin-top:16px"><div class="kn-kicker">لە قورئان بپرسە</div>';
       html+='<p style="font-size:13px;color:#9AAB9F;line-height:1.6">وەڵام تەنها لە ئایەتە پێداچوونەوەکراوەکانی ئەم بەشەدایە. حوکم و فەتوا نییە.</p>';
       html+='<input id="knAsk" class="kn-ask" placeholder="بۆ نموونە: نائومێدی، سوپاس، یوسف" value="'+esc(state.askQ)+'">';
-      html+='<button type="button" class="kn-primary" data-k="askGo">گەڕان لە دەق</button>';
+      html+='<button type="button" class="kn-primary" data-k="askGo">'+kl('Search the text','البحث في النص','گەڕان لە دەق')+'</button>';
       var hits=searchHits(state.askQ);
       hits.forEach(function(q){
         localizeSearchHit(q);
