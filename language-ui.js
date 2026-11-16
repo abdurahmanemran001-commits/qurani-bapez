@@ -146,7 +146,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=21';
+    s7.src = 'salah.js?v=22';
     s7.onload = function () {
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';
@@ -182,4 +182,16 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     '}',
   ].join('\n');
   document.head.appendChild(st);
+})();
+
+/* offline: once per launch, ask the service worker to download every app file in the background */
+(function () {
+  try {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        navigator.serviceWorker.ready.then(function (r) { if (r && r.active) r.active.postMessage('precache'); }).catch(function () {});
+      }, 6000);
+    });
+  } catch (e) {}
 })();

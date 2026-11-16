@@ -86,6 +86,22 @@
     var h = Math.floor(total / 60), mi = total % 60;
     return (h < 10 ? '0' : '') + h + ':' + (mi < 10 ? '0' : '') + mi;
   }
+  /* offline prayer times (standard solar formulas, same parameters as the aladhan methods used here) */
+  function localTimes(lat,lng,method,school){
+    var R=Math.PI/180,pn=placeNow();
+    var tzh=(Date.UTC(pn.getFullYear(),pn.getMonth(),pn.getDate(),pn.getHours(),pn.getMinutes(),pn.getSeconds())-Date.now())/3600000;tzh=Math.round(tzh*4)/4;
+    var jd=Date.UTC(pn.getFullYear(),pn.getMonth(),pn.getDate(),12)/86400000+2440587.5,D=jd-2451545.0-lng/360;
+    function fx(a,b){a=a-b*Math.floor(a/b);return a<0?a+b:a;}
+    var g=fx(357.529+0.98560028*D,360),q=fx(280.459+0.98564736*D,360),L=fx(q+1.915*Math.sin(g*R)+0.020*Math.sin(2*g*R),360),e=23.439-0.00000036*D;
+    var RA=fx(Math.atan2(Math.cos(e*R)*Math.sin(L*R),Math.cos(L*R))/R/15,24),eqt=q/15-RA;if(eqt>12)eqt-=24;if(eqt<-12)eqt+=24;
+    var decl=Math.asin(Math.sin(e*R)*Math.sin(L*R))/R,noon=12+tzh-lng/15-eqt;
+    function t(a){var c=(-Math.sin(a*R)-Math.sin(decl*R)*Math.sin(lat*R))/(Math.cos(decl*R)*Math.cos(lat*R));if(c>1||c<-1)return NaN;return Math.acos(c)/R/15;}
+    var P={1:[18,18],2:[15,15],3:[18,17],4:[18.5,0],5:[19.5,17.5],99:[16.5,16]};var m=(method==99&&!inIraq(lat,lng))?3:method;var pr=P[m]||P[3];
+    var f=(school==1?2:1),ac=Math.atan(1/(f+Math.tan(Math.abs(lat-decl)*R)))/R,asr=noon+ (function(){var c=(Math.sin(ac*R)-Math.sin(decl*R)*Math.sin(lat*R))/(Math.cos(decl*R)*Math.cos(lat*R));return Math.acos(c)/R/15;})();
+    var sr=noon-t(0.833),ss=noon+t(0.833),fa=noon-t(pr[0]),is=pr[1]?noon+t(pr[1]):ss+1.5;
+    function h(x){if(isNaN(x))return '--:--';x=fx(x+0.5/60,24);var H=Math.floor(x),M=Math.floor((x-H)*60);return (H<10?'0':'')+H+':'+(M<10?'0':'')+M;}
+    return{Fajr:h(fa),Sunrise:h(sr),Dhuhr:h(noon),Asr:h(asr),Maghrib:h(ss),Sunset:h(ss),Isha:h(is),Imsak:h(fa-10/60),Midnight:h(ss+(fa+24-ss)/2)};
+  }
   async function fetchTimes(){
     var off = inIraq(S.lat, S.lng) ? getOffsets() : { Fajr: 0, Sunrise: 0, Dhuhr: 0, Asr: 0, Maghrib: 0, Isha: 0 };
     if (!inIraq(S.lat, S.lng)) getOffsets();
@@ -97,10 +113,17 @@
       +'&method='+encodeURIComponent(S.method||3)
       +'&school='+encodeURIComponent(school)
       +'&_='+Date.now();
-    var r=await fetch(url);if(!r.ok)throw new Error('net');
-    var j=await r.json();if(!j.data||!j.data.timings)throw new Error('empty');
-    var raw = j.data.timings;
-    try { if (j.data.meta && j.data.meta.timezone) S.tz = j.data.meta.timezone; } catch (e) {}
+    var raw,j;
+    try{
+      var r=await fetch(url);if(!r.ok)throw new Error('net');
+      j=await r.json();if(!j.data||!j.data.timings)throw new Error('empty');
+      raw = j.data.timings;
+      try { if (j.data.meta && j.data.meta.timezone) { S.tz = j.data.meta.timezone; try{localStorage.setItem('salah_tz_'+S.lat.toFixed(1)+'_'+S.lng.toFixed(1),S.tz);}catch(e){} } } catch (e) {}
+    }catch(netErr){
+      /* offline: restore the place's time zone if known, then calculate on the device */
+      try{if(!S.tz)S.tz=localStorage.getItem('salah_tz_'+(+S.lat).toFixed(1)+'_'+(+S.lng).toFixed(1))||'';}catch(e){}
+      raw=localTimes(+S.lat,+S.lng,+S.method||3,school);
+    }
     S.fetchedDay = ymd(placeNow());
     times = {};
     ['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha','Sunset','Imsak','Midnight'].forEach(function(k){
