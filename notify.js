@@ -14,7 +14,7 @@
   function load() {
     var o = {};
     try { o = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
-    return { on: !!o.on, time: /^\d\d:\d\d$/.test(o.time) ? o.time : '08:00', eve: o.eve !== false };
+    return { on: !!o.on, time: /^\d\d:\d\d$/.test(o.time) ? o.time : '08:00', eve: o.eve !== false, q: !!o.q, qtime: /^\d\d:\d\d$/.test(o.qtime) ? o.qtime : '20:00' };
   }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   var S = load();
@@ -73,9 +73,15 @@
   }
   function at(d, hhmm) { var p = hhmm.split(':'); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), +p[0], +p[1], 0, 0); }
 
+  var QT = {
+    ckb: { back: '‹ گەڕانەوە', head: '🔔 نۆتیفیکەیشنی ڕۆژانە', auto: 'ناردنی فەرمودە و ئایەت بە شێوەی خۆکار', ntime: 'کاتی نۆتیفیکەیشن', eve: 'بیرخستنەوەی ئێوارەی ڕۆژووی دووشەممە و پێنجشەممە', test: '🔔 تاقیکردنەوە (٤ چرکە دواتر)', nh: 'نامەکانی ڕۆژانی داهاتوو', row: 'بیرخستنەوەی خوێندنەوەی قورئان (ڕۆژانە)', time: 'کاتی بیرخستنەوە', title: 'کاتی قورئان', body: 'ئەمڕۆ بەشێک لە قورئان بخوێنەوە، ئەگەرچی ئایەتێک بێت.' },
+    en: { back: '‹ Back', head: '🔔 Daily notifications', auto: 'Send a hadith or verse automatically', ntime: 'Notification time', eve: 'Evening reminder for Monday & Thursday fasting', test: '🔔 Test (in 4 seconds)', nh: 'Upcoming messages', row: 'Daily Quran reading reminder', time: 'Reminder time', title: 'Quran time', body: 'Read a portion of the Quran today, even a single verse.' },
+    ar: { back: '‹ رجوع', head: '🔔 الإشعارات اليومية', auto: 'إرسال حديث أو آية تلقائيًا', ntime: 'وقت الإشعار', eve: 'تذكير مساء صيام الاثنين والخميس', test: '🔔 تجربة (بعد ٤ ثوانٍ)', nh: 'الرسائل القادمة', row: 'تذكير يومي بقراءة القرآن', time: 'وقت التذكير', title: 'وقت القرآن', body: 'اقرأ اليوم شيئًا من القرآن ولو آية.' }
+  };
+  function qt() { var l = window.appLang || 'ckb'; return QT[l] || (l === 'bad' ? QT.ckb : QT.en); }
   function plan() {
     var out = [], now = new Date(), i, d, mm;
-    for (i = 0; i < DAYS; i++) {
+    for (i = 0; S.on && i < DAYS; i++) {
       d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
       mm = messageFor(d, false);
       if (mm.item) out.push({ id: 1000 + i, when: at(d, S.time), cat: mm.cat, item: mm.item });
@@ -84,6 +90,7 @@
         if (ev.item) out.push({ id: 2000 + i, when: at(d, '19:30'), cat: 'mteve', item: ev.item });
       }
     }
+    if (S.q) for (i = 0; i < DAYS; i++) { d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i); out.push({ id: 2500 + i, when: at(d, S.qtime), quran: true }); }
     return out.filter(function (x) { return x.when.getTime() > now.getTime() + 30000; });
   }
 
@@ -100,12 +107,13 @@
     var LN = plugin();
     if (!LN) return Promise.resolve(false);
     return clearAll(LN).then(function () {
-      if (!S.on) return true;
+      if (!S.on && !S.q) return true;
       return LN.requestPermissions().then(function (p) {
         if (!p || p.display !== 'granted') return false;
         var mk = LN.createChannel ? LN.createChannel({ id: 'daily', name: 'فەرمودە و ئایەتی ڕۆژانە', importance: 4, visibility: 1 }).catch(function () {}) : Promise.resolve();
         return mk.then(function () {
           var list = plan().map(function (x) {
+            if (x.quran) return { id: x.id, title: qt().title, body: qt().body, largeBody: qt().body, schedule: { at: x.when, allowWhileIdle: true }, channelId: 'daily' };
             return { id: x.id, title: TITLES[x.cat] || 'قورئانی کوردی', body: bodyOf(x.item), largeBody: bodyOf(x.item), summaryText: TITLES[x.cat], schedule: { at: x.when, allowWhileIdle: true }, channelId: 'daily' };
           });
           return list.length ? LN.schedule({ notifications: list }).then(function () { return true; }) : true;
@@ -163,10 +171,11 @@
   function ensureView() {
     if ($('notify')) return $('notify');
     var z = $('zikr'); if (!z || !z.parentNode) return null;
-    var v = document.createElement('section'); v.id = 'notify'; v.className = 'view';
+    var v = document.createElement('section'); v.id = 'notify'; v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1');
     z.parentNode.appendChild(v);
     v.addEventListener('click', onClick);
     v.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'ntQTime' && /^\d\d:\d\d$/.test(e.target.value)) { S.qtime = e.target.value; save(S); apply(); }
       if (e.target && e.target.id === 'ntTime' && /^\d\d:\d\d$/.test(e.target.value)) { S.time = e.target.value; save(S); apply(); }
     });
     return v;
@@ -181,13 +190,15 @@
       n++;
       prev += '<div class="nt-prev"><small>' + DOW[d.getDay()] + ' · ' + d.getDate() + '/' + (d.getMonth() + 1) + ' · ' + esc(TITLES[m.cat]) + '</small>' + (m.item.ar ? '<div class="ar">' + esc(m.item.ar) + '</div>' : '') + esc(m.item.ku) + (m.item.src ? '<em>— ' + esc(m.item.src) + '</em>' : '') + '</div>';
     }
-    v.innerHTML = '<div class="nt-top"><button data-act="back">‹ گەڕانەوە</button><b>🔔 نۆتیفیکەیشنی ڕۆژانە</b></div>' +
-      '<div class="nt-box"><div class="nt-row"><span>ناردنی فەرمودە و ئایەت بە شێوەی خۆکار</span><button class="nt-sw' + (S.on ? ' on' : '') + '" data-act="toggle" aria-label="چالاککردن"></button></div>' +
-      '<div class="nt-row"><span>کاتی نۆتیفیکەیشن</span><input type="time" id="ntTime" value="' + S.time + '"></div>' +
-      '<div class="nt-row"><span>بیرخستنەوەی ئێوارەی ڕۆژووی دووشەممە و پێنجشەممە</span><button class="nt-sw' + (S.eve ? ' on' : '') + '" data-act="eve" aria-label="ئێوارە"></button></div>' +
-      '<button class="nt-btn" data-act="test">🔔 تاقیکردنەوە (٤ چرکە دواتر)</button>' +
+    v.innerHTML = '<div class="nt-top"><button data-act="back">' + esc(qt().back) + '</button><b>' + esc(qt().head) + '</b></div>' +
+      '<div class="nt-box"><div class="nt-row"><span>' + esc(qt().auto) + '</span><button class="nt-sw' + (S.on ? ' on' : '') + '" data-act="toggle" aria-label="چالاککردن"></button></div>' +
+      '<div class="nt-row"><span>' + esc(qt().ntime) + '</span><input type="time" id="ntTime" value="' + S.time + '"></div>' +
+      '<div class="nt-row"><span>' + esc(qt().eve) + '</span><button class="nt-sw' + (S.eve ? ' on' : '') + '" data-act="eve" aria-label="ئێوارە"></button></div>' +
+      '<div class="nt-row"><span>' + esc(qt().row) + '</span><button class="nt-sw' + (S.q ? ' on' : '') + '" data-act="qtoggle" aria-label="q"></button></div>' +
+      '<div class="nt-row"><span>' + esc(qt().time) + '</span><input type="time" id="ntQTime" value="' + S.qtime + '"></div>' +
+      '<button class="nt-btn" data-act="test">' + esc(qt().test) + '</button>' +
       '<div class="nt-note" id="ntStatus">' + (isApp() ? 'ئەپەکە ٣٠ ڕۆژی داهاتوو خۆی ئامادە دەکات، بێ ئینتەرنێت و بێ کردنەوەی ئەپ. هەر جارێک ئەپەکە بکەیتەوە نوێ دەبێتەوە.' : 'ئەم بەشە لە ئەپی ئەندرۆید و ئایفۆندا ڕۆژانە خۆکارانە نۆتیفیکەیشن دەنێرێت. لێرەدا تەنها ڕێکخستن و پێشبینین دەبینیت.') + '<br>ژمارەی نامەکان: ' + total() + ' نامە — فەرمودەی دووشەممە/پێنجشەممە، هەینی، شەعبان، ڕەمەزان، دە شەوی کۆتایی، شەووال، جەژن، زیلحیجە، عەرەفە، موحەڕەم، ئایەت، فەرمودە و دوعا.</div></div>' +
-      '<div class="nt-h">نامەکانی ڕۆژانی داهاتوو</div>' + prev;
+      '<div class="nt-h">' + esc(qt().nh) + '</div>' + prev;
   }
   function status(t) { var e = $('ntStatus'); if (e) e.textContent = t; }
   function apply() { if (isApp()) schedule().then(function (ok) { if (S.on && !ok) status('ڕێگەپێدانی نۆتیفیکەیشن نەدرا. لە ڕێکخستنەکانی مۆبایل ڕێگە بدە.'); }); }
@@ -196,6 +207,7 @@
     var a = b.getAttribute('data-act');
     if (a === 'back') { if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); var bt = document.querySelector('.bottom'); if (bt) bt.classList.remove('hidden'); return; }
     if (a === 'toggle') { S.on = !S.on; save(S); b.classList.toggle('on', S.on); apply(); if (S.on && !isApp()) status('لە ئەپی مۆبایلدا نۆتیفیکەیشنەکان چالاک دەبن. ئەم بەشە لە وێبسایتدا تەنها پێشبینینە.'); }
+    else if (a === 'qtoggle') { S.q = !S.q; save(S); b.classList.toggle('on', S.q); apply(); }
     else if (a === 'eve') { S.eve = !S.eve; save(S); b.classList.toggle('on', S.eve); apply(); }
     else if (a === 'test') { testNow().then(function (r) { status(r === 'sent' ? 'نۆتیفیکەیشنی تاقیکردنەوە نێردرا.' : r === 'denied' ? 'ڕێگەپێدان نەدرا؛ لە ڕێکخستنەکانی مۆبایل/وێبگەڕ ڕێگە بدە.' : 'ئەم ئامێرە پشتگیری نۆتیفیکەیشن ناکات.'); }); }
   }
@@ -222,8 +234,8 @@
     var box = document.querySelector('#startScreen .section-choices');
     if (box) new MutationObserver(function () { addCard(); }).observe(box, { childList: true });
     /* keep the 30-day window fresh: on launch and when the app returns to the foreground */
-    if (S.on && isApp()) apply();
-    document.addEventListener('visibilitychange', function () { if (!document.hidden && S.on && isApp()) apply(); });
+    if ((S.on || S.q) && isApp()) apply();
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && (S.on || S.q) && isApp()) apply(); });
   }
   window.__notifyPlan = function (n) { return plan().slice(0, n || 100); };
   window.__notifyMessageFor = messageFor;

@@ -139,7 +139,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('sira-story.js?v=3'); })
     .then(function () { return loadScript('notify-content.js?v=1'); })
     .then(function () { return loadScript('notify-content2.js?v=1'); })
-    .then(function () { return loadScript('notify.js?v=1'); });
+    .then(function () { return loadScript('notify.js?v=2'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
