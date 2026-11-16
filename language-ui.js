@@ -145,7 +145,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=16';
+    s7.src = 'salah.js?v=18';
     s7.onload = function () {
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';
