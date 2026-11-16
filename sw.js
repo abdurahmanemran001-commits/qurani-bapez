@@ -2,13 +2,13 @@
 // - app pages (html/js/css/json): NETWORK FIRST, so every change you push shows up right away;
 //   cached copy is only used when offline.
 // - heavy mushaf data (fonts / page images under /data/): cache first, size-limited.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const SHELL = 'shell-' + VERSION;
 const PAGES = 'pages-' + VERSION;
 const DATA = 'data-' + VERSION;
 const IMAGES = 'quran-pages-' + VERSION;
 const API = 'api-' + VERSION;
-const MAX_PAGES = 150;
+const MAX_PAGES = 600;
 const MAX_DATA = 400;
 const MAX_IMAGES = 40;
 const SHELL_FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
@@ -21,6 +21,33 @@ self.addEventListener('install', (e) => {
     caches.open(SHELL).then((c) => c.addAll(SHELL_FILES)).then(() => self.skipWaiting())
   );
 });
+
+// Offline: download every app script / data file listed in precache.json (built by the deploy workflow).
+let precaching = null;
+async function precache() {
+  if (precaching) return precaching;
+  precaching = (async () => {
+    try {
+      const list = await (await fetch('./precache.json?_=' + Date.now(), { cache: 'no-store' })).json();
+      const cache = await caches.open(PAGES);
+      let i = 0;
+      async function worker() {
+        while (i < list.length) {
+          const u = list[i++];
+          try {
+            if (await cache.match(u, { ignoreSearch: true })) continue;
+            const r = await fetch(u);
+            if (r && r.status === 200) await cache.put(u, r);
+          } catch (e) { /* offline or missing: skip, next launch retries */ }
+        }
+      }
+      await Promise.all([worker(), worker(), worker(), worker()]);
+    } catch (e) { /* no manifest */ }
+    precaching = null;
+  })();
+  return precaching;
+}
+self.addEventListener('message', (e) => { if (e.data === 'precache') e.waitUntil(precache()); });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
@@ -45,7 +72,7 @@ async function networkFirst(req) {
     }
     return r;
   } catch (err) {
-    const hit = (await cache.match(req)) || (await caches.match(req));
+    const hit = (await cache.match(req)) || (await cache.match(req, { ignoreSearch: true })) || (await caches.match(req)) || (await caches.match(req, { ignoreSearch: true }));
     if (hit) return hit;
     if (req.mode === 'navigate') {
       const shell = await caches.match('./index.html');

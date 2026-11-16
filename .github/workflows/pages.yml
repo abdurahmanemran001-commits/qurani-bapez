@@ -120,6 +120,29 @@ jobs:
           print('bounds pages', len(pages))
           PY
 
+      - name: Offline manifest (files the service worker pre-downloads)
+        run: |
+          python3 - <<'PY'
+          import os, json
+          out = []
+          for root, dirs, files in os.walk('dist'):
+              rel = os.path.relpath(root, 'dist')
+              top = rel.split(os.sep)[0]
+              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters') or '/data' in rel:
+                  dirs[:] = []
+                  continue
+              for f in files:
+                  if f == 'precache.json' or f == 'sw.js':
+                      continue
+                  if f.lower().endswith(('.js', '.json', '.css', '.html', '.svg', '.webmanifest', '.mp3', '.jpg', '.png', '.webp')):
+                      p = os.path.join(root, f)
+                      if os.path.getsize(p) > 25 * 1024 * 1024 or f.lower().endswith(('.mp3',)):
+                          continue
+                      out.append('./' + os.path.relpath(p, 'dist').replace(os.sep, '/'))
+          json.dump(sorted(set(out)), open('dist/precache.json', 'w'))
+          print('precache files:', len(out))
+          PY
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
