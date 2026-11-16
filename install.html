@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ckb" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Qurani Bapez</title>
+<meta name="theme-color" content="#176b4b">
+<style>
+:root{--g:#176b4b;--gd:#0f4a34;--bg:#f4faf7;--ink:#12372a;--mut:#5b7068;--card:#fff;--line:#dce5e1}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1714;--ink:#e6f2ec;--mut:#9bb3a9;--card:#15221d;--line:#25382f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.8 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+.hero{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;padding:36px 16px 44px;text-align:center}
+.hero img{width:84px;height:84px;border-radius:20px;background:#fff;padding:8px}
+.hero h1{margin:12px 0 4px;font-size:26px}.hero p{margin:0;opacity:.92}
+.langs{display:flex;gap:6px;justify-content:center;margin-top:16px}.langs button{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:16px;padding:5px 14px;font:inherit;font-size:14px}.langs button.on{background:#fff;color:var(--g)}
+main{max-width:560px;margin:-22px auto 40px;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.btn{display:block;text-align:center;background:var(--g);color:#fff;text-decoration:none;border-radius:12px;padding:14px;font-weight:700;font-size:17px}
+.card h2{margin:0 0 8px;font-size:18px;color:var(--g)}.card ol,.card ul{margin:6px 0;padding-inline-start:22px}.small{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="hero"><img src="icon.svg" alt=""><h1 id="t"></h1><p id="s"></p>
+<div class="langs"><button data-l="ckb">کوردی</button><button data-l="en">English</button><button data-l="ar">العربية</button></div></div>
+<main>
+<div class="card"><h2 id="aT"></h2><a class="btn" id="aB" href="https://github.com/abdurahmanemran001-commits/qurani-bapez/releases/download/app-latest/qurani-bapez-android.apk"></a><p class="small" id="aN"></p></div>
+<div class="card"><h2 id="wT"></h2><a class="btn" id="wB" href="https://abdurahmanemran001-commits.github.io/qurani-bapez/"></a><ol id="wL"></ol></div>
+<div class="card"><h2 id="fT"></h2><ul id="fL"></ul></div>
+</main>
+<script>
+var T={
+ckb:{dir:'rtl',t:'قورئانی کوردی',s:'قورئان، کاتی نوێژ، بانگ، سیرە و زیکر بە کوردی',aT:'ئەندرۆید',aB:'داگرتنی ئەپ (APK)',aN:'دوای داگرتن، ڕێگە بدە بە دامەزراندن لە سەرچاوەی نەناسراو، پاشان بیکەرەوە. بۆ بانگ، ڕێگەی ئاگاداری و «ئاگاداری بە کاتی دروست» بدە.',wT:'ئایفۆن و کۆمپیوتەر',wB:'کردنەوەی سایتەکە',wL:['لە Safari سایتەکە بکەرەوە.','دوگمەی هاوبەشکردن (Share) بدە.','«Add to Home Screen» هەڵبژێرە.'],fT:'چی تێدایە',fL:['موسحەف و گوێگرتن لە قاریانی کوردی و عەرەبی','کاتی نوێژ، بانگ، قیبلە و تۆماری نوێژ','ڕۆژژمێری هیجری و بۆنە ئایینییەکان','سیرەی پێغەمبەر ﷺ و ژیانی هاوەڵان','زیکر، تەسبیح و ڕوقیە','فەرمودە، تەدەببور و ئاگاداریی ڕۆژانە','١٠ زمان']},
+en:{dir:'ltr',t:'Kurdish Quran',s:'Quran, prayer times, adhan, seerah and dhikr in Kurdish',aT:'Android',aB:'Download the app (APK)',aN:'After downloading, allow installing from unknown sources, then open it. For the adhan, allow notifications and exact alarms.',wT:'iPhone & computer',wB:'Open the website',wL:['Open the website in Safari.','Tap the Share button.','Choose “Add to Home Screen”.'],fT:'What is inside',fL:['Mushaf and recitations by Kurdish and Arabic reciters','Prayer times, adhan, qibla and a prayer log','Hijri calendar and Islamic occasions','Seerah of the Prophet ﷺ and the Companions','Dhikr, tasbih and ruqyah','Hadith, reflection and daily reminders','10 languages']},
+ar:{dir:'rtl',t:'القرآن الكردي',s:'القرآن ومواقيت الصلاة والأذان والسيرة والأذكار بالكردية',aT:'أندرويد',aB:'تحميل التطبيق (APK)',aN:'بعد التحميل اسمح بالتثبيت من مصادر غير معروفة ثم افتحه. للأذان فعّل الإشعارات والمنبهات الدقيقة.',wT:'آيفون والحاسوب',wB:'فتح الموقع',wL:['افتح الموقع في Safari.','اضغط زر المشاركة.','اختر «إضافة إلى الشاشة الرئيسية».'],fT:'ماذا بداخله',fL:['المصحف والتلاوات بأصوات قراء كرد وعرب','مواقيت الصلاة والأذان والقبلة وسجل الصلاة','التقويم الهجري والمناسبات الإسلامية','سيرة النبي ﷺ وحياة الصحابة','الأذكار والتسبيح والرقية','الأحاديث والتدبر والتذكيرات اليومية','١٠ لغات']}};
+function set(l){if(!T[l])l='ckb';var x=T[l];document.documentElement.lang=l;document.documentElement.dir=x.dir;
+['t','s','aT','aB','aN','wT','wB','fT'].forEach(function(k){document.getElementById(k).textContent=x[k]});
+document.getElementById('wL').innerHTML=x.wL.map(function(i){return'<li>'+i+'</li>'}).join('');
+document.getElementById('fL').innerHTML=x.fL.map(function(i){return'<li>'+i+'</li>'}).join('');
+document.querySelectorAll('.langs button').forEach(function(b){b.classList.toggle('on',b.dataset.l===l)});
+try{localStorage.setItem('install_lang',l)}catch(e){}}
+document.querySelectorAll('.langs button').forEach(function(b){b.onclick=function(){set(b.dataset.l)}});
+var l0='';try{l0=localStorage.getItem('install_lang')||localStorage.getItem('app_language')||''}catch(e){}
+if(!T[l0]){var n=(navigator.language||'').slice(0,2);l0=n==='ar'?'ar':n==='ku'||n==='ckb'?'ckb':'en'}
+set(l0);
+</script>
+</body>
+</html>
