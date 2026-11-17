@@ -134,7 +134,7 @@ jobs:
           for root, dirs, files in os.walk('dist'):
               rel = os.path.relpath(root, 'dist')
               top = rel.split(os.sep)[0]
-              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters') or '/data' in rel:
+              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters', 'tafsir-ku') or '/data' in rel:
                   dirs[:] = []
                   continue
               for f in files:
