@@ -122,6 +122,8 @@ jobs:
 
       - name: Build Kurdish tafsirs (hiwaquran databases -> JSON)
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/build_tafsir_ku.py dist/tafsir-ku
 
       - name: Offline manifest (files the service worker pre-downloads)

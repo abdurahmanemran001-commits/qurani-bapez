@@ -4,15 +4,14 @@ dist/tafsir-ku/<slug>.json  ({"sura:ayah": "text"})  + dist/tafsir-ku/index.json
 import io, json, os, sqlite3, sys, tempfile, urllib.request, zipfile
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else 'dist/tafsir-ku'
-BASE = 'https://sites.google.com/site/hiwaquran/hiwaselah/'
-ITEMS = [  # slug, file, Kurdish name
-    ('hq-rebar', 'tafser_rebar', 'تەفسیری ڕێبەر'),
-    ('hq-raman', 'tafser_raman', 'تەفسیری ڕامان'),
-    ('hq-asan', 'tafser_asan', 'تەفسیری ئاسان'),
-    ('hq-puxta', 'tafser_puxta', 'پوختەی قورئان'),
-    ('hq-sanahy', 'tafser_sanahy', 'تەفسیری سەناهی'),
-    ('hq-badini', 'tafser_latiny_badiny', 'تەفسیری بادینی (لاتینی)'),
-]
+API = 'https://api.github.com/repos/Hiwaselah/tafser/releases?per_page=100'
+NAMES = {  # release tag -> Kurdish name (unknown tags fall back to the release title)
+    'rebar': 'تەفسیری ڕێبەر', 'raman': 'تەفسیری ڕامان', 'asan': 'تەفسیری ئاسان', 'puxta': 'پوختەی قورئان',
+    'sanahi': 'تەفسیری سەناهی', 'badiny_latiny': 'تەفسیری بادینی (لاتینی)', 'hazhar': 'تەفسیری هەژار',
+    'roshn': 'تەفسیری ڕووناک', 'tafseeri_ronahi_Badiny': 'تەفسیری ڕووناکی (بادینی)',
+    'tawhidy': 'تەفسیری تەوحیدی', 'ahsan_kalam_hussein_taji': 'ئەحسەن ئەلکەلام (حوسێن تاجی)', 'zhian_badini': 'ژیان (بادینی)',
+}
+SKIP = {'muyasar', 'v3', 'tafseryquran'}
 os.makedirs(OUT, exist_ok=True)
 
 def fetch(url):
@@ -46,20 +45,36 @@ def convert(db):
     return out
 
 ok = []
-for slug, f, name in ITEMS:
-    try:
-        print('==', slug)
-        raw = fetch(BASE + f + '.zip')
-        z = zipfile.ZipFile(io.BytesIO(raw))
-        dbn = [n for n in z.namelist() if n.lower().endswith('.db')][0]
-        with tempfile.TemporaryDirectory() as td:
-            z.extract(dbn, td)
-            data = convert(os.path.join(td, dbn))
-        if not data or len(data) < 500:
-            print('  skipped (too few rows)', len(data or {})); continue
-        json.dump(data, open(os.path.join(OUT, slug + '.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
-        ok.append([slug, name]); print('  ok', len(data), 'ayahs')
-    except Exception as e:
-        print('  FAILED', e)
+hdr = {'User-Agent': 'Mozilla/5.0', 'Accept': 'application/vnd.github+json'}
+if os.environ.get('GITHUB_TOKEN'): hdr['Authorization'] = 'Bearer ' + os.environ['GITHUB_TOKEN']
+rels = json.loads(urllib.request.urlopen(urllib.request.Request(API, headers=hdr), timeout=60).read())
+print('releases:', [r['tag_name'] for r in rels])
+for r in rels:
+    tag = r['tag_name']
+    if tag in SKIP: continue
+    slug = 'hq-' + ''.join(c if c.isalnum() else '-' for c in tag.lower())
+    name = NAMES.get(tag) or r.get('name') or tag
+    done = False
+    for asset in r.get('assets', []):
+        fn = asset['name'].lower()
+        if not fn.endswith(('.zip', '.db')): continue
+        try:
+            print('==', tag, asset['name'], asset.get('size'))
+            raw = fetch(asset['browser_download_url'])
+            with tempfile.TemporaryDirectory() as td:
+                if fn.endswith('.zip'):
+                    z = zipfile.ZipFile(io.BytesIO(raw))
+                    dbn = [n for n in z.namelist() if n.lower().endswith('.db')][0]
+                    z.extract(dbn, td); path = os.path.join(td, dbn)
+                else:
+                    path = os.path.join(td, 'x.db'); open(path, 'wb').write(raw)
+                data = convert(path)
+            if not data or len(data) < 500:
+                print('  skipped (rows:', len(data or {}), ')'); continue
+            json.dump(data, open(os.path.join(OUT, slug + '.json'), 'w'), ensure_ascii=False, separators=(',', ':'))
+            ok.append([slug, name]); print('  ok', len(data), 'ayahs'); done = True; break
+        except Exception as e:
+            print('  FAILED', e)
+    if not done: print('  no tafsir from', tag)
 json.dump(ok, open(os.path.join(OUT, 'index.json'), 'w'), ensure_ascii=False)
-print('built', len(ok), 'of', len(ITEMS))
+print('built', len(ok))
