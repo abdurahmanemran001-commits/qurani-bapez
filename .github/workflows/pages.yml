@@ -120,6 +120,10 @@ jobs:
           print('bounds pages', len(pages))
           PY
 
+      - name: Build Kurdish tafsirs (hiwaquran databases -> JSON)
+        continue-on-error: true
+        run: python3 tools/build_tafsir_ku.py dist/tafsir-ku
+
       - name: Offline manifest (files the service worker pre-downloads)
         run: |
           python3 - <<'PY'
