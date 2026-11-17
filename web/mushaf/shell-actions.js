@@ -25,7 +25,7 @@
   var BASE = 'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/';
   var ROOT = location.pathname.replace(/\/mushaf\/.*$/, '/').replace(/[^\/]*$/, '');
   var ED = {
-    ckb: [['hq-rebar', 'تەفسیری ڕێبەر'], ['hq-raman', 'تەفسیری ڕامان'], ['hq-asan', 'تەفسیری ئاسان'], ['hq-puxta', 'پوختەی قورئان'], ['hq-sanahy', 'تەفسیری سەناهی'], ['hq-badini', 'تەفسیری بادینی (لاتینی)'], ['kurd-tafsir-rebar', 'Rebar Kurdish Tafsir'], ['kurdish-mokhtasar', 'Kurdish Mokhtasar']],
+    ckb: [['kurd-tafsir-rebar', 'Rebar Kurdish Tafsir'], ['kurdish-mokhtasar', 'Kurdish Mokhtasar']],
     ar: [['ar-tafsir-muyassar', 'التفسير الميسر'], ['ar-tafsir-ibn-kathir', 'تفسير ابن كثير'], ['ar-tafsir-al-tabari', 'تفسير الطبري'], ['ar-tafseer-al-qurtubi', 'تفسير القرطبي'], ['ar-tafseer-al-saddi', 'تفسير السعدي'], ['ar-tafsir-al-baghawi', 'تفسير البغوي'], ['ar-tafsir-al-wasit', 'التفسير الوسيط'], ['ar-tafsir-al-jalalayn', 'تفسير الجلالين'], ['ar-tafsir-al-mukhtasar', 'المختصر في التفسير'], ['ar-tafseer-tahrir-al-tanwir', 'التحرير والتنوير'], ['tafsir-al-razi', 'تفسير الرازي'], ['tafsir-al-baydawi', 'تفسير البيضاوي'], ['tafsir-al-nasafi', 'تفسير النسفي'], ['al-kashshaf-al-zamakhshari', 'الكشاف للزمخشري'], ['al-muharrar-al-wajiz-ibn-atiyyah', 'المحرر الوجيز'], ['tafsir-ibn-uthaymeen', 'تفسير ابن عثيمين'], ['fath-al-qadir-al-shawkani', 'فتح القدير']],
     en: [['en-tafisr-ibn-kathir', 'Tafsir Ibn Kathir'], ['en-tafsir-maarif-ul-quran', "Ma'ariful Quran"], ['en-al-jalalayn', 'Al-Jalalayn'], ['en-tafsir-ibn-abbas', 'Tanwir al-Miqbas (Ibn Abbas)'], ['en-tafsir-al-mukhtasar', 'Al-Mukhtasar'], ['en-tazkirul-quran', 'Tazkirul Quran'], ['en-asbab-al-nuzul-by-al-wahidi', 'Asbab al-Nuzul (Al-Wahidi)']],
     tr: [['tr-tafsir-ibne-kathir', 'İbn Kesir Tefsiri'], ['turkish-mokhtasar', 'Muhtasar Tefsir'], ['turkish-tafsir-as-saadi-turkish', "Es-Sa'di Tefsiri"]],
@@ -38,11 +38,11 @@
   var LN = { ckb: 'کوردی', ar: 'العربية', en: 'English', tr: 'Türkçe', fa: 'فارسی', ur: 'اردو', fr: 'Français', ru: 'Русский', id: 'Indonesia' };
   var RTL = { ckb: 1, ar: 1, fa: 1, ur: 1 };
   var SLUG = {}, NAME = {};
-  /* hide Kurdish tafsirs the build could not produce */
+  /* Kurdish tafsirs built by the deploy (tafsir-ku/index.json = [[slug, name], ...]) are added to the Kurdish list */
+  var HQL = [];
   try { fetch(ROOT + 'tafsir-ku/index.json').then(function (r) { return r.json(); }).then(function (l) {
-    var have = {}; l.forEach(function (x) { have[x[0]] = 1; });
-    ED.ckb = ED.ckb.filter(function (e) { return e[0].indexOf('hq-') !== 0 || have[e[0]]; });
-  }).catch(function () { ED.ckb = ED.ckb.filter(function (e) { return e[0].indexOf('hq-') !== 0; }); }); } catch (e) {}
+    l.forEach(function (x) { if (!SLUG[x[0]]) { ED.ckb.unshift([x[0], x[1]]); SLUG[x[0]] = 'ckb'; NAME[x[0]] = x[1]; } });
+  }).catch(function () {}); } catch (e) {}
   Object.keys(ED).forEach(function (g) { ED[g].forEach(function (e) { SLUG[e[0]] = g; NAME[e[0]] = e[1]; }); });
   var JUZ_PAGE = [1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
 
