@@ -47,7 +47,7 @@
   function avatar(r, size, cls) {
     var k = personKey(r), init = '<span class="rc-av ' + (cls || '') + '" style="background:' + color(r.n) + ';width:' + size + 'px;height:' + size + 'px;flex-basis:' + size + 'px;font-size:' + Math.round(size * .42) + 'px">' + esc(initial(r.n)) + '</span>';
     if (PH.bad[k]) return init;
-    return '<span class="rc-ph" style="width:' + size + 'px;height:' + size + 'px;flex-basis:' + size + 'px"><img src="reciters/' + esc(k) + '.jpg" alt="" loading="lazy" onerror="window.__rcBad(this,\'' + esc(k) + '\')">' + init.replace('class="rc-av ', 'class="rc-av rc-fb ') + '</span>';
+    return '<span class="rc-ph" style="width:' + size + 'px;height:' + size + 'px;flex-basis:' + size + 'px"><img src="' + (window.__rcBase || 'reciters/') + esc(k) + '.jpg" alt="" loading="lazy" onerror="window.__rcBad(this,\'' + esc(k) + '\')">' + init.replace('class="rc-av ', 'class="rc-av rc-fb ') + '</span>';
   }
   window.__rcBad = function (img, k) { PH.bad[k] = 1; if (img && img.parentNode) img.parentNode.removeChild(img); };
   function css() {
@@ -71,6 +71,7 @@
       + '#pl select#rc{display:none!important}';
     document.head.appendChild(s);
   }
+  window.__rcUtil = { isKurd: isKurd, avatar: avatar, css: css, esc: esc };
   function list() {
     var rc = document.getElementById('rc');
     if (!rc) return [];
@@ -103,6 +104,7 @@
     btn.innerHTML = found ? avatar(found, 24) + '<span>' + esc(found.n) + '</span>' : 'قورئانخوێن';
   }
   function boot() {
+    if (window.__rcNoBoot) return;
     var rc = document.getElementById('rc');
     if (!rc || !rc.options || !rc.options.length) return setTimeout(boot, 250);
     css();
