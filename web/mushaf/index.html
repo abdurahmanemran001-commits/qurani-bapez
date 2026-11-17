@@ -22,6 +22,8 @@
     rep('<button id="px" title="داخستن">✕</button>', '<button id="ps" title="وەستانی تەواو (دەگەڕێتەوە سەرەتای ئایەت)">⏹</button><button id="sp" title="خێرایی">1×</button><button id="px" title="داخستن">✕</button>');
     rep('<button id="pa" title="ئایەتی پێشوو">⏮</button>', '<button id="pa" title="ئایەتی پێشوو">⏮</button>');
     rep("px.onclick=function(){au.pause();bad();cur=null;frameHl();document.getElementById('pl').classList.remove('on');};", "px.onclick=function(){au.pause();bad();cur=null;frameHl();document.getElementById('pl').classList.remove('on');};document.getElementById('ps').onclick=function(){if(!cur)return;au.pause();try{au.currentTime=0;}catch(e){}bad();};var SPD=[0.75,1,1.25,1.5,2],si=SPD.indexOf(+ld('sp',1));if(si<0)si=1;function aps(){var r=SPD[si];au.defaultPlaybackRate=r;au.playbackRate=r;document.getElementById('sp').textContent=r+'×';}aps();document.getElementById('sp').onclick=function(){si=(si+1)%SPD.length;sv('sp',SPD[si]);aps();};au.addEventListener('loadedmetadata',aps);au.addEventListener('play',aps);");
+    rep("isQ()?[{id:'q'+mode,n:QN[mode]}]:R;", "isQ()?[{id:'q'+mode,n:QN[mode]}]:(R||[]).filter(function(r){var w=/^warsh\\//.test(r.id);return mode==='w'?w:!w;});");
+    rep("if(!isG()&&!isQ()){var v=ld('rc','');if(v)rc.value=v;}", "if(!isG()&&!isQ()){var v=ld('rc','');if(v)rc.value=v;if(!rc.value)rc.selectedIndex=0;}");
     rep("<body>", "<body><script>window.__goHome=function(){try{history.back();}catch(e){}setTimeout(function(){location.replace('../');},450);};<\/script>");
     document.open();
     document.write(html);
@@ -32,7 +34,7 @@
       s.src = 'player-gapless.js?v=4';
       document.body.appendChild(s);
       var g=document.createElement('script');
-      g.src='reciter-groups.js?v=2';
+      g.src='reciter-groups.js?v=3';
       document.body.appendChild(g);
       var h=document.createElement('script');
       h.src='shell-actions.js?v=15';

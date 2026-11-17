@@ -72,10 +72,12 @@
     document.head.appendChild(s);
   }
   function list() {
-    if (window.R && window.R.length) return window.R.slice();
     var rc = document.getElementById('rc');
     if (!rc) return [];
-    return [].map.call(rc.options, function (o) { return { id: o.value, n: o.textContent }; });
+    /* only what the shell put in the select for the current riwaya (Warsh mode = Warsh reciters only) */
+    var meta = {};
+    (window.R || []).forEach(function (r) { meta[r.id] = r; });
+    return [].map.call(rc.options, function (o) { return meta[o.value] || { id: o.value, n: o.textContent }; });
   }
   function paint() {
     var rc = document.getElementById('rc');
@@ -97,7 +99,7 @@
     }
     var found = all.filter(function (r) { return r.id === cur; })[0];
     var curHtml = found ? '<div class="rc-cur">' + avatar(found, 54) + '<div><small>ئێستا گوێ دەگریت لە</small><b>' + esc(found.n) + '</b><small>' + (isKurd(found) ? 'قورئانخوێنی کورد' : 'قورئانخوێنی عەرەب') + '</small></div></div>' : '';
-    panel.innerHTML = curHtml + block('🟢 قورئانخوێنە کوردەکان', kurd, 'ku') + block('🟤 قورئانخوێنە عەرەبەکان', arab, 'ar');
+    panel.innerHTML = curHtml + (kurd.length ? block('🟢 قورئانخوێنە کوردەکان', kurd, 'ku') : '') + (arab.length ? block('🟤 قورئانخوێنە عەرەبەکان', arab, 'ar') : '');
     btn.innerHTML = found ? avatar(found, 24) + '<span>' + esc(found.n) + '</span>' : 'قورئانخوێن';
   }
   function boot() {
@@ -133,6 +135,7 @@
         panel.hidden = true;
       });
       rc.addEventListener('change', paint);
+      try { new MutationObserver(function () { paint(); }).observe(rc, { childList: true }); } catch (err) {}
     }
     paint();
   }
