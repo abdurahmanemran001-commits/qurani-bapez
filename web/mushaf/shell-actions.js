@@ -24,6 +24,7 @@
   /* tafsir editions (spa5k/tafsir_api via jsDelivr, no API key): [slug, name] */
   var BASE = 'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/';
   var ROOT = location.pathname.replace(/\/mushaf\/.*$/, '/').replace(/[^\/]*$/, '');
+  if (!window.__tafsirDL) { try { var dls = document.createElement('script'); dls.src = ROOT + 'mushaf/tafsir-dl.js?v=1'; document.head.appendChild(dls); } catch (e) {} }
   var ED = {
     ckb: [['kurd-tafsir-rebar', 'Rebar Kurdish Tafsir'], ['kurdish-mokhtasar', 'Kurdish Mokhtasar']],
     ar: [['ar-tafsir-muyassar', 'التفسير الميسر'], ['ar-tafsir-ibn-kathir', 'تفسير ابن كثير'], ['ar-tafsir-al-tabari', 'تفسير الطبري'], ['ar-tafseer-al-qurtubi', 'تفسير القرطبي'], ['ar-tafseer-al-saddi', 'تفسير السعدي'], ['ar-tafsir-al-baghawi', 'تفسير البغوي'], ['ar-tafsir-al-wasit', 'التفسير الوسيط'], ['ar-tafsir-al-jalalayn', 'تفسير الجلالين'], ['ar-tafsir-al-mukhtasar', 'المختصر في التفسير'], ['ar-tafseer-tahrir-al-tanwir', 'التحرير والتنوير'], ['tafsir-al-razi', 'تفسير الرازي'], ['tafsir-al-baydawi', 'تفسير البيضاوي'], ['tafsir-al-nasafi', 'تفسير النسفي'], ['al-kashshaf-al-zamakhshari', 'الكشاف للزمخشري'], ['al-muharrar-al-wajiz-ibn-atiyyah', 'المحرر الوجيز'], ['tafsir-ibn-uthaymeen', 'تفسير ابن عثيمين'], ['fath-al-qadir-al-shawkani', 'فتح القدير']],
@@ -196,6 +197,7 @@
   function fetchTafsir(ed, s, a) {
     var k = ed + '|' + s + '|' + a;
     if (tcache[k]) return tcache[k];
+    if (window.__tafsirDL && window.__tafsirDL.has(ed)) return (tcache[k] = window.__tafsirDL.get(ed).then(function (m) { return clean((m && m[s + ':' + a]) || ''); }));
     if (ed.indexOf('hq-') === 0) return (tcache[k] = hqLoad(ed).then(function (m) { return clean(m[s + ':' + a] || ''); }));
     return (tcache[k] = pool(function () {
       return fetch(BASE + ed + '/' + s + '/' + a + '.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { return clean(j && j.text); });
@@ -270,6 +272,7 @@
         var sp = document.createElement('span');
         sp.textContent = e[1];
         row.appendChild(cb); row.appendChild(sp);
+        if (window.__tafsirDL) { row.style.display = 'flex'; row.style.alignItems = 'center'; row.style.gap = '8px'; row.appendChild(window.__tafsirDL.button(e[0])); }
         list.appendChild(row);
       });
     });
