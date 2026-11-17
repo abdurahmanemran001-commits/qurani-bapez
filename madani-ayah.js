@@ -91,7 +91,7 @@
   function fillReciters(sel) {
     if (!sel) return;
     sel.innerHTML = '';
-    var list = reciters.slice().sort(function (a, b) {
+    var list = reciters.filter(function (r) { return !/^warsh\//.test(r.id); }).sort(function (a, b) {
       if (a.t === b.t) return (a.n || a.id).localeCompare(b.n || b.id, 'ku');
       return a.t === 'a' ? -1 : 1;
     });
@@ -107,6 +107,46 @@
     try { var saved = localStorage.getItem('madani_reciter'); if (saved) sel.value = saved; } catch (e) {}
     if (!sel.value && list.length) sel.value = list[0].id;
     reciterId = sel.value;
+  }
+
+  /* grouped reciter picker (Kurds first, then Arabs, with photos) replacing the plain dropdown */
+  var rcUtilLoading = false;
+  function buildPicker(sel) {
+    var U = window.__rcUtil;
+    if (!U) {
+      if (!rcUtilLoading) {
+        rcUtilLoading = true; window.__rcNoBoot = true; window.__rcBase = 'mushaf/reciters/';
+        var sc = document.createElement('script'); sc.src = 'mushaf/reciter-groups.js?v=4';
+        sc.onload = function () { buildPicker(sel); }; document.head.appendChild(sc);
+      }
+      return;
+    }
+    U.css();
+    sel.style.display = 'none';
+    var btn = document.getElementById('rcBtn');
+    if (!btn) { btn = document.createElement('button'); btn.id = 'rcBtn'; btn.type = 'button'; btn.style.flex = '1'; btn.style.maxWidth = 'none'; sel.parentNode.insertBefore(btn, sel); }
+    var panel = document.getElementById('rcPanel');
+    if (!panel) { panel = document.createElement('div'); panel.id = 'rcPanel'; panel.hidden = true; document.body.appendChild(panel); }
+    function paint() {
+      var hafs = reciters.filter(function (r) { return !/^warsh\//.test(r.id); }), cur = sel.value, kurd = hafs.filter(U.isKurd), arab = hafs.filter(function (r) { return !U.isKurd(r); });
+      var found = reciters.filter(function (r) { return r.id === cur; })[0];
+      function block(title, arr, cls) {
+        if (!arr.length) return '';
+        return '<div class="rc-sec ' + cls + '"><span>' + U.esc(title) + '</span><i>' + arr.length + '</i></div><div class="rc-line ' + cls + '"></div>' + arr.map(function (r) {
+          return '<button type="button" class="rc-item' + (r.id === cur ? ' on' : '') + '" data-id="' + U.esc(r.id) + '">' + U.avatar(r, 40) + '<span>' + U.esc(r.n || r.id) + '</span></button>';
+        }).join('');
+      }
+      panel.innerHTML = (found ? '<div class="rc-cur">' + U.avatar(found, 54) + '<div><b>' + U.esc(found.n || found.id) + '</b></div></div>' : '') + block('🟢 قورئانخوێنە کوردەکان', kurd, 'ku') + block('🟤 قورئانخوێنە عەرەبەکان', arab, 'ar');
+      btn.innerHTML = found ? U.avatar(found, 24) + '<span>' + U.esc(found.n || found.id) + '</span>' : 'قورئانخوێن';
+    }
+    btn.onclick = function (e) { e.stopPropagation(); panel.hidden = !panel.hidden; if (!panel.hidden) paint(); };
+    panel.onclick = function (e) {
+      var b = e.target.closest('.rc-item'); if (!b) return;
+      sel.value = b.getAttribute('data-id'); try { sel.onchange(); } catch (err) {}
+      panel.hidden = true; paint();
+    };
+    if (!window.__madaniRcDoc) { window.__madaniRcDoc = true; document.addEventListener('click', function (e) { var p = document.getElementById('rcPanel'); if (!p || p.hidden) return; if (e.target.closest('#rcPanel') || e.target.closest('#rcBtn')) return; p.hidden = true; }); }
+    paint();
   }
 
   function loadRecitersList(cb) {
@@ -240,7 +280,7 @@
         + ['madaniPrev|⏮','madaniStop|⏹','madaniNext|⏭','madaniSpeed|1×','madaniRep|🔁'].map(function (x) { x = x.split('|'); return '<button id="' + x[0] + '" type="button" style="flex:1;max-width:80px;padding:8px 0;border:0;border-radius:8px;background:#2a5a4d;color:#fff;font-weight:bold;cursor:pointer">' + x[1] + '</button>'; }).join('') + '</span>';
       mushaf.parentNode.insertBefore(playerBar, mushaf.nextSibling);
       var sel = playerBar.querySelector('#madaniReciter');
-      loadRecitersList(function () { fillReciters(sel); });
+      loadRecitersList(function () { fillReciters(sel); buildPicker(sel); });
       sel.onchange = function () {
         reciterId = sel.value;
         try { localStorage.setItem('madani_reciter', reciterId); } catch (e) {}

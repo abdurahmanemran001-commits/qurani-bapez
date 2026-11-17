@@ -2,7 +2,7 @@ document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.j
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
-  s.src = 'madani-ayah.js?v=27';
+  s.src = 'madani-ayah.js?v=28';
   s.async = true;
   document.head.appendChild(s);
 
