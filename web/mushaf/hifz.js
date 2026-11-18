@@ -120,7 +120,7 @@
   function newRun(n, from, to) {
     S = {
       view: 'run', sura: n, loading: true, err: '', words: [], starts: {}, count: cnt(n), from: from || 1, to: to || cnt(n), page: 0, pos: 0, base: 0, cur: 0,
-      fails: {}, hint: {}, ayBad: {}, ayDone: {}, listening: false, finished: false, said: '', msg: '', t0: 0,
+      fails: {}, softs: {}, hint: {}, ayBad: {}, ayDone: {}, listening: false, finished: false, said: '', msg: '', t0: 0,
       filter: S.filter, q: S.q
     };
   }
@@ -147,20 +147,29 @@
 
   /* ---------- alignment of what was heard with the expected words ---------- */
   function align(tokens, base, fin) {
-    var p = base, N = S.words.length, i = 0, wrong = -1;
+    var p = base, N = S.words.length, i = 0, wrong = -1, soft = [], lenient = P.level < 2;
+    function W(k) { return k < N ? S.words[k].nw : ''; }
     while (i < tokens.length && p < N) {
-      var t = tokens[i], e = S.words[p].nw;
+      var t = tokens[i], e = W(p);
       if (!e) { p++; continue; }
       if (wmatch(t, e)) { p++; i++; continue; }
       /* the engine split one word into two tokens */
       if (i + 1 < tokens.length && wmatch(t + tokens[i + 1], e)) { p++; i += 2; continue; }
       /* the engine glued two words together */
-      if (p + 1 < N && S.words[p + 1].nw && wmatch(t, e + S.words[p + 1].nw)) { p += 2; i++; continue; }
+      if (p + 1 < N && W(p + 1) && wmatch(t, e + W(p + 1))) { p += 2; i++; continue; }
       /* the engine wrote a partial last word (interim) */
       if (!fin && i === tokens.length - 1) break;
+      if (lenient) {
+        /* a spurious extra token: the next token is the word we expect */
+        if (i + 1 < tokens.length && wmatch(tokens[i + 1], e)) { i++; continue; }
+        /* the engine misheard this one word but the reciter went on correctly: keep the flow */
+        if (i + 1 < tokens.length && p + 1 < N && wmatch(tokens[i + 1], W(p + 1))) { soft.push(p); p++; i++; continue; }
+        /* last heard token is a near miss (>= 0.4) at the end of the phrase: accept softly */
+        if (i === tokens.length - 1 && p < N && sim(pf(t), pf(e)) >= 0.4 && fin) { soft.push(p); p++; i++; continue; }
+      }
       wrong = p; break;
     }
-    return { p: p, wrong: wrong };
+    return { p: p, wrong: wrong, soft: soft };
   }
 
   /* ---------- listening ---------- */
@@ -214,6 +223,7 @@
       if (!best || r.p > best.p || (r.p === best.p && r.wrong < 0 && best.wrong >= 0)) { best = r; bestAlt = alts[k]; }
     }
     S.said = String(bestAlt).trim().split(/\s+/).slice(-6).join(' ');
+    best.soft.forEach(function (k) { S.softs[k] = true; });
     if (best.p > S.cur) { S.cur = best.p; advanceTo(S.cur); }
     if (fin) {
       if (best.wrong >= 0 && best.wrong === S.pos) registerWrong(best.wrong);
@@ -228,7 +238,7 @@
     var from = S.pos, i, a;
     for (i = from; i < p && i < S.words.length; i++) {
       a = S.words[i].a;
-      paintWord(i, 'ok');
+      paintWord(i, 'ok'); if (S.softs[i]) { var se = $('hfW' + i); if (se) se.classList.add('soft'); }
       var nx = S.words[i + 1];
       if (!nx || nx.a !== a) completeAyah(a);
     }
@@ -332,7 +342,7 @@
       '.hf-ws{flex:1;display:flex;flex-wrap:wrap;gap:4px 9px;font-size:27px;line-height:2.1;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;direction:rtl}',
       '.hf-w{border-radius:9px;padding:0 5px;color:transparent;background:rgba(255,255,255,.075);transition:background .18s,color .18s,transform .18s;user-select:none;-webkit-user-select:none}',
       '.hf-w.ok{color:var(--ink);background:transparent;animation:hfPop .28s ease-out}.hf-w.ok.given{color:var(--gold)}',
-      '.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
+      '.hf-w.soft{box-shadow:0 -2px 0 #d99a4e inset}.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
       '.hf-w.bad{background:rgba(224,82,82,.35);animation:hfShake .35s}',
       '.hf-w .h{color:var(--gold)}',
       '.hf-w.rev{color:rgba(245,239,221,.45)}',
