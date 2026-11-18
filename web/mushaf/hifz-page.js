@@ -115,7 +115,7 @@
     return {
       view: 'home', page: P.page, startPage: P.page, items: [], wi: 0,
       ready: false, loading: false, listening: false,
-      ok: 0, bad: 0, hint: 0, said: '', msg: '', kind: '', err: '',
+      ok: 0, bad: 0, hint: 0, said: '', msg: '', kind: '', err: '', q: '',
       sWi0: 0, used: 0, carry: '', carryDead: false, pageDoneT: null
     };
   }
@@ -415,6 +415,18 @@
       '@keyframes hpPulse{0%{box-shadow:0 0 0 0 #c0392b88}70%{box-shadow:0 0 0 16px #c0392b00}100%{box-shadow:0 0 0 0 #c0392b00}}',
       '@media(prefers-reduced-motion:reduce){#hifzPageView .hp-mic.on{animation:none}}',
       '#hifzPageView .hp-stats{display:flex;justify-content:space-around;font-size:12px;color:#2a3a45;margin-top:2px}',
+      '#hifzPageView .hp-tools{display:flex;gap:8px;margin-bottom:10px;align-items:center}',
+      '#hifzPageView .hp-tools .hp-in{flex:1;min-width:0;width:auto;border:1px solid #cdd7de;border-radius:10px;padding:10px;font:inherit;font-size:15px;background:#fff;box-sizing:border-box}',
+      '#hifzPageView .hp-tools .hp-pgin{flex:0 0 84px;width:84px}',
+      '#hifzPageView .hp-gobtn{flex:0 0 auto;padding:10px 14px}',
+      '#hifzPageView .hp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}',
+      '#hifzPageView .hp-sura{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid #d9e0e6;background:#fff;border-radius:14px;padding:12px 6px;font:inherit;cursor:pointer;color:#17364f}',
+      '#hifzPageView .hp-sura b{font-size:12px;color:#6f5720}',
+      '#hifzPageView .hp-sura span{font-size:21px;font-weight:800;font-family:"Amiri","Noto Naskh Arabic",serif}',
+      '#hifzPageView .hp-sura small{font-size:11px;color:#5b6b76}',
+      '#hifzPageView .hp-lvs{display:flex;gap:6px;justify-content:center;margin-bottom:4px}',
+      '#hifzPageView .hp-lvl{border:1px solid #cdd7de;background:#fff;border-radius:14px;padding:4px 14px;font:inherit;font-size:12px;cursor:pointer;color:#17364f}',
+      '#hifzPageView .hp-lvl.on{background:#24597a;color:#fff;border-color:#24597a}',
       '.section-choice.hifzpage-choice{border-color:#c6d5e3;background:linear-gradient(135deg,#fff,#edf3f9)}',
       '.section-choice.hifzpage-choice .choice-icon{background:#d6e3f0;color:#24597a}'
     ].join('\n');
@@ -430,25 +442,31 @@
     v.id = 'hifzPageView'; v.className = 'view';
     main.appendChild(v);
     v.addEventListener('click', onClick);
-    v.addEventListener('change', onChange);
+    v.addEventListener('input', function (e) { if (e.target && e.target.id === 'hpQ') { S.q = e.target.value; paintGrid(); } });
     return v;
   }
 
   function homeHtml() {
-    var sl = SL(), i, o = '';
-    for (i = 0; i < sl.length; i++) o += '<option value="' + (i + 1) + '"' + (i + 1 === P.sura ? ' selected' : '') + '>' + toAr(i + 1) + '. ' + esc(sl[i][0]) + '</option>';
-    var lv = LEVELS.map(function (l, k) { return '<button type="button" class="hp-chip' + (k === P.level ? ' on' : '') + '" data-lv="' + k + '">' + l[0] + '</button>'; }).join('');
     var hist = P.hist.length ? P.hist.map(function (h) {
       return '<div class="hp-hist"><span>لاپەڕە ' + toAr(h.p1) + (h.p2 !== h.p1 ? '–' + toAr(h.p2) : '') + '</span><span>✓' + toAr(h.ok) + ' ✗' + toAr(h.bad) + ' 💡' + toAr(h.hint) + '</span><span>' + new Date(h.t).toLocaleDateString() + '</span></div>';
     }).join('') : '<div class="hp-note">هێشتا هیچ پشکنینێکت نەکردووە.</div>';
-    return '<div class="hp-head"><div><h2>لەبەرکردن لەسەر لاپەڕە</h2><small>لاپەڕەی موسحەف، ئایەتی ڕاست دەنووسرێتەوە</small></div><button type="button" class="hp-btn" data-act="exit">بەشەکان</button></div>' +
+    return '<div class="hp-head"><div><h2>لەبەرکردن لەسەر لاپەڕە</h2><small>سورەتێک هەڵبژێرە، یەکسەر لاپەڕەکەی دەکرێتەوە</small></div><button type="button" class="hp-btn" data-act="exit">بەشەکان</button></div>' +
       '<div class="hp-body">' +
-      '<div class="hp-card"><h3>لە کوێوە دەست پێبکەیت؟</h3><label for="hpSura">سورەت</label><select id="hpSura">' + o + '</select>' +
-      '<label for="hpPage">لاپەڕە (١ – ٦٠٤)</label><input id="hpPage" type="number" min="1" max="604" value="' + clamp(P.page, 1, 604) + '">' +
-      '<label>وردبینی</label><div class="hp-chips">' + lv + '</div>' +
-      '<button type="button" class="hp-go" data-act="start">🎤 دەستپێکردن</button></div>' +
-      '<div class="hp-card"><h3>چۆن کار دەکات</h3><div class="hp-note">لاپەڕەی موسحەف دەکرێتەوە لەگەڵ ناوی سورەت، بسملە و ژمارەی ئایەتەکان، بەڵام وشەکان شاراونەتەوە. مایکرۆفۆن بکەرەوە و ئایەتێک بە تەواوی بە لەبەر بخوێنەوە. ئەگەر ڕاست بوو، ئایەتەکە لەسەر لاپەڕەکە دەنووسرێتەوە؛ ئەگەر هەڵە بوو نانووسرێتەوە و شوێنەکەی بە سوور دەدرەوشێتەوە. پەنجە بنێ بە ئایەتێکی لاپەڕەکەوە تا لەوێوە دەست پێبکەیت. ئینتەرنێت و مۆڵەتی مایکرۆفۆن پێویستە.</div></div>' +
+      '<div class="hp-tools"><input id="hpQ" class="hp-in" type="search" placeholder="گەڕان بە ناو یان ژمارە…" value="' + esc(S.q || '') + '">' +
+      '<input id="hpPage" class="hp-in hp-pgin" type="number" min="1" max="604" inputmode="numeric" placeholder="لاپەڕە">' +
+      '<button type="button" class="hp-chip on hp-gobtn" data-act="page">بڕۆ</button></div>' +
+      '<div class="hp-grid" id="hpGrid"></div>' +
       '<div class="hp-card"><h3>پشکنینە پێشووەکان</h3>' + hist + '</div></div>';
+  }
+  function paintGrid() {
+    var g = $('hpGrid');
+    if (!g) return;
+    var q = nstr(S.q || ''), qn = parseInt(S.q, 10), sl = SL(), o = '', n;
+    for (n = 1; n <= sl.length; n++) {
+      if (S.q) { if (qn) { if (n !== qn) continue; } else if (nstr(sl[n - 1][0]).indexOf(q) < 0) continue; }
+      o += '<button type="button" class="hp-sura" data-act="open" data-n="' + n + '"><b>' + toAr(n) + '</b><span>' + esc(sl[n - 1][0]) + '</span><small>' + toAr(sl[n - 1][2]) + ' ئایەت · لاپەڕە ' + toAr(sl[n - 1][3]) + '</small></button>';
+    }
+    g.innerHTML = o || '<div class="hp-note">هیچ نەدۆزرایەوە.</div>';
   }
 
   function runHtml() {
@@ -463,7 +481,8 @@
     var f = $('hpFoot');
     if (!f) return;
     var msg = S.err || (S.loading ? 'لاپەڕە بار دەکرێت…' : S.msg), kind = S.err ? 'err' : S.kind;
-    f.innerHTML = '<div class="hp-said" id="hpSaid">' + esc(S.said) + '</div>' +
+    var lv = LEVELS.map(function (l, k) { return '<button type="button" class="hp-lvl' + (k === P.level ? ' on' : '') + '" data-lv="' + k + '">' + l[0] + '</button>'; }).join('');
+    f.innerHTML = '<div class="hp-lvs">' + lv + '</div><div class="hp-said" id="hpSaid">' + esc(S.said) + '</div>' +
       '<div class="hp-msg ' + esc(kind) + '">' + esc(msg) + '</div>' +
       '<div class="hp-ctl"><button type="button" class="hp-sm" data-act="hint">💡<small>ئاماژە</small></button>' +
       '<button type="button" class="hp-mic' + (S.listening ? ' on' : '') + '" data-act="mic" aria-label="مایکرۆفۆن">' + (S.listening ? '■' : '🎤') + '</button>' +
@@ -478,23 +497,21 @@
     if (!v) return;
     v.innerHTML = S.view === 'run' ? runHtml() : homeHtml();
     frame = S.view === 'run' ? $('hpFrame') : null;
+    if (S.view !== 'run') paintGrid();
   }
 
   /* ---------- events ---------- */
-  function onChange(e) {
-    var t = e.target;
-    if (t && t.id === 'hpSura') {
-      var n = +t.value, x = SL()[n - 1], pg = $('hpPage');
-      P.sura = n; if (x && pg) { pg.value = x[3]; P.page = +x[3]; } savePrefs();
-    }
-  }
-  function begin() {
-    var pg = $('hpPage');
-    P.page = clamp(pg ? +pg.value || 1 : P.page, 1, 604); savePrefs();
+  function beginAt(pg) {
+    P.page = clamp(+pg || 1, 1, 604); savePrefs();
     S = freshState();
     S.view = 'run'; S.page = P.page; S.startPage = P.page;
     render();
     loadPage(P.page);
+  }
+  function openSura(n) {
+    var x = SL()[n - 1];
+    P.sura = n;
+    beginAt(x ? +x[3] : 1);
   }
   function saveHistory() {
     if (S.ok + S.bad + S.hint === 0) return;
@@ -505,18 +522,21 @@
   function toHome() {
     stopListen(); clearTimeout(S.pageDoneT); loadId++;
     saveHistory();
+    var q = S.q;
     S = freshState();
+    S.q = q;
     render();
   }
   function onClick(e) {
     var el = e.target.closest ? e.target.closest('[data-act],[data-lv]') : null;
     if (!el) return;
     var lv = el.getAttribute('data-lv');
-    if (lv !== null) { var pg = $('hpPage'); if (pg && +pg.value) P.page = clamp(+pg.value, 1, 604); P.level = +lv; savePrefs(); render(); return; }
+    if (lv !== null) { P.level = +lv; savePrefs(); if (S.view === 'run') paintFoot(); return; }
     var act = el.getAttribute('data-act');
     if (act === 'exit') { leave(); return; }
     if (act === 'home') { toHome(); return; }
-    if (act === 'start') { begin(); return; }
+    if (act === 'open') { openSura(+el.getAttribute('data-n')); return; }
+    if (act === 'page') { var pn = parseInt(($('hpPage') || {}).value, 10); if (pn >= 1 && pn <= 604) beginAt(pn); return; }
     if (S.view !== 'run') return;
     if (act === 'mic') { if (S.listening) { stopListen(); paintFoot(); } else startListen(); return; }
     if (act === 'hint') { help(false); return; }
