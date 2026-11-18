@@ -548,7 +548,8 @@
     if (S.view === 'run') toHome(); else stopListen();
     var v = $('hifzPageView');
     if (v) v.classList.remove('active');
-    if (typeof showView === 'function') showView('startScreen', 'بەشەکان');
+    if (typeof window.enterHifz === 'function') window.enterHifz();
+    else if (typeof showView === 'function') showView('startScreen', 'بەشەکان');
   }
 
   window.enterHifzPage = function () {
@@ -561,6 +562,8 @@
 
   /* ---------- start-screen card (right after the zikr card) ---------- */
   function addCard() {
+    var old = document.querySelector('#startScreen .hifzpage-choice'); if (old) old.remove();
+    return true;
     var box = document.querySelector('#startScreen .section-choices');
     if (!box) return false;
     if (box.querySelector('.hifzpage-choice')) return true;
