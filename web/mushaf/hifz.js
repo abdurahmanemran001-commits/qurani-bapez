@@ -14,9 +14,9 @@
   var rec = null, restartT = null, flashT = {};
 
   var T = {
-    ckb: { title: 'لەبەرکردنی قورئان', sub: 'بە دەنگ بخوێنەوە، وشەکان بە زیندوویی دەنووسرێنەوە', search: 'گەڕان بە ناو یان ژمارە…', all: 'هەموو', prog: 'لە ڕێگادا', done: 'تەواو', ay: 'ئایەت', mast: 'لەبەرکراو', cont: 'بەردەوام بە', lvl: ['ئاسان', 'ناوەند', 'سەخت'], level: 'ئاستی ڕەخنە', back: '‹ سورەتەکان', exit: 'بەشەکان', tap: 'مایک دابگرە و بخوێنە', listen: 'گوێم لێیە…', stop: 'ڕاگرتن', hint: 'ئاماژە', ai: '✨ AI', loading: 'بارکردن…', loadfail: 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', wrong: 'هەڵەیە، دووبارە بیڵێ', fin: 'ماشاءاللە! سورەتەکەت تەواو کرد', clean: 'ئایەتی بێ هەڵە', fails: 'هەڵە', again: 'دووبارە', coachT: 'ڕاهێنەری AI', coachWait: 'AI بیر دەکاتەوە…', coachFail: 'AI ئێستا بەردەست نییە.', say: 'دەمیت', jump: 'لێرەوە دەست پێ بکە', note: 'ناسینەوەی دەنگ تەنها پیتەکان دەناسێتەوە، نەک فەتحە و زەمە.' },
-    en: { title: 'Quran Memorisation', sub: 'Recite aloud — words appear live as you say them', search: 'Search by name or number…', all: 'All', prog: 'In progress', done: 'Mastered', ay: 'ayat', mast: 'memorised', cont: 'Continue', lvl: ['Easy', 'Medium', 'Strict'], level: 'Strictness', back: '‹ Surahs', exit: 'Sections', tap: 'Hold the mic and recite', listen: 'Listening…', stop: 'Stop', hint: 'Hint', ai: '✨ AI', loading: 'Loading…', loadfail: 'Could not load the Quran text. Check your internet.', nomic: 'This browser does not support voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', wrong: 'Wrong, say it again', fin: 'Mashallah! You finished the surah', clean: 'Clean ayat', fails: 'Mistakes', again: 'Again', coachT: 'AI coach', coachWait: 'AI is thinking…', coachFail: 'AI is not available right now.', say: 'Heard', jump: 'Start from here', note: 'Voice recognition hears letters, not short vowels (fatha, damma).' },
-    ar: { title: 'حفظ القرآن', sub: 'اقرأ بصوتك — تظهر الكلمات مباشرةً أثناء القراءة', search: 'ابحث بالاسم أو الرقم…', all: 'الكل', prog: 'قيد الحفظ', done: 'متقن', ay: 'آية', mast: 'محفوظ', cont: 'تابع', lvl: ['سهل', 'متوسط', 'صارم'], level: 'درجة الصرامة', back: '‹ السور', exit: 'الأقسام', tap: 'اضغط على الميكروفون واقرأ', listen: 'أستمع…', stop: 'إيقاف', hint: 'تلميح', ai: '✨ ذكاء', loading: 'جارٍ التحميل…', loadfail: 'تعذّر تحميل نص القرآن. تحقق من الإنترنت.', nomic: 'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', wrong: 'خطأ، أعد الكلمة', fin: 'ما شاء الله! أتممت السورة', clean: 'آيات بلا خطأ', fails: 'أخطاء', again: 'إعادة', coachT: 'المدرّب الذكي', coachWait: 'جارٍ التفكير…', coachFail: 'الذكاء الاصطناعي غير متاح الآن.', say: 'سمعتُ', jump: 'ابدأ من هنا', note: 'التعرف على الصوت يميّز الحروف لا الحركات القصيرة (الفتحة والضمة).' }
+    ckb: { title: 'لەبەرکردنی قورئان', sub: 'بە دەنگ بخوێنەوە، وشەکان بە زیندوویی دەنووسرێنەوە', search: 'گەڕان بە ناو یان ژمارە…', all: 'هەموو', prog: 'لە ڕێگادا', done: 'تەواو', ay: 'ئایەت', mast: 'لەبەرکراو', cont: 'بەردەوام بە', lvl: ['ئاسان', 'ناوەند', 'سەخت'], level: 'ئاستی ڕەخنە', back: '‹ سورەتەکان', exit: 'بەشەکان', tap: 'مایک دابگرە و بخوێنە', listen: 'گوێم لێیە…', stop: 'ڕاگرتن', hint: 'ئاماژە', ai: '✨ AI', loading: 'بارکردن…', loadfail: 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', wrong: 'هەڵەیە، دووبارە بیڵێ', fin: 'ماشاءاللە! سورەتەکەت تەواو کرد', clean: 'ئایەتی بێ هەڵە', fails: 'هەڵە', again: 'دووبارە', coachT: 'ڕاهێنەری AI', coachWait: 'AI بیر دەکاتەوە…', coachFail: 'AI ئێستا بەردەست نییە.', say: 'دەمیت', jump: 'لێرەوە دەست پێ بکە', pg: 'لاپەڕە', pgGo: 'بڕۆ', pgPh: 'ژمارەی لاپەڕە (١–٦٠٤)', pgBad: 'لاپەڕە نەدۆزرایەوە. ئینتەرنێت بپشکنە.', note: 'ناسینەوەی دەنگ تەنها پیتەکان دەناسێتەوە، نەک فەتحە و زەمە.' },
+    en: { title: 'Quran Memorisation', sub: 'Recite aloud — words appear live as you say them', search: 'Search by name or number…', all: 'All', prog: 'In progress', done: 'Mastered', ay: 'ayat', mast: 'memorised', cont: 'Continue', lvl: ['Easy', 'Medium', 'Strict'], level: 'Strictness', back: '‹ Surahs', exit: 'Sections', tap: 'Hold the mic and recite', listen: 'Listening…', stop: 'Stop', hint: 'Hint', ai: '✨ AI', loading: 'Loading…', loadfail: 'Could not load the Quran text. Check your internet.', nomic: 'This browser does not support voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', wrong: 'Wrong, say it again', fin: 'Mashallah! You finished the surah', clean: 'Clean ayat', fails: 'Mistakes', again: 'Again', coachT: 'AI coach', coachWait: 'AI is thinking…', coachFail: 'AI is not available right now.', say: 'Heard', jump: 'Start from here', pg: 'Page', pgGo: 'Go', pgPh: 'Page number (1–604)', pgBad: 'Page not found. Check your internet.', note: 'Voice recognition hears letters, not short vowels (fatha, damma).' },
+    ar: { title: 'حفظ القرآن', sub: 'اقرأ بصوتك — تظهر الكلمات مباشرةً أثناء القراءة', search: 'ابحث بالاسم أو الرقم…', all: 'الكل', prog: 'قيد الحفظ', done: 'متقن', ay: 'آية', mast: 'محفوظ', cont: 'تابع', lvl: ['سهل', 'متوسط', 'صارم'], level: 'درجة الصرامة', back: '‹ السور', exit: 'الأقسام', tap: 'اضغط على الميكروفون واقرأ', listen: 'أستمع…', stop: 'إيقاف', hint: 'تلميح', ai: '✨ ذكاء', loading: 'جارٍ التحميل…', loadfail: 'تعذّر تحميل نص القرآن. تحقق من الإنترنت.', nomic: 'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', wrong: 'خطأ، أعد الكلمة', fin: 'ما شاء الله! أتممت السورة', clean: 'آيات بلا خطأ', fails: 'أخطاء', again: 'إعادة', coachT: 'المدرّب الذكي', coachWait: 'جارٍ التفكير…', coachFail: 'الذكاء الاصطناعي غير متاح الآن.', say: 'سمعتُ', jump: 'ابدأ من هنا', pg: 'صفحة', pgGo: 'اذهب', pgPh: 'رقم الصفحة (١–٦٠٤)', pgBad: 'تعذّر إيجاد الصفحة. تحقق من الإنترنت.', note: 'التعرف على الصوت يميّز الحروف لا الحركات القصيرة (الفتحة والضمة).' }
   };
   function lang() { var l = window.appLang || 'ckb'; return l === 'bad' ? 'ckb' : l; }
   function L() { return T[lang()] || T.en; }
@@ -115,9 +115,9 @@
 
   /* ---------- session state ---------- */
   var S = { view: 'home', filter: 'all', q: '' };
-  function newRun(n) {
+  function newRun(n, from, to) {
     S = {
-      view: 'run', sura: n, loading: true, err: '', words: [], starts: {}, count: cnt(n), pos: 0, base: 0, cur: 0,
+      view: 'run', sura: n, loading: true, err: '', words: [], starts: {}, count: cnt(n), from: from || 1, to: to || cnt(n), page: 0, pos: 0, base: 0, cur: 0,
       fails: {}, hint: {}, ayBad: {}, ayDone: {}, listening: false, finished: false, said: '', msg: '', t0: 0,
       filter: S.filter, q: S.q
     };
@@ -125,7 +125,7 @@
   function buildWords() {
     var n = S.sura, a, i, parts, w;
     S.words = []; S.starts = {};
-    for (a = 1; a <= S.count; a++) {
+    for (a = S.from; a <= S.to; a++) {
       var t = TEXT[n][a - 1];
       if (a === 1 && n !== 1 && n !== 9) t = stripBism(t);
       parts = String(t).split(/\s+/).filter(Boolean);
@@ -257,9 +257,9 @@
   function finish() {
     S.finished = true; stopListen();
     var clean = 0, a, bad = 0;
-    for (a = (S.sura === 1 ? 2 : 1); a <= S.count; a++) { if (S.ayBad[a]) bad++; else clean++; }
+    for (a = Math.max(S.from, S.sura === 1 ? 2 : 1); a <= S.to; a++) { if (S.ayBad[a]) bad++; else clean++; }
     for (var k in S.fails) bad += 0;
-    S.stat = { clean: clean, total: S.count - (S.sura === 1 ? 1 : 0), fails: Object.keys(S.fails).reduce(function (s, k) { return s + S.fails[k]; }, 0), secs: Math.round((Date.now() - (S.t0 || Date.now())) / 1000) };
+    S.stat = { clean: clean, total: S.to - Math.max(S.from, S.sura === 1 ? 2 : 1) + 1, fails: Object.keys(S.fails).reduce(function (s, k) { return s + S.fails[k]; }, 0), secs: Math.round((Date.now() - (S.t0 || Date.now())) / 1000) };
     P.hist.unshift({ t: Date.now(), s: S.sura, c: clean, n: S.stat.total, f: S.stat.fails });
     P.hist = P.hist.slice(0, 30); P.last = S.sura; savePrefs();
     paintAll();
@@ -381,7 +381,7 @@
       '<div class="hf-hero"><div class="hf-ring" style="--p:' + pct + '"><b>' + num(pct) + '٪'.replace('٪', '%') + '</b></div><div><h1>' + esc(t.title) + '</h1><p>' + esc(t.sub) + '</p><p style="margin-top:6px;color:var(--gold)">' + num(tot) + ' / ' + num(6236) + ' ' + esc(t.ay) + ' · ' + esc(t.mast) + '</p></div></div>' + cont +
       '<div class="hf-tools"><input id="hfQ" class="hf-in" type="search" placeholder="' + esc(t.search) + '" value="' + esc(S.q || '') + '">' +
       ['all', 'prog', 'done'].map(function (f) { return '<button type="button" class="hf-chip' + (S.filter === f ? ' on' : '') + '" data-act="filter" data-f="' + f + '">' + esc(t[f]) + '</button>'; }).join('') + '</div>' +
-      '<div class="hf-grid" id="hfGrid"></div><div class="hf-note">' + esc(t.note) + '</div>';
+      '<div class="hf-tools"><input id="hfPg" class="hf-in" type="number" min="1" max="604" inputmode="numeric" placeholder="' + esc(t.pgPh) + '"><button type="button" class="hf-chip on" data-act="page">' + esc(t.pgGo) + '</button></div><div class="hf-grid" id="hfGrid"></div><div class="hf-note">' + esc(t.note) + '</div>';
   }
   function paintGrid() {
     var g = $('hfGrid'); if (!g) return;
@@ -399,19 +399,19 @@
   function runHtml() {
     var t = L(), n = S.sura;
     var head = '<div class="hf-top"><button type="button" class="hf-btn" data-act="home">' + esc(t.back) + '</button><div class="hf-lv" id="hfLv"></div></div>' +
-      '<div class="hf-ttl"><h2>' + esc(sname(n)) + '</h2><small>' + num(S.count) + ' ' + esc(t.ay) + '</small></div><div class="hf-prog"><i id="hfProg"></i></div>';
+      '<div class="hf-ttl"><h2>' + esc(sname(n)) + '</h2><small>' + (S.page ? esc(t.pg) + ' ' + num(S.page) + ' · ' : '') + num(S.to - S.from + 1) + ' ' + esc(t.ay) + '</small></div><div class="hf-prog"><i id="hfProg"></i></div>';
     if (S.loading) return head + '<div class="hf-note" style="padding:60px 24px">' + esc(t.loading) + '</div>';
     if (S.err && !S.words.length) return head + '<div class="hf-note" style="padding:60px 24px;color:#ff9b9b">' + esc(S.err) + '</div>';
     var rows = '', a, i;
-    for (a = 1; a <= S.count; a++) {
+    for (a = S.from; a <= S.to; a++) {
       var ws = '';
-      for (i = S.starts[a]; i < (S.starts[a + 1] != null ? S.starts[a + 1] : S.words.length); i++) {
+      for (i = S.starts[a]; i < (a < S.to ? S.starts[a + 1] : S.words.length); i++) {
         var w = S.words[i];
         ws += '<span class="hf-w' + (w.given ? ' ok given' : '') + '" id="hfW' + i + '">' + esc(w.disp) + '</span>';
       }
       rows += '<div class="hf-ay' + (n === 1 && a === 1 ? ' done' : '') + '" id="hfAy' + a + '" data-act="jump" data-a="' + a + '"><span class="hf-num">' + num(a) + '</span><div class="hf-ws">' + ws + '</div></div>';
     }
-    var bism = (n !== 1 && n !== 9) ? '<div class="hf-bism">' + BISM_T + '</div>' : '';
+    var bism = (S.from === 1 && n !== 1 && n !== 9) ? '<div class="hf-bism">' + BISM_T + '</div>' : '';
     var fin = S.finished ? finHtml() : '';
     return head + bism + '<div class="hf-page">' + rows + '</div>' + fin +
       '<div class="hf-dock"><div class="hf-said" id="hfSaid"></div><div class="hf-row">' +
@@ -483,8 +483,9 @@
     if (act === 'exit') return leave();
     if (act === 'home') { stopListen(); S = { view: 'home', filter: S.filter, q: S.q }; return render(); }
     if (act === 'filter') { S.filter = b.getAttribute('data-f'); return render(); }
+    if (act === 'page') { var pn = parseInt(($('hfPg') || {}).value, 10); if (pn >= 1 && pn <= 604) openPage(pn); return; }
     if (act === 'open') return openSura(+b.getAttribute('data-n'));
-    if (act === 'again') return openSura(S.sura);
+    if (act === 'again') return S.page ? openPage(S.page) : openSura(S.sura);
     if (act === 'lvl') { P.level = +b.getAttribute('data-k'); savePrefs(); return paintDock(); }
     if (act === 'mic') return S.listening ? stopListen() : startListen();
     if (act === 'jump') {
@@ -503,9 +504,20 @@
     }
     if (act === 'ai') {
       if (S.loading) return;
-      var ai = S.finished ? S.count : (S.words[Math.min(S.pos, S.words.length - 1)] || { a: 1 }).a;
+      var ai = S.finished ? S.to : (S.words[Math.min(S.pos, S.words.length - 1)] || { a: 1 }).a;
       return coach(ai);
     }
+  }
+  function openPage(pg) {
+    stopListen(); newRun(1, 1, 1); S.page = pg; render();
+    fetch('madani-bounds/' + ('000' + pg).slice(-3) + '.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+      var ks = Object.keys(d).map(function (k) { var q = k.split(':'); return { s: +q[0], a: +q[1] }; }).sort(function (x, y) { return x.s - y.s || x.a - y.a; });
+      if (!ks.length) throw 0;
+      var sn = ks[0].s, as = ks.filter(function (k) { return k.s === sn; }).map(function (k) { return k.a; });
+      if (S.page !== pg) return;
+      newRun(sn, as[0], as[as.length - 1]); S.page = pg; render();
+      ensureSura(sn).then(function (ok) { if (S.page !== pg) return; S.loading = false; if (!ok) S.err = L().loadfail; else buildWords(); render(); });
+    }).catch(function () { if (S.page !== pg) return; S.loading = false; S.err = L().pgBad; render(); });
   }
   function openSura(n) {
     stopListen(); newRun(n); render();
