@@ -9,7 +9,7 @@
 
   var LS_KEY = 'hifz_v2';
   /* [name, similarity needed for a word] */
-  var LEVELS = [0.58, 0.74, 0.88];
+  var LEVELS = [0.5, 0.66, 0.86];
   var TEXT = {};
   var rec = null, restartT = null, flashT = {};
 
@@ -68,12 +68,21 @@
   }
   function sim(a, b) { var l = Math.max(a.length, b.length); return l ? 1 - lev(a, b) / l : 1; }
   /* word match: short words must be exact (a different short word is a different word) */
+  /* sound-alike letters are folded together (speech engines confuse them a lot) */
+  function pf(s) {
+    return s.replace(/[\u0636\u0638\u0630\u0632]/g, '\u0632').replace(/[\u062B\u0633\u0635]/g, '\u0633').replace(/[\u062A\u0637]/g, '\u062A')
+      .replace(/[\u062D\u0647]/g, '\u0647').replace(/[\u0642\u0643\u063A]/g, '\u0643').replace(/\u0639/g, '').replace(/(.)\1/g, '$1');
+  }
   function wmatch(t, e) {
     if (!t || !e) return false;
     if (t === e) return true;
-    if (e.length <= 3 || t.length <= 2) return false;
-    var th = LEVELS[P.level];
-    return sim(t, e) >= th && Math.abs(t.length - e.length) <= (P.level === 2 ? 1 : 2);
+    var lv = P.level, th = LEVELS[lv], x = t, y = e;
+    if (lv < 2) { x = pf(t); y = pf(e); if (x === y) return true; if (!x || !y) return false; }
+    var d = Math.abs(x.length - y.length);
+    if (lv === 2) { if (e.length <= 3) return false; return sim(x, y) >= th && d <= 1; }
+    if (y.length <= 2) return false;
+    if (y.length === 3) return lev(x, y) <= 1 && d <= 1;
+    return sim(x, y) >= th && d <= 2;
   }
 
   /* ---------- Quran text ---------- */
