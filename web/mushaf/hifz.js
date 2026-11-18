@@ -1,102 +1,79 @@
-/* hifz.js v1 — لەبەرکردنی قورئان
-   The user recites from memory. The app listens (Web Speech API, Arabic), compares what was said
-   with the real ayah text and "writes" an ayah on the page only when it is correct. */
+/* hifz.js v2 — لەبەرکردنی قورئان
+   Pick a surah, then recite from memory. The ayat are shown only as numbers; every word is "written" the moment
+   the microphone hears it (Web Speech API, Arabic, interim results = very fast). Wrong words are refused and a
+   progressive hint is given. Progress is saved per ayah. An AI coach (worker /hifz-coach) explains the ayah and
+   gives a memory tip. Texts follow the app language (ckb / en / ar; others use English). */
 (function () {
-  if (window.__hifzV1) return;
-  window.__hifzV1 = true;
+  if (window.__hifzV2) return;
+  window.__hifzV2 = true;
 
-  var LS_KEY = 'hifz_v1';
-  var BISM = ''; /* set below, after nstr exists */
-  /* [name, minimum similarity, maximum wrong letters allowed in one ayah] */
-  var LEVELS = [['ئاسان', 0.8, 8], ['ناوەند', 0.85, 4], ['سەخت', 0.92, 2]];
+  var LS_KEY = 'hifz_v2';
+  /* [name, similarity needed for a word] */
+  var LEVELS = [0.58, 0.74, 0.88];
   var TEXT = {};
-  var rec = null, restartT = null;
+  var rec = null, restartT = null, flashT = {};
 
-  /* ---------- small helpers ---------- */
+  var T = {
+    ckb: { title: 'لەبەرکردنی قورئان', sub: 'بە دەنگ بخوێنەوە، وشەکان بە زیندوویی دەنووسرێنەوە', search: 'گەڕان بە ناو یان ژمارە…', all: 'هەموو', prog: 'لە ڕێگادا', done: 'تەواو', ay: 'ئایەت', mast: 'لەبەرکراو', cont: 'بەردەوام بە', lvl: ['ئاسان', 'ناوەند', 'سەخت'], level: 'ئاستی ڕەخنە', back: '‹ سورەتەکان', exit: 'بەشەکان', tap: 'مایک دابگرە و بخوێنە', listen: 'گوێم لێیە…', stop: 'ڕاگرتن', hint: 'ئاماژە', ai: '✨ AI', loading: 'بارکردن…', loadfail: 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', wrong: 'هەڵەیە، دووبارە بیڵێ', fin: 'ماشاءاللە! سورەتەکەت تەواو کرد', clean: 'ئایەتی بێ هەڵە', fails: 'هەڵە', again: 'دووبارە', coachT: 'ڕاهێنەری AI', coachWait: 'AI بیر دەکاتەوە…', coachFail: 'AI ئێستا بەردەست نییە.', say: 'دەمیت', jump: 'لێرەوە دەست پێ بکە', note: 'ناسینەوەی دەنگ تەنها پیتەکان دەناسێتەوە، نەک فەتحە و زەمە.' },
+    en: { title: 'Quran Memorisation', sub: 'Recite aloud — words appear live as you say them', search: 'Search by name or number…', all: 'All', prog: 'In progress', done: 'Mastered', ay: 'ayat', mast: 'memorised', cont: 'Continue', lvl: ['Easy', 'Medium', 'Strict'], level: 'Strictness', back: '‹ Surahs', exit: 'Sections', tap: 'Hold the mic and recite', listen: 'Listening…', stop: 'Stop', hint: 'Hint', ai: '✨ AI', loading: 'Loading…', loadfail: 'Could not load the Quran text. Check your internet.', nomic: 'This browser does not support voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', wrong: 'Wrong, say it again', fin: 'Mashallah! You finished the surah', clean: 'Clean ayat', fails: 'Mistakes', again: 'Again', coachT: 'AI coach', coachWait: 'AI is thinking…', coachFail: 'AI is not available right now.', say: 'Heard', jump: 'Start from here', note: 'Voice recognition hears letters, not short vowels (fatha, damma).' },
+    ar: { title: 'حفظ القرآن', sub: 'اقرأ بصوتك — تظهر الكلمات مباشرةً أثناء القراءة', search: 'ابحث بالاسم أو الرقم…', all: 'الكل', prog: 'قيد الحفظ', done: 'متقن', ay: 'آية', mast: 'محفوظ', cont: 'تابع', lvl: ['سهل', 'متوسط', 'صارم'], level: 'درجة الصرامة', back: '‹ السور', exit: 'الأقسام', tap: 'اضغط على الميكروفون واقرأ', listen: 'أستمع…', stop: 'إيقاف', hint: 'تلميح', ai: '✨ ذكاء', loading: 'جارٍ التحميل…', loadfail: 'تعذّر تحميل نص القرآن. تحقق من الإنترنت.', nomic: 'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', wrong: 'خطأ، أعد الكلمة', fin: 'ما شاء الله! أتممت السورة', clean: 'آيات بلا خطأ', fails: 'أخطاء', again: 'إعادة', coachT: 'المدرّب الذكي', coachWait: 'جارٍ التفكير…', coachFail: 'الذكاء الاصطناعي غير متاح الآن.', say: 'سمعتُ', jump: 'ابدأ من هنا', note: 'التعرف على الصوت يميّز الحروف لا الحركات القصيرة (الفتحة والضمة).' }
+  };
+  function lang() { var l = window.appLang || 'ckb'; return l === 'bad' ? 'ckb' : l; }
+  function L() { return T[lang()] || T.en; }
+  function isRtlUi() { var l = lang(); return l === 'ckb' || l === 'ar' || l === 'fa' || l === 'ur'; }
+
+  /* ---------- helpers ---------- */
   function $(id) { return document.getElementById(id); }
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function toAr(n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.charAt(+d); }); }
-  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function num(n) { return lang() === 'ckb' || lang() === 'ar' ? toAr(n) : String(n); }
   function SL() { try { return surahs || []; } catch (e) { return []; } }
   function cnt(n) { var x = SL()[n - 1]; return x ? (+x[2] || 0) : 0; }
-  function sname(n) { var x = SL()[n - 1]; return x ? x[0] : ('سورەت ' + n); }
+  function sname(n) { var x = SL()[n - 1]; return x ? x[0] : ('' + n); }
 
-  /* ---------- saved settings + history ---------- */
+  /* ---------- saved data ---------- */
   function loadPrefs() {
-    var d = { sura: 1, from: 1, to: 7, level: 1, hist: [] };
+    var d = { level: 1, last: 0, prog: {}, hist: [] };
     try { var j = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); for (var k in j) if (k in d) d[k] = j[k]; } catch (e) {}
+    if (!d.prog || typeof d.prog !== 'object') d.prog = {};
     if (!Array.isArray(d.hist)) d.hist = [];
     return d;
   }
-  function savePrefs() { try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) {} }
   var P = loadPrefs();
+  function savePrefs() { try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) {} }
+  function masteredIn(n) { var o = P.prog[n] || {}, c = 0, k; for (k in o) if (o[k] > 0) c++; return c; }
+  function totalMastered() { var t = 0, n; for (n = 1; n <= 114; n++) t += masteredIn(n); return t; }
 
   /* ---------- Arabic matching ---------- */
-  /* strips tashkeel, Quranic marks, tatweel; unifies letter variants the speech engine writes differently */
   function norm(s) {
     return String(s || '')
-      .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '')
-      .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627')
-      .replace(/\u0649/g, '\u064A')
-      .replace(/\u0626/g, '\u064A')
-      .replace(/\u0624/g, '\u0648')
-      .replace(/\u0629/g, '\u0647')
-      .replace(/\u06A9/g, '\u0643').replace(/\u06CC/g, '\u064A')
-      .replace(/[^\u0621-\u064A\s]/g, ' ')
-      .replace(/\s+/g, ' ').trim();
+      .replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي').replace(/ئ/g, 'ي').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
+      .replace(/ک/g, 'ك').replace(/ی/g, 'ي')
+      .replace(/[^ء-ي\s]/g, ' ').replace(/\s+/g, ' ').trim();
   }
-  /* alef and hamza are dropped on both sides: the speech engine and the Uthmani text spell them differently (مالك / مَـٰلِكِ, الرحمن / ٱلرَّحْمَـٰنِ) */
-  function nstr(s) { return norm(s).replace(/[ \u0627\u0621]/g, ''); }
-  BISM = nstr('بسم الله الرحمن الرحيم');
+  /* alef + hamza are dropped on both sides (speech engines and the Uthmani text spell them differently) */
+  function nw(s) { return norm(s).replace(/[ اء]/g, ''); }
   function lev(a, b) {
     var m = a.length, n = b.length, i, j;
-    if (!m) return n;
-    if (!n) return m;
+    if (!m) return n; if (!n) return m;
     var p = new Array(n + 1);
     for (j = 0; j <= n; j++) p[j] = j;
     for (i = 1; i <= m; i++) {
       var prev = p[0]; p[0] = i;
-      for (j = 1; j <= n; j++) {
-        var tmp = p[j];
-        p[j] = Math.min(p[j] + 1, p[j - 1] + 1, prev + (a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1));
-        prev = tmp;
-      }
+      for (j = 1; j <= n; j++) { var tmp = p[j]; p[j] = Math.min(p[j] + 1, p[j - 1] + 1, prev + (a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1)); prev = tmp; }
     }
     return p[n];
   }
-  function sim(a, b) { var L = Math.max(a.length, b.length); return L ? 1 - lev(a, b) / L : 1; }
-
-  /* best length (around the expected length) of the spoken text, starting at pos, that matches the ayah */
-  function bestWindow(st, pos, exp, d, avail) {
-    var m = exp.length, lo = Math.max(1, m - d), hi = Math.min(avail, m + d);
-    var step = Math.max(1, Math.floor(d / 5)), best = { s: -1, len: lo, e: m }, L, s, a, b;
-    for (L = lo; L <= hi; L += step) { s = sim(st.substr(pos, L), exp); if (s > best.s) best = { s: s, len: L }; }
-    if (step > 1) {
-      a = Math.max(lo, best.len - step); b = Math.min(hi, best.len + step);
-      for (L = a; L <= b; L++) { s = sim(st.substr(pos, L), exp); if (s > best.s) best = { s: s, len: L }; }
-    }
-    best.e = lev(st.substr(pos, best.len), exp);
-    return best;
-  }
-
-  /* how many consecutive ayahs, starting at ayah idx, are contained in the spoken stream (from pos) */
-  function matchFrom(stream, pos, idx, th, cap) {
-    var n = 0, last = 0;
-    if (idx === 1 && S.sura !== 1 && S.sura !== 9 && pos === 0 && stream.length >= BISM.length - 3) {
-      if (sim(stream.slice(0, BISM.length), BISM) >= 0.8) pos += Math.min(BISM.length, stream.length);
-    }
-    while (idx + n <= S.to) {
-      var exp = S.exp[idx + n], m = exp.length, d = Math.max(2, Math.ceil(m * 0.12)), avail = stream.length - pos;
-      if (avail < m - d) break;
-      var bw = bestWindow(stream, pos, exp, d, avail);
-      last = bw.s;
-      if (bw.s >= th && bw.e <= (cap == null ? 99 : cap)) { pos += bw.len; n++; } else break;
-    }
-    return { n: n, pos: pos, last: last };
+  function sim(a, b) { var l = Math.max(a.length, b.length); return l ? 1 - lev(a, b) / l : 1; }
+  /* word match: short words must be exact (a different short word is a different word) */
+  function wmatch(t, e) {
+    if (!t || !e) return false;
+    if (t === e) return true;
+    if (e.length <= 3 || t.length <= 2) return false;
+    var th = LEVELS[P.level];
+    return sim(t, e) >= th && Math.abs(t.length - e.length) <= (P.level === 2 ? 1 : 2);
   }
 
   /* ---------- Quran text ---------- */
@@ -104,410 +81,482 @@
   function loadCorpus() {
     if (corpusP) return corpusP;
     corpusP = fetch('ai/quran.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-      ((j && j.v) || []).forEach(function (r) {
-        var s = +r[0], a = +r[1];
-        if (s && a) (TEXT[s] = TEXT[s] || [])[a - 1] = String(r[2] || '');
-      });
+      ((j && j.v) || []).forEach(function (r) { var s = +r[0], a = +r[1]; if (s && a) (TEXT[s] = TEXT[s] || [])[a - 1] = String(r[2] || ''); });
     }).catch(function () {});
     return corpusP;
   }
-  function suraReady(n) {
-    var t = TEXT[n], c = cnt(n);
-    if (!t || !c) return false;
-    for (var i = 0; i < c; i++) if (!t[i]) return false;
-    return true;
-  }
+  function suraReady(n) { var t = TEXT[n], c = cnt(n); if (!t || !c) return false; for (var i = 0; i < c; i++) if (!t[i]) return false; return true; }
   function ensureSura(n) {
     return loadCorpus().then(function () {
       if (suraReady(n)) return true;
       return fetch('https://api.alquran.cloud/v1/surah/' + n + '/quran-uthmani').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-        var a = j && j.data && j.data.ayahs;
-        if (!a || !a.length) throw 0;
+        var a = j && j.data && j.data.ayahs; if (!a || !a.length) throw 0;
         TEXT[n] = a.map(function (x) { return String(x.text || ''); });
         return suraReady(n);
       }).catch(function () { return false; });
     });
   }
-  /* some editions put the bismillah inside ayah 1 of every surah; the user does not have to recite it there */
+  var BISM_N = nw('بسم الله الرحمن الرحيم');
+  var BISM_T = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ';
   function stripBism(t) {
     var w = String(t).split(/\s+/);
-    if (w.length > 4 && nstr(w.slice(0, 4).join(' ')) === BISM) return w.slice(4).join(' ');
+    if (w.length > 4 && nw(w.slice(0, 4).join(' ')) === BISM_N) return w.slice(4).join(' ');
     return t;
   }
 
-  /* ---------- state ---------- */
-  function freshState() {
-    return {
-      view: 'home', sura: P.sura, from: P.from, to: P.to, idx: 1,
-      ayat: {}, exp: {}, done: {}, clean: {}, skip: {}, tries: {},
-      ok: 0, bad: 0, hint: 0, hintOn: false, reveal: false,
-      listening: false, finished: false, loading: false,
-      said: '', msg: '', kind: '', err: '', last: 0,
-      carry0: '', carryDead: false, pos: 0, sess: '', sIdx0: 1, judged: false
+  /* ---------- session state ---------- */
+  var S = { view: 'home', filter: 'all', q: '' };
+  function newRun(n) {
+    S = {
+      view: 'run', sura: n, loading: true, err: '', words: [], starts: {}, count: cnt(n), pos: 0, base: 0, cur: 0,
+      fails: {}, hint: {}, ayBad: {}, ayDone: {}, listening: false, finished: false, said: '', msg: '', t0: 0,
+      filter: S.filter, q: S.q
     };
   }
-  var S = freshState();
-
-  function begin() {
-    var n = clamp(+($('hfSura') || {}).value || P.sura, 1, 114), c = cnt(n);
-    var from = clamp(+($('hfFrom') || {}).value || 1, 1, c);
-    var to = clamp(+($('hfTo') || {}).value || c, from, c);
-    P.sura = n; P.from = from; P.to = to; savePrefs();
-    S = freshState();
-    S.view = 'run'; S.sura = n; S.from = from; S.to = to; S.idx = from; S.sIdx0 = from; S.loading = true;
-    render();
-    ensureSura(n).then(function (ok) {
-      S.loading = false;
-      if (!ok) { S.err = 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە و دووبارە هەوڵ بدە.'; render(); return; }
-      for (var a = from; a <= to; a++) {
-        var t = TEXT[n][a - 1];
-        if (a === 1 && n !== 1 && n !== 9) t = stripBism(t);
-        S.ayat[a] = t; S.exp[a] = nstr(t);
+  function buildWords() {
+    var n = S.sura, a, i, parts, w;
+    S.words = []; S.starts = {};
+    for (a = 1; a <= S.count; a++) {
+      var t = TEXT[n][a - 1];
+      if (a === 1 && n !== 1 && n !== 9) t = stripBism(t);
+      parts = String(t).split(/\s+/).filter(Boolean);
+      S.starts[a] = S.words.length;
+      var first = S.words.length;
+      for (i = 0; i < parts.length; i++) {
+        w = nw(parts[i]);
+        if (!w && S.words.length > first) { S.words[S.words.length - 1].disp += ' ' + parts[i]; continue; }
+        S.words.push({ a: a, disp: parts[i], nw: w, given: n === 1 && a === 1 });
       }
-      render();
-    });
+    }
+    /* Al-Fatiha: ayah 1 is the Bismillah itself — shown as a given, not tested */
+    var p = 0;
+    while (p < S.words.length && S.words[p].given) p++;
+    S.pos = S.base = S.cur = p;
+  }
+
+  /* ---------- alignment of what was heard with the expected words ---------- */
+  function align(tokens, base, fin) {
+    var p = base, N = S.words.length, i = 0, wrong = -1;
+    while (i < tokens.length && p < N) {
+      var t = tokens[i], e = S.words[p].nw;
+      if (!e) { p++; continue; }
+      if (wmatch(t, e)) { p++; i++; continue; }
+      /* the engine split one word into two tokens */
+      if (i + 1 < tokens.length && wmatch(t + tokens[i + 1], e)) { p++; i += 2; continue; }
+      /* the engine glued two words together */
+      if (p + 1 < N && S.words[p + 1].nw && wmatch(t, e + S.words[p + 1].nw)) { p += 2; i++; continue; }
+      /* the engine wrote a partial last word (interim) */
+      if (!fin && i === tokens.length - 1) break;
+      wrong = p; break;
+    }
+    return { p: p, wrong: wrong };
   }
 
   /* ---------- listening ---------- */
   function engine() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
   function startListen() {
-    if (!engine()) { S.err = 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome لەسەر ئەندرۆید یان کۆمپیوتەر بەکاربهێنە.'; render(); return; }
-    S.err = ''; S.listening = true; render(); openRec();
+    if (!engine()) { S.err = L().nomic; paintAll(); return; }
+    if (S.finished) return;
+    S.err = ''; S.listening = true; if (!S.t0) S.t0 = Date.now();
+    paintDock(); openRec();
   }
   function stopListen() {
-    S.listening = false;
-    clearTimeout(restartT);
+    S.listening = false; clearTimeout(restartT);
     try { if (rec) { var r = rec; rec = null; if (r.abort) r.abort(); else r.stop(); } } catch (e) {}
+    paintDock();
   }
   function openRec() {
-    var R = engine(), r;
-    if (!R) return;
-    if (S.carryDead) { S.carry0 = ''; S.carryDead = false; }
-    S.pos = 0; S.sess = ''; S.judged = false; S.sIdx0 = S.idx;
-    try { r = new R(); } catch (e) { S.listening = false; S.err = 'نەتوانرا مایکرۆفۆن بکرێتەوە.'; render(); return; }
+    var R = engine(), r; if (!R) return;
+    S.base = S.pos; S.cur = S.pos;
+    try { r = new R(); } catch (e) { S.listening = false; S.err = L().nomic; paintAll(); return; }
     rec = r;
-    r.lang = 'ar-SA'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 3;
+    r.lang = 'ar-SA'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 3;
     r.onresult = function (e) {
       if (rec !== r) return;
-      var last = e.results[e.results.length - 1], fin = !!last.isFinal, alts = [], j, i, K = Math.min(3, last.length || 1);
+      var alts = [], j, i, K = 3, fin = false;
       for (j = 0; j < K; j++) {
-        var t = '';
-        for (i = 0; i < e.results.length; i++) { var it = e.results[i]; t += ' ' + ((it[j] || it[0]).transcript || ''); }
-        alts.push(t);
+        var tx = '';
+        for (i = 0; i < e.results.length; i++) { var it = e.results[i]; if (j === 0 && i === e.results.length - 1) fin = !!it.isFinal; tx += ' ' + ((it[j] || it[0]).transcript || ''); }
+        alts.push(tx);
       }
       onSpeech(alts, fin);
     };
     r.onerror = function (e) {
       if (rec !== r) return;
       var c = e && e.error;
-      if (c === 'not-allowed' || c === 'service-not-allowed') { stopListen(); S.err = 'مۆڵەتی مایکرۆفۆن نەدراوە. لە ڕێکخستنی وێبگەڕ مۆڵەت بدە.'; render(); }
-      else if (c === 'audio-capture') { stopListen(); S.err = 'مایکرۆفۆن نەدۆزرایەوە.'; render(); }
-      else if (c === 'network') { stopListen(); S.err = 'ناسینەوەی دەنگ پێویستی بە ئینتەرنێت هەیە.'; render(); }
+      if (c === 'not-allowed' || c === 'service-not-allowed') { stopListen(); S.err = L().denied; paintAll(); }
+      else if (c === 'audio-capture') { stopListen(); S.err = L().nomic; paintAll(); }
+      else if (c === 'network') { stopListen(); S.err = L().net; paintAll(); }
     };
     r.onend = function () {
       if (rec !== r) return;
-      if (S.listening && !S.finished) {
-        if (!S.judged && S.sess) { judgeLeft(); render(); }
-        clearTimeout(restartT);
-        restartT = setTimeout(function () { if (S.listening && !S.finished) openRec(); }, 200);
-      }
+      if (S.listening && !S.finished) { clearTimeout(restartT); restartT = setTimeout(function () { if (S.listening && !S.finished) openRec(); }, 120); }
     };
-    try { r.start(); } catch (e2) { S.listening = false; S.err = 'نەتوانرا مایکرۆفۆن بکرێتەوە.'; render(); }
+    try { r.start(); } catch (e2) { S.listening = false; S.err = L().nomic; paintAll(); }
   }
-
   function onSpeech(alts, fin) {
     if (!S.listening || S.finished) return;
-    var bestR = null, bestS = '', bestAlt = '', i, st, r;
-    for (i = 0; i < alts.length; i++) {
-      st = S.carry0 + nstr(alts[i]);
-      r = fin ? matchFrom(st, 0, S.sIdx0, LEVELS[P.level][1], LEVELS[P.level][2]) : matchFrom(st, S.pos, S.idx, LEVELS[P.level][1], LEVELS[P.level][2]);
-      if (!bestR || r.n > bestR.n || (r.n === bestR.n && r.last > bestR.last)) { bestR = r; bestS = st; bestAlt = alts[i]; }
+    var best = null, bestAlt = '', k, tok;
+    for (k = 0; k < alts.length; k++) {
+      tok = nw2(alts[k]);
+      var r = align(tok, S.base, fin);
+      if (!best || r.p > best.p || (r.p === best.p && r.wrong < 0 && best.wrong >= 0)) { best = r; bestAlt = alts[k]; }
     }
-    S.said = String(bestAlt).trim(); S.sess = bestS; S.last = bestR.last;
-    if (!fin) {
-      if (bestR.n > 0) { S.pos = bestR.pos; accept(bestR.n); render(); }
-      else paintSaid();
-      return;
+    S.said = String(bestAlt).trim().split(/\s+/).slice(-6).join(' ');
+    if (best.p > S.cur) { S.cur = best.p; advanceTo(S.cur); }
+    if (fin) {
+      if (best.wrong >= 0 && best.wrong === S.pos) registerWrong(best.wrong);
+      /* the session is over for this phrase: the next one starts from the committed position */
+      S.base = S.pos;
     }
-    var already = S.idx - S.sIdx0;
-    if (bestR.n > already) accept(bestR.n - already);
-    S.judged = true; S.pos = bestR.pos;
-    if (!S.finished) judge(bestS.slice(bestR.pos), bestR.n >= already, bestR.n > 0 || already > 0);
-    render();
+    paintDock();
   }
+  function nw2(s) { return norm(s).split(' ').map(function (w) { return w.replace(/[اء]/g, ''); }).filter(Boolean); }
 
-  function accept(n) {
-    for (var k = 0; k < n && S.idx <= S.to; k++) {
-      S.done[S.idx] = true;
-      if (S.clean[S.idx] !== false) S.clean[S.idx] = true;
-      S.ok++; S.idx++;
+  function advanceTo(p) {
+    var from = S.pos, i, a;
+    for (i = from; i < p && i < S.words.length; i++) {
+      a = S.words[i].a;
+      paintWord(i, 'ok');
+      var nx = S.words[i + 1];
+      if (!nx || nx.a !== a) completeAyah(a);
     }
-    S.hintOn = false; S.reveal = false; S.carryDead = true; S.msg = ''; S.kind = '';
-    if (S.idx > S.to) finish();
+    S.pos = p;
+    S.msg = '';
+    if (p >= S.words.length) return finish();
+    paintCursor();
   }
-
-  function judgeLeft() { judge(S.sess.slice(S.pos), true, S.idx > S.sIdx0); S.judged = true; }
-
-  /* leftover speech that did not complete the expected ayah: keep as a pause, or mark as a mistake */
-  function judge(left, consistent, hadAccept) {
-    S.carry0 = ''; S.carryDead = false;
-    if (S.idx > S.to || left.length < 4) return;
-    if (hadAccept && !consistent) return;
-    var exp = S.exp[S.idx], m = exp.length;
-    var pre = sim(left, exp.slice(0, left.length));
-    if (left.length < 0.9 * m && pre >= LEVELS[P.level][1] - 0.06) { S.carry0 = left; S.msg = 'درێژە بدە…'; S.kind = 'info'; return; }
-    wrong();
+  function completeAyah(a) {
+    if (S.ayDone[a]) return;
+    S.ayDone[a] = true;
+    var clean = !S.ayBad[a];
+    if (a === 1 && S.sura === 1) return;
+    if (clean) { var o = P.prog[S.sura] = P.prog[S.sura] || {}; o[a] = Math.min(5, (o[a] || 0) + 1); savePrefs(); }
+    var row = $('hfAy' + a); if (row) { row.classList.add('done'); if (!clean) row.classList.add('rough'); }
+    updateBar();
   }
-  function wrong() {
-    S.bad++; S.tries[S.idx] = (S.tries[S.idx] || 0) + 1; S.clean[S.idx] = false;
-    S.msg = '✗ هەڵەیە، ئایەتی ' + toAr(S.idx) + ' نەنووسرایەوە. دووبارە بیخوێنەوە.' + (S.tries[S.idx] >= 3 ? ' دەتوانیت ئاماژە بەکاربهێنیت.' : '');
-    S.kind = 'bad';
-    try { if (navigator.vibrate) navigator.vibrate(80); } catch (e) {}
+  function registerWrong(i) {
+    var w = S.words[i], c = S.fails[i] = (S.fails[i] || 0) + 1;
+    S.ayBad[w.a] = true;
+    S.msg = L().wrong;
+    if (c >= 2) S.hint[i] = Math.min(c - 1, 3);
+    if (c >= 4) S.hint[i] = 99;
+    paintWord(i, 'bad');
+    clearTimeout(flashT[i]); flashT[i] = setTimeout(function () { paintWord(i, null); }, 700);
+    try { if (navigator.vibrate) navigator.vibrate(70); } catch (e) {}
   }
-
   function finish() {
-    var total = S.to - S.from + 1, c = 0;
-    for (var a = S.from; a <= S.to; a++) if (S.clean[a] === true && S.done[a]) c++;
-    S.finished = true; S.clean_n = c;
-    stopListen();
-    P.hist.unshift({ t: Date.now(), s: S.sura, f: S.from, to: S.to, n: total, c: c });
-    P.hist = P.hist.slice(0, 15);
-    savePrefs();
+    S.finished = true; stopListen();
+    var clean = 0, a, bad = 0;
+    for (a = (S.sura === 1 ? 2 : 1); a <= S.count; a++) { if (S.ayBad[a]) bad++; else clean++; }
+    for (var k in S.fails) bad += 0;
+    S.stat = { clean: clean, total: S.count - (S.sura === 1 ? 1 : 0), fails: Object.keys(S.fails).reduce(function (s, k) { return s + S.fails[k]; }, 0), secs: Math.round((Date.now() - (S.t0 || Date.now())) / 1000) };
+    P.hist.unshift({ t: Date.now(), s: S.sura, c: clean, n: S.stat.total, f: S.stat.fails });
+    P.hist = P.hist.slice(0, 30); P.last = S.sura; savePrefs();
+    paintAll();
   }
 
-  /* ---------- UI ---------- */
-  function injectCss() {
+  /* ---------- AI coach ---------- */
+  function endpoint() {
+    var e = '';
+    try { e = localStorage.getItem('ai_endpoint') || ''; } catch (x) {}
+    e = (e || window.AI_SHARI_ENDPOINT || 'https://qurani-ai-shari.abdurahmanemran03.workers.dev').trim().replace(/\/+$/, '');
+    return /^https:\/\//.test(e) ? e : '';
+  }
+  var coachCache = {};
+  function coach(a) {
+    var sheet = $('hfCoach'); if (!sheet) return;
+    var key = S.sura + ':' + a + ':' + lang(), words = S.words.filter(function (w, i) { return w.a === a; }).map(function (w) { return w.disp; }).join(' ');
+    var miss = [];
+    S.words.forEach(function (w, i) { if (w.a === a && S.fails[i]) miss.push(w.disp); });
+    sheet.hidden = false;
+    var body = sheet.querySelector('.hf-cbody');
+    var cur = '<div class="hf-cayah" dir="rtl">' + esc(words) + ' <span>﴿' + toAr(a) + '﴾</span></div>';
+    if (coachCache[key]) { body.innerHTML = cur + '<p>' + esc(coachCache[key]) + '</p>'; return; }
+    body.innerHTML = cur + '<p class="hf-dim">' + esc(L().coachWait) + '</p>';
+    var ep = endpoint(); if (!ep) { body.innerHTML = cur + '<p class="hf-dim">' + esc(L().coachFail) + '</p>'; return; }
+    fetch(ep + '/hifz-coach', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ayah: words, sura: sname(S.sura), n: a, lang: lang(), miss: miss }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok || !d.text) throw 0; return d.text; }); })
+      .then(function (t) { coachCache[key] = t; if (!sheet.hidden) body.innerHTML = cur + '<p>' + esc(t) + '</p>'; })
+      .catch(function () { if (!sheet.hidden) body.innerHTML = cur + '<p class="hf-dim">' + esc(L().coachFail) + '</p>'; });
+  }
+
+  /* ---------- UI: css ---------- */
+  function css() {
     if ($('hifzCss')) return;
-    var s = document.createElement('style');
-    s.id = 'hifzCss';
+    var s = document.createElement('style'); s.id = 'hifzCss';
     s.textContent = [
-      'body:has(#hifzView.active) .top{display:none!important}',
-      '.phone:has(#hifzView.active) .status,.phone:has(#hifzView.active) .appbar,.phone:has(#hifzView.active) .bottom{display:none!important}',
-      '.phone:has(#hifzView.active) .main{height:100%!important;padding:0!important;background:#f3f1ea}',
-      '#hifzView{display:none!important}',
-      '#hifzView.active{display:flex!important;flex-direction:column;height:100%;max-height:100%;box-sizing:border-box}',
-      '#hifzView .hf-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));background:linear-gradient(145deg,#17364f,#24597a);color:#fff;flex-shrink:0}',
-      '#hifzView .hf-head h2{margin:0;font-size:17px;font-weight:800}',
-      '#hifzView .hf-head small{display:block;font-size:11px;opacity:.85;margin-top:2px}',
-      '#hifzView .hf-btn{border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:8px 11px;font:inherit;font-size:12px;cursor:pointer}',
-      '#hifzView .hf-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px calc(20px + env(safe-area-inset-bottom))}',
-      '#hifzView .hf-card{background:#fff;border:1px solid #d9e0e6;border-radius:14px;padding:13px 14px;margin-bottom:11px}',
-      '#hifzView .hf-card h3{margin:0 0 8px;font-size:14px;color:#17364f}',
-      '#hifzView label{display:block;font-size:12px;color:#5b6b76;margin:9px 0 4px;font-weight:700}',
-      '#hifzView select,#hifzView input[type=number]{width:100%;box-sizing:border-box;border:1px solid #cdd7de;border-radius:10px;padding:10px;font:inherit;font-size:15px;background:#fff}',
-      '#hifzView .hf-row{display:flex;gap:8px}',
-      '#hifzView .hf-row>div{flex:1}',
-      '#hifzView .hf-chips{display:flex;gap:6px;flex-wrap:wrap}',
-      '#hifzView .hf-chip{flex:1;border:1px solid #cdd7de;background:#fff;border-radius:10px;padding:9px 4px;font:inherit;font-size:13px;cursor:pointer;color:#17364f}',
-      '#hifzView .hf-chip.on{background:#24597a;color:#fff;border-color:#24597a}',
-      '#hifzView .hf-go{width:100%;border:0;border-radius:13px;padding:14px;margin-top:12px;font:inherit;font-size:16px;font-weight:800;background:#24597a;color:#fff;cursor:pointer}',
-      '#hifzView .hf-note{font-size:12px;line-height:1.9;color:#5b6b76}',
-      '#hifzView .hf-hist{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #eef1f3;font-size:13px;color:#2a3a45}',
-      '#hifzView .hf-bar{height:8px;background:#dfe7ec;border-radius:5px;overflow:hidden;margin:8px 0 2px}',
-      '#hifzView .hf-bar i{display:block;height:100%;background:#2e8b68;transition:width .35s}',
-      '#hifzView .hf-page{background:#fffdf5;border:1px solid #e4d8b4;border-radius:14px;padding:16px 14px;min-height:200px;direction:rtl;text-align:justify;font-family:"Amiri","Noto Naskh Arabic","Scheherazade New",serif;font-size:26px;line-height:2.25;color:#16322a}',
-      '#hifzView .hf-a{display:inline}',
-      '#hifzView .hf-a.new{animation:hfIn .6s ease-out}',
-      '@keyframes hfIn{from{opacity:0;color:#2e8b68}to{opacity:1}}',
-      '#hifzView .hf-n{display:inline-block;min-width:1.5em;height:1.5em;line-height:1.5em;text-align:center;border:1px solid #b99a4b;border-radius:50%;font-size:.55em;color:#6f5720;margin:0 .25em;font-family:serif;vertical-align:middle}',
-      '#hifzView .hf-n0{border-style:dashed;color:#8a8a8a;border-color:#b5b5b5}',
-      '#hifzView .hf-dots{color:#b5b5b5;letter-spacing:.35em}',
-      '#hifzView .hf-hint{color:#9a7b2f}',
-      '#hifzView .hf-rev{color:#b5483a;opacity:.8}',
-      '#hifzView .hf-skip{color:#b5483a}',
-      '#hifzView .hf-said{min-height:22px;margin:10px 2px 0;font-size:14px;color:#5b6b76;direction:rtl;text-align:center}',
-      '#hifzView .hf-msg{min-height:22px;margin:6px 2px;font-size:14px;font-weight:700;text-align:center}',
-      '#hifzView .hf-msg.bad{color:#b5483a}',
-      '#hifzView .hf-msg.info{color:#24597a}',
-      '#hifzView .hf-msg.err{color:#b5483a;font-weight:600;line-height:1.8}',
-      '#hifzView .hf-mic{display:block;margin:6px auto 4px;width:78px;height:78px;border:0;border-radius:50%;background:#24597a;color:#fff;font-size:32px;cursor:pointer;box-shadow:0 6px 18px #24597a55}',
-      '#hifzView .hf-mic.on{background:#c0392b;box-shadow:0 0 0 0 #c0392b88;animation:hfPulse 1.4s infinite}',
-      '@keyframes hfPulse{0%{box-shadow:0 0 0 0 #c0392b88}70%{box-shadow:0 0 0 18px #c0392b00}100%{box-shadow:0 0 0 0 #c0392b00}}',
-      '@media(prefers-reduced-motion:reduce){#hifzView .hf-mic.on{animation:none}#hifzView .hf-a.new{animation:none}}',
-      '#hifzView .hf-mlabel{text-align:center;font-size:12px;color:#5b6b76;margin-bottom:10px}',
-      '#hifzView .hf-tools{display:flex;gap:6px;margin-bottom:10px}',
-      '#hifzView .hf-tools button{flex:1;border:1px solid #cdd7de;background:#fff;border-radius:10px;padding:9px 2px;font:inherit;font-size:12px;cursor:pointer;color:#17364f}',
-      '#hifzView .hf-stats{display:flex;justify-content:space-around;font-size:13px;color:#2a3a45}',
-      '#hifzView .hf-big{font-size:42px;font-weight:800;text-align:center;color:#24597a;margin:6px 0}',
-      '.section-choice.hifz-choice{border-color:#c6d5e3;background:linear-gradient(135deg,#fff,#edf3f9)}',
-      '.section-choice.hifz-choice .choice-icon{background:#d6e3f0;color:#24597a}'
+      '#hifzView{--bg1:#06201a;--bg2:#0c3a2d;--gold:#e6c46f;--gold2:#b8924a;--ink:#f5efdd;--dim:rgba(245,239,221,.62);--glass:rgba(255,255,255,.055);--line:rgba(230,196,111,.26);color:var(--ink);min-height:100vh;padding:0 0 130px;background:radial-gradient(circle at 1px 1px,rgba(230,196,111,.10) 1px,transparent 0) 0 0/24px 24px,linear-gradient(180deg,var(--bg2),var(--bg1) 70%);font-family:inherit}',
+      'body:has(#hifzView.active) .bottom{display:none!important}',
+      '#hifzView *{box-sizing:border-box}',
+      '.hf-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 14px 4px}',
+      '.hf-btn{border:1px solid var(--line);background:var(--glass);color:var(--ink);border-radius:12px;padding:8px 13px;font:inherit;font-size:13px}',
+      '.hf-hero{margin:8px 14px 12px;padding:18px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,rgba(230,196,111,.16),rgba(255,255,255,.03));display:flex;gap:16px;align-items:center}',
+      '.hf-ring{width:84px;height:84px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--gold) calc(var(--p)*1%),rgba(255,255,255,.1) 0)}',
+      '.hf-ring b{width:66px;height:66px;border-radius:50%;background:var(--bg1);display:grid;place-items:center;font-size:17px;color:var(--gold)}',
+      '.hf-hero h1{margin:0 0 4px;font-size:21px;color:var(--gold);line-height:1.4}.hf-hero p{margin:0;color:var(--dim);font-size:13px;line-height:1.7}',
+      '.hf-tools{display:flex;gap:8px;padding:0 14px 8px;flex-wrap:wrap}',
+      '.hf-in{flex:1;min-width:140px;background:var(--glass);border:1px solid var(--line);border-radius:14px;color:var(--ink);padding:10px 13px;font:inherit;font-size:14px;outline:0}',
+      '.hf-chip{border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:16px;padding:7px 13px;font:inherit;font-size:13px}.hf-chip.on{background:var(--gold);color:#2b2208;border-color:var(--gold);font-weight:700}',
+      '.hf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:4px 14px}',
+      '.hf-card{position:relative;text-align:center;border:1px solid var(--line);background:var(--glass);border-radius:18px;padding:16px 8px 12px;color:var(--ink);font:inherit;overflow:hidden;backdrop-filter:blur(3px)}',
+      '.hf-card:active{transform:scale(.97)}',
+      '.hf-star{width:46px;height:46px;position:relative;margin:0 auto 8px;display:grid;place-items:center;color:var(--gold);font-weight:700;font-size:15px}',
+      '.hf-star:before,.hf-star:after{content:"";position:absolute;inset:6px;border:1.5px solid var(--gold);border-radius:4px}.hf-star:after{transform:rotate(45deg)}',
+      '.hf-card h3{margin:0;font-size:20px;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;color:var(--ink);font-weight:700}',
+      '.hf-card small{display:block;color:var(--dim);font-size:12px;margin-top:2px}',
+      '.hf-bar{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin-top:10px;overflow:hidden}.hf-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:5px}',
+      '.hf-card.full{border-color:var(--gold);background:linear-gradient(160deg,rgba(230,196,111,.22),rgba(255,255,255,.04))}',
+      '.hf-cont{margin:0 14px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--gold);border-radius:16px;padding:12px 16px;background:rgba(230,196,111,.12);color:var(--ink);font:inherit;width:calc(100% - 28px)}',
+      /* run */
+      '.hf-ttl{text-align:center;padding:4px 14px 2px}.hf-ttl h2{margin:0;font-size:30px;color:var(--gold);font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;font-weight:700}.hf-ttl small{color:var(--dim)}',
+      '.hf-prog{margin:8px 20px 6px;height:6px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden}.hf-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .25s}',
+      '.hf-bism{text-align:center;font-size:27px;color:var(--gold);margin:14px 14px 6px;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;direction:rtl;line-height:2;text-shadow:0 0 18px rgba(230,196,111,.35)}',
+      '.hf-page{margin:8px 12px;padding:6px 12px;border:1px solid var(--line);border-radius:22px;background:rgba(0,0,0,.18)}',
+      '.hf-ay{display:flex;gap:10px;align-items:flex-start;padding:12px 4px;border-bottom:1px dashed rgba(230,196,111,.15);direction:rtl;cursor:pointer}',
+      '.hf-ay:last-child{border-bottom:0}',
+      '.hf-num{flex:none;width:34px;height:34px;display:grid;place-items:center;font-size:14px;color:var(--gold);position:relative;margin-top:4px}',
+      '.hf-num:before,.hf-num:after{content:"";position:absolute;inset:5px;border:1.4px solid var(--gold);border-radius:3px}.hf-num:after{transform:rotate(45deg)}',
+      '.hf-ay.done .hf-num{background:var(--gold);color:#2b2208;border-radius:50%}.hf-ay.done .hf-num:before,.hf-ay.done .hf-num:after{display:none}.hf-ay.rough .hf-num{background:#d99a4e}',
+      '.hf-ws{flex:1;display:flex;flex-wrap:wrap;gap:4px 9px;font-size:27px;line-height:2.1;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;direction:rtl}',
+      '.hf-w{border-radius:9px;padding:0 5px;color:transparent;background:rgba(255,255,255,.075);transition:background .18s,color .18s,transform .18s;user-select:none;-webkit-user-select:none}',
+      '.hf-w.ok{color:var(--ink);background:transparent;animation:hfPop .28s ease-out}.hf-w.ok.given{color:var(--gold)}',
+      '.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
+      '.hf-w.bad{background:rgba(224,82,82,.35);animation:hfShake .35s}',
+      '.hf-w .h{color:var(--gold)}',
+      '.hf-w.rev{color:rgba(245,239,221,.45)}',
+      '@keyframes hfPop{0%{transform:scale(.8);color:var(--gold)}60%{transform:scale(1.08)}100%{transform:scale(1)}}',
+      '@keyframes hfShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}',
+      '.hf-dock{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,rgba(4,22,17,.96) 28%);display:flex;flex-direction:column;align-items:center;gap:8px}',
+      '.hf-said{min-height:22px;max-width:100%;font-size:14px;color:var(--dim);text-align:center;direction:rtl;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hf-said.err{color:#ff9b9b}',
+      '.hf-row{display:flex;align-items:center;gap:18px}',
+      '.hf-mic{width:78px;height:78px;border-radius:50%;border:0;background:linear-gradient(145deg,var(--gold),var(--gold2));color:#2b2208;font-size:32px;display:grid;place-items:center;box-shadow:0 10px 28px rgba(230,196,111,.35);position:relative}',
+      '.hf-mic.on{background:linear-gradient(145deg,#ff7a6b,#d9433a);color:#fff;box-shadow:0 0 0 0 rgba(255,100,90,.6);animation:hfPulse 1.4s infinite}',
+      '@keyframes hfPulse{0%{box-shadow:0 0 0 0 rgba(255,100,90,.55)}100%{box-shadow:0 0 0 26px rgba(255,100,90,0)}}',
+      '.hf-sm{width:50px;height:50px;border-radius:50%;border:1px solid var(--line);background:var(--glass);color:var(--ink);font:inherit;font-size:13px;display:grid;place-items:center}',
+      '.hf-lv{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}',
+      '.hf-sheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}.hf-sheet[hidden]{display:none}',
+      '.hf-sbox{width:100%;max-height:80vh;overflow:auto;background:linear-gradient(180deg,#0f4636,#082a21);border-top:1px solid var(--gold);border-radius:24px 24px 0 0;padding:18px 18px 28px;color:var(--ink)}',
+      '.hf-sbox h3{margin:0 0 10px;color:var(--gold)}.hf-cayah{font-size:24px;line-height:2;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;color:var(--gold);margin-bottom:8px}.hf-cbody p{line-height:1.9;margin:6px 0;font-size:15px}.hf-dim{color:var(--dim)}',
+      '.hf-fin{margin:16px 14px;padding:22px;border:1px solid var(--gold);border-radius:22px;text-align:center;background:linear-gradient(160deg,rgba(230,196,111,.2),rgba(255,255,255,.03))}',
+      '.hf-fin h2{margin:0 0 12px;color:var(--gold)}.hf-stats{display:flex;gap:10px;justify-content:center;margin:12px 0}.hf-stats div{flex:1;border:1px solid var(--line);border-radius:14px;padding:10px 4px}.hf-stats b{display:block;font-size:22px;color:var(--gold)}.hf-stats span{font-size:12px;color:var(--dim)}',
+      '.hf-note{text-align:center;color:var(--dim);font-size:11.5px;padding:10px 24px}'
     ].join('\n');
     document.head.appendChild(s);
   }
 
+  /* ---------- UI: views ---------- */
   function ensureView() {
-    var main = document.querySelector('.main');
-    if (!main) return null;
-    var v = $('hifzView');
-    if (v) return v;
-    v = document.createElement('div');
-    v.id = 'hifzView'; v.className = 'view';
+    var main = document.querySelector('.main'); if (!main) return null;
+    var v = $('hifzView'); if (v) return v;
+    v = document.createElement('div'); v.id = 'hifzView'; v.className = 'view';
+    v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1');
     main.appendChild(v);
     v.addEventListener('click', onClick);
-    v.addEventListener('change', onChange);
+    v.addEventListener('input', function (e) { if (e.target.id === 'hfQ') { S.q = e.target.value; paintGrid(); } });
     return v;
   }
-
-  function head(title, sub, back) {
-    return '<div class="hf-head"><div><h2>' + esc(title) + '</h2>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div><div style="display:flex;gap:6px">' +
-      (back ? '<button type="button" class="hf-btn" data-act="home">‹ گەڕانەوە</button>' : '') +
-      '<button type="button" class="hf-btn" data-act="exit">بەشەکان</button></div></div>';
+  function render() {
+    var v = ensureView(); if (!v) return;
+    v.dir = isRtlUi() ? 'rtl' : 'ltr';
+    v.innerHTML = S.view === 'run' ? runHtml() : homeHtml();
+    if (S.view === 'home') paintGrid();
+    else if (!S.loading) { paintWords(); updateBar(); paintDock(); paintCursor(); }
   }
+  function paintAll() { render(); }
 
   function homeHtml() {
-    var sl = SL(), c = cnt(P.sura) || 7, i, o = '';
-    for (i = 0; i < sl.length; i++) o += '<option value="' + (i + 1) + '"' + (i + 1 === P.sura ? ' selected' : '') + '>' + toAr(i + 1) + '. ' + esc(sl[i][0]) + ' (' + toAr(sl[i][2]) + ')</option>';
-    var lv = LEVELS.map(function (l, k) { return '<button type="button" class="hf-chip' + (k === P.level ? ' on' : '') + '" data-lv="' + k + '">' + l[0] + '</button>'; }).join('');
-    var hist = P.hist.length ? P.hist.map(function (h) {
-      var pct = h.n ? Math.round(100 * h.c / h.n) : 0;
-      return '<div class="hf-hist"><span>' + esc(sname(h.s)) + ' · ' + toAr(h.f) + '–' + toAr(h.to) + '</span><b>' + toAr(pct) + '٪</b><span>' + new Date(h.t).toLocaleDateString() + '</span></div>';
-    }).join('') : '<div class="hf-note">هێشتا هیچ پشکنینێکت نەکردووە.</div>';
-    return head('لەبەرکردنی قورئان', 'بخوێنەوە، ئەپەکە گوێ دەگرێت', false) +
-      '<div class="hf-body">' +
-      '<div class="hf-card"><h3>چی بخوێنیتەوە؟</h3><label for="hfSura">سورەت</label><select id="hfSura">' + o + '</select>' +
-      '<div class="hf-row"><div><label for="hfFrom">لە ئایەتی</label><input id="hfFrom" type="number" min="1" max="' + c + '" value="' + clamp(P.from, 1, c) + '"></div>' +
-      '<div><label for="hfTo">تا ئایەتی</label><input id="hfTo" type="number" min="1" max="' + c + '" value="' + clamp(P.to, 1, c) + '"></div></div>' +
-      '<label>وردبینی</label><div class="hf-chips">' + lv + '</div>' +
-      '<button type="button" class="hf-go" data-act="start">🎤 دەستپێکردن</button></div>' +
-      '<div class="hf-card"><h3>چۆن کار دەکات</h3><div class="hf-note">مایکرۆفۆن بکەرەوە و ئایەتەکان بە لەبەر بخوێنەوە. ئەگەر ئایەتەکە ڕاست بوو لەسەر لاپەڕەکە دەنووسرێتەوە؛ ئەگەر هەڵە بوو نانووسرێتەوە و دەتوانیت دووبارە هەوڵ بدەیت. ئینتەرنێت و مۆڵەتی مایکرۆفۆن پێویستە.</div></div>' +
-      '<div class="hf-card"><h3>پشکنینە پێشووەکان</h3>' + hist + '</div></div>';
+    var t = L(), tot = totalMastered(), pct = Math.round(tot / 6236 * 100);
+    var cont = P.last ? '<button type="button" class="hf-cont" data-act="open" data-n="' + P.last + '"><span>' + esc(t.cont) + '</span><b style="font-family:Amiri,serif;font-size:20px;color:var(--gold)">' + esc(sname(P.last)) + '</b></button>' : '';
+    return '<div class="hf-top"><button type="button" class="hf-btn" data-act="exit">‹ ' + esc(t.exit) + '</button></div>' +
+      '<div class="hf-hero"><div class="hf-ring" style="--p:' + pct + '"><b>' + num(pct) + '٪'.replace('٪', '%') + '</b></div><div><h1>' + esc(t.title) + '</h1><p>' + esc(t.sub) + '</p><p style="margin-top:6px;color:var(--gold)">' + num(tot) + ' / ' + num(6236) + ' ' + esc(t.ay) + ' · ' + esc(t.mast) + '</p></div></div>' + cont +
+      '<div class="hf-tools"><input id="hfQ" class="hf-in" type="search" placeholder="' + esc(t.search) + '" value="' + esc(S.q || '') + '">' +
+      ['all', 'prog', 'done'].map(function (f) { return '<button type="button" class="hf-chip' + (S.filter === f ? ' on' : '') + '" data-act="filter" data-f="' + f + '">' + esc(t[f]) + '</button>'; }).join('') + '</div>' +
+      '<div class="hf-grid" id="hfGrid"></div><div class="hf-note">' + esc(t.note) + '</div>';
   }
-
-  function pageHtml() {
-    var h = '', a, newest = S.idx - 1;
-    for (a = S.from; a <= S.to; a++) {
-      if (S.done[a]) h += '<span class="hf-a' + (a === newest && S.ok ? ' new' : '') + '">' + esc(S.ayat[a]) + ' <span class="hf-n">' + toAr(a) + '</span></span> ';
-      else if (S.skip[a]) h += '<span class="hf-skip">••• <span class="hf-n">' + toAr(a) + '</span></span> ';
+  function paintGrid() {
+    var g = $('hfGrid'); if (!g) return;
+    var q = nw(S.q || ''), qn = parseInt(S.q, 10), o = '', n, c, m, full;
+    for (n = 1; n <= 114; n++) {
+      c = cnt(n); m = masteredIn(n); full = c && m >= c;
+      if (S.filter === 'prog' && !(m > 0 && !full)) continue;
+      if (S.filter === 'done' && !full) continue;
+      if (S.q) { if (qn) { if (n !== qn) continue; } else if (nw(sname(n)).indexOf(q) < 0) continue; }
+      o += '<button type="button" class="hf-card' + (full ? ' full' : '') + '" data-act="open" data-n="' + n + '"><div class="hf-star">' + num(n) + '</div><h3>' + esc(sname(n)) + '</h3><small>' + num(c) + ' ' + esc(L().ay) + '</small><div class="hf-bar"><i style="width:' + (c ? Math.round(m / c * 100) : 0) + '%"></i></div></button>';
     }
-    if (!S.finished && S.ayat[S.idx]) {
-      var t = S.ayat[S.idx], cur;
-      if (S.reveal) cur = '<span class="hf-rev">' + esc(t) + '</span>';
-      else if (S.hintOn) cur = '<span class="hf-hint">' + esc(t.split(/\s+/).slice(0, 2).join(' ')) + ' …</span>';
-      else cur = '<span class="hf-dots">• • •</span>';
-      h += '<span>' + cur + ' <span class="hf-n hf-n0">' + toAr(S.idx) + '</span></span>';
-    }
-    return '<div class="hf-page" data-no-translate="1" data-keep-ar="1">' + h + '</div>';
+    g.innerHTML = o;
   }
 
   function runHtml() {
-    var total = S.to - S.from + 1, doneN = S.idx - S.from, pct = Math.round(100 * doneN / total);
-    var t = head(sname(S.sura), 'ئایەتی ' + toAr(S.from) + ' تا ' + toAr(S.to), true);
-    if (S.loading) return t + '<div class="hf-body"><div class="hf-card hf-note">دەقی قورئان بار دەکرێت…</div></div>';
-    if (!S.ayat[S.from]) return t + '<div class="hf-body"><div class="hf-card"><div class="hf-msg err">' + esc(S.err || 'هەڵەیەک ڕوویدا.') + '</div><button type="button" class="hf-go" data-act="home">گەڕانەوە</button></div></div>';
-    if (S.finished) return t + '<div class="hf-body">' + doneHtml(total) + pageHtml() + '</div>';
-    return t + '<div class="hf-body">' +
-      '<div class="hf-bar"><i style="width:' + pct + '%"></i></div>' +
-      '<div class="hf-note" style="text-align:center;margin-bottom:8px">ئایەتی ' + toAr(Math.min(S.idx, S.to)) + ' · ' + toAr(doneN) + ' لە ' + toAr(total) + '</div>' +
-      pageHtml() +
-      '<div class="hf-said" id="hfSaid">' + esc(S.said) + '</div>' +
-      '<div class="hf-msg ' + esc(S.err ? 'err' : S.kind) + '" id="hfMsg">' + esc(S.err || S.msg) + '</div>' +
-      '<button type="button" class="hf-mic' + (S.listening ? ' on' : '') + '" data-act="mic" aria-label="مایکرۆفۆن">' + (S.listening ? '■' : '🎤') + '</button>' +
-      '<div class="hf-mlabel">' + (S.listening ? 'گوێم لێتە… ئایەتی ' + toAr(S.idx) + ' بخوێنەوە' : 'کرتە بکە و دەستپێبکە') + '</div>' +
-      '<div class="hf-tools"><button type="button" data-act="hint">💡 ئاماژە</button><button type="button" data-act="reveal">👁 ئایەتەکە ببینە</button><button type="button" data-act="skip">⏭ تێپەڕاندن</button></div>' +
-      '<div class="hf-stats"><span>✓ ' + toAr(S.ok) + '</span><span>✗ ' + toAr(S.bad) + '</span><span>💡 ' + toAr(S.hint) + '</span></div></div>';
+    var t = L(), n = S.sura;
+    var head = '<div class="hf-top"><button type="button" class="hf-btn" data-act="home">' + esc(t.back) + '</button><div class="hf-lv" id="hfLv"></div></div>' +
+      '<div class="hf-ttl"><h2>' + esc(sname(n)) + '</h2><small>' + num(S.count) + ' ' + esc(t.ay) + '</small></div><div class="hf-prog"><i id="hfProg"></i></div>';
+    if (S.loading) return head + '<div class="hf-note" style="padding:60px 24px">' + esc(t.loading) + '</div>';
+    if (S.err && !S.words.length) return head + '<div class="hf-note" style="padding:60px 24px;color:#ff9b9b">' + esc(S.err) + '</div>';
+    var rows = '', a, i;
+    for (a = 1; a <= S.count; a++) {
+      var ws = '';
+      for (i = S.starts[a]; i < (S.starts[a + 1] != null ? S.starts[a + 1] : S.words.length); i++) {
+        var w = S.words[i];
+        ws += '<span class="hf-w' + (w.given ? ' ok given' : '') + '" id="hfW' + i + '">' + esc(w.disp) + '</span>';
+      }
+      rows += '<div class="hf-ay' + (n === 1 && a === 1 ? ' done' : '') + '" id="hfAy' + a + '" data-act="jump" data-a="' + a + '"><span class="hf-num">' + num(a) + '</span><div class="hf-ws">' + ws + '</div></div>';
+    }
+    var bism = (n !== 1 && n !== 9) ? '<div class="hf-bism">' + BISM_T + '</div>' : '';
+    var fin = S.finished ? finHtml() : '';
+    return head + bism + '<div class="hf-page">' + rows + '</div>' + fin +
+      '<div class="hf-dock"><div class="hf-said" id="hfSaid"></div><div class="hf-row">' +
+      '<button type="button" class="hf-sm" data-act="hint">💡<br><span style="font-size:10px">' + esc(t.hint) + '</span></button>' +
+      '<button type="button" class="hf-mic" id="hfMic" data-act="mic">🎙</button>' +
+      '<button type="button" class="hf-sm" data-act="ai">' + esc(t.ai) + '</button></div></div>' +
+      '<div class="hf-sheet" id="hfCoach" hidden data-act="closeCoach"><div class="hf-sbox" data-stop="1"><h3>' + esc(t.coachT) + '</h3><div class="hf-cbody"></div></div></div>';
+  }
+  function finHtml() {
+    var st = S.stat || {}, t = L();
+    return '<div class="hf-fin"><h2>🌙 ' + esc(t.fin) + '</h2><div class="hf-stats"><div><b>' + num(st.clean) + '/' + num(st.total) + '</b><span>' + esc(t.clean) + '</span></div><div><b>' + num(st.fails) + '</b><span>' + esc(t.fails) + '</span></div></div>' +
+      '<button type="button" class="hf-btn" data-act="again">↻ ' + esc(t.again) + '</button></div>';
   }
 
-  function doneHtml(total) {
-    var c = S.clean_n || 0, pct = total ? Math.round(100 * c / total) : 0, weak = [], a;
-    for (a = S.from; a <= S.to; a++) if (S.clean[a] !== true || !S.done[a]) weak.push(toAr(a));
-    return '<div class="hf-card"><h3>پشکنین تەواو بوو</h3><div class="hf-big">' + toAr(pct) + '٪</div>' +
-      '<div class="hf-note" style="text-align:center">' + toAr(c) + ' ئایەت لە ' + toAr(total) + ' بێ هەڵە و بێ ئاماژە خوێندرانەوە.</div>' +
-      (weak.length ? '<div class="hf-note" style="text-align:center;margin-top:6px">ئایەتەکانی پێویست بە دووبارەکردنەوە: ' + weak.join('، ') + '</div>' : '') +
-      '<div class="hf-row" style="margin-top:10px"><div><button type="button" class="hf-go" style="margin-top:0" data-act="again">دووبارە</button></div><div><button type="button" class="hf-go" style="margin-top:0;background:#fff;color:#24597a;border:1px solid #24597a" data-act="home">سورەتی تر</button></div></div></div>';
+  /* ---------- UI: incremental painting (fast path) ---------- */
+  function paintWords() {
+    S.words.forEach(function (w, i) {
+      var el = $('hfW' + i); if (!el) return;
+      if (i < S.pos) { el.classList.add('ok'); }
+      else { el.classList.remove('ok'); paintHint(i, el); }
+    });
+    var a; for (a in S.ayDone) { var r = $('hfAy' + a); if (r) { r.classList.add('done'); if (S.ayBad[a]) r.classList.add('rough'); } }
   }
-
-  function render() {
-    injectCss();
-    var v = ensureView();
-    if (!v) return;
-    v.innerHTML = S.view === 'run' ? runHtml() : homeHtml();
+  function paintWord(i, state) {
+    var el = $('hfW' + i); if (!el) return;
+    el.classList.remove('bad');
+    if (state === 'ok') { el.classList.add('ok'); el.classList.remove('cur'); el.innerHTML = esc(S.words[i].disp); }
+    else if (state === 'bad') { void el.offsetWidth; el.classList.add('bad'); paintHint(i, el); }
+    else paintHint(i, el);
   }
-  function paintSaid() { var e = $('hfSaid'); if (e) e.textContent = S.said; }
+  function firstLetters(disp, k) {
+    var out = '', n = 0, i, ch;
+    for (i = 0; i < disp.length; i++) {
+      ch = disp.charAt(i); out += ch;
+      if (/[ء-يٱکی]/.test(ch)) { n++; if (n >= k) { while (i + 1 < disp.length && /[ؐ-ًؚ-ٰٟۖ-ۭ]/.test(disp.charAt(i + 1))) { i++; out += disp.charAt(i); } break; } }
+    }
+    return out;
+  }
+  function paintHint(i, el) {
+    var h = S.hint[i], w = S.words[i]; if (!h || i < S.pos || w.given) return;
+    if (h >= 99) { el.classList.add('rev'); el.innerHTML = esc(w.disp); return; }
+    var pre = firstLetters(w.disp, h);
+    el.innerHTML = '<i class="h" style="font-style:normal">' + esc(pre) + '</i>' + esc(w.disp.slice(pre.length));
+  }
+  function paintCursor() {
+    var old = document.querySelector('#hifzView .hf-w.cur'); if (old) old.classList.remove('cur');
+    var el = $('hfW' + S.pos); if (!el || S.finished) return;
+    el.classList.add('cur');
+    try { var r = el.getBoundingClientRect(); if (r.top < 120 || r.bottom > window.innerHeight - 190) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
+    updateBar();
+  }
+  function updateBar() {
+    var b = $('hfProg'); if (!b || !S.words.length) return;
+    b.style.width = Math.round(S.pos / S.words.length * 100) + '%';
+  }
+  function paintDock() {
+    var m = $('hfMic'), s = $('hfSaid'), t = L(); if (!m) return;
+    m.classList.toggle('on', S.listening); m.textContent = S.listening ? '⏹' : '🎙';
+    if (s) { s.classList.toggle('err', !!(S.err || S.msg)); s.textContent = S.err || S.msg || (S.listening ? (S.said ? t.say + ': ' + S.said : t.listen) : t.tap); }
+    var lv = $('hfLv');
+    if (lv) lv.innerHTML = t.lvl.map(function (n, k) { return '<button type="button" class="hf-chip' + (k === P.level ? ' on' : '') + '" data-act="lvl" data-k="' + k + '">' + esc(n) + '</button>'; }).join('');
+  }
 
   /* ---------- events ---------- */
-  function onChange(e) {
-    var t = e.target;
-    if (t && t.id === 'hfSura') {
-      var n = +t.value, c = cnt(n);
-      P.sura = n; P.from = 1; P.to = c; savePrefs(); render();
-    }
-  }
   function onClick(e) {
-    var el = e.target.closest ? e.target.closest('[data-act],[data-lv]') : null;
-    if (!el) return;
-    var lv = el.getAttribute('data-lv');
-    if (lv !== null) { var fi = $('hfFrom'), ti = $('hfTo'); if (fi && +fi.value) P.from = +fi.value; if (ti && +ti.value) P.to = +ti.value; P.level = +lv; savePrefs(); render(); return; }
-    var act = el.getAttribute('data-act');
-    if (act === 'exit') { leave(); return; }
-    if (act === 'home') { stopListen(); S = freshState(); render(); return; }
-    if (act === 'start') { begin(); return; }
-    if (act === 'again') { stopListen(); begin2(); return; }
-    if (act === 'mic') { if (S.listening) { stopListen(); render(); } else startListen(); return; }
-    if (S.view !== 'run' || S.finished || !S.ayat[S.idx]) return;
-    if (act === 'hint') { if (!S.hintOn && !S.reveal) { S.hintOn = true; S.hint++; S.clean[S.idx] = false; } render(); return; }
-    if (act === 'reveal') { if (!S.reveal) { S.reveal = true; S.hint++; S.clean[S.idx] = false; } render(); return; }
-    if (act === 'skip') {
-      S.skip[S.idx] = true; S.clean[S.idx] = false; S.idx++; S.carry0 = ''; S.hintOn = false; S.reveal = false; S.msg = ''; S.kind = '';
-      if (S.idx > S.to) finish();
-      else S.sIdx0 = S.idx;
-      render(); return;
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var act = b.getAttribute('data-act');
+    if (act === 'closeCoach') { if (e.target.closest('[data-stop]')) return; $('hfCoach').hidden = true; return; }
+    if (act === 'exit') return leave();
+    if (act === 'home') { stopListen(); S = { view: 'home', filter: S.filter, q: S.q }; return render(); }
+    if (act === 'filter') { S.filter = b.getAttribute('data-f'); return render(); }
+    if (act === 'open') return openSura(+b.getAttribute('data-n'));
+    if (act === 'again') return openSura(S.sura);
+    if (act === 'lvl') { P.level = +b.getAttribute('data-k'); savePrefs(); return paintDock(); }
+    if (act === 'mic') return S.listening ? stopListen() : startListen();
+    if (act === 'jump') {
+      if (S.loading || S.finished) return;
+      var a = +b.getAttribute('data-a'), np = S.starts[a];
+      if (a === 1 && S.sura === 1) return;
+      if (np == null || np === S.pos) return;
+      var was = S.listening; if (was) stopListen();
+      var i; for (i = 0; i < S.words.length; i++) { var el = $('hfW' + i); if (el) { if (i < np) el.classList.add('ok'); else { el.classList.remove('ok'); paintHint(i, el); } } }
+      S.pos = S.cur = S.base = np; paintCursor(); if (was) startListen(); return;
+    }
+    if (act === 'hint') {
+      if (S.loading || S.finished) return;
+      var i2 = S.pos; S.hint[i2] = Math.min((S.hint[i2] || 0) + 1, 3); S.ayBad[S.words[i2].a] = true;
+      var el2 = $('hfW' + i2); if (el2) paintHint(i2, el2); return;
+    }
+    if (act === 'ai') {
+      if (S.loading) return;
+      var ai = S.finished ? S.count : (S.words[Math.min(S.pos, S.words.length - 1)] || { a: 1 }).a;
+      return coach(ai);
     }
   }
-  function begin2() {
-    var n = P.sura, from = P.from, to = P.to;
-    S = freshState();
-    var fake = { sura: n, from: from, to: to };
-    S.view = 'run'; S.sura = fake.sura; S.from = fake.from; S.to = fake.to; S.idx = fake.from; S.sIdx0 = fake.from; S.loading = true;
-    render();
+  function openSura(n) {
+    stopListen(); newRun(n); render();
     ensureSura(n).then(function (ok) {
+      if (S.sura !== n) return;
       S.loading = false;
-      if (!ok) { S.err = 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە و دووبارە هەوڵ بدە.'; render(); return; }
-      for (var a = from; a <= to; a++) {
-        var t = TEXT[n][a - 1];
-        if (a === 1 && n !== 1 && n !== 9) t = stripBism(t);
-        S.ayat[a] = t; S.exp[a] = nstr(t);
-      }
+      if (!ok) S.err = L().loadfail; else buildWords();
       render();
+      if (ok) { P.last = n; savePrefs(); }
     });
   }
   function leave() {
     stopListen();
-    var v = $('hifzView');
-    if (v) v.classList.remove('active');
+    var v = $('hifzView'); if (v) v.classList.remove('active');
     if (typeof showView === 'function') showView('startScreen', 'بەشەکان');
   }
 
   window.enterHifz = function () {
-    injectCss();
+    css();
     if (!ensureView()) return;
-    S = freshState();
-    if (typeof showView === 'function') showView('hifzView', 'لەبەرکردنی قورئان');
+    S = { view: 'home', filter: 'all', q: '' };
+    if (typeof showView === 'function') showView('hifzView', L().title);
     render();
   };
+  /* re-render when the app language changes */
+  try {
+    var _sl = window.setAppLanguage;
+    if (typeof _sl === 'function' && !_sl.__hf) {
+      window.setAppLanguage = function () { var r = _sl.apply(this, arguments); var v = $('hifzView'); if (v && v.classList.contains('active') && !S.listening) setTimeout(render, 60); return r; };
+      window.setAppLanguage.__hf = true;
+    }
+  } catch (e) {}
 
-  /* ---------- start-screen card (right after the zikr card) ---------- */
+  /* ---------- start-screen card ---------- */
   function addCard() {
     var box = document.querySelector('#startScreen .section-choices');
     if (!box) return false;
-    if (box.querySelector('.hifz-choice')) return true;
-    var b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'section-choice hifz-choice';
-    b.innerHTML = '<span class="choice-icon">🎙</span><span class="choice-copy"><b>لەبەرکردنی قورئان</b><small>بە دەنگ بخوێنەوە، ئایەتی ڕاست لەسەر قورئانەکە دەنووسرێتەوە</small></span><span class="choice-arrow">‹</span>';
-    b.onclick = function () { window.enterHifz(); };
-    var z = box.querySelector('.zikr-choice');
-    if (z && z.nextSibling) box.insertBefore(b, z.nextSibling);
-    else box.appendChild(b);
+    var key = lang(), b = box.querySelector('.hifz-choice');
+    if (!b) {
+      b = document.createElement('button'); b.type = 'button'; b.className = 'section-choice hifz-choice';
+      b.setAttribute('data-no-translate', '1'); b.setAttribute('data-keep-ar', '1');
+      b.onclick = function () { window.enterHifz(); };
+      var z = box.querySelector('.zikr-choice');
+      if (z && z.nextSibling) box.insertBefore(b, z.nextSibling); else box.appendChild(b);
+    }
+    if (b.getAttribute('data-l') !== key) {
+      b.setAttribute('data-l', key);
+      var t = L();
+      b.innerHTML = '<span class="choice-icon">🎙</span><span class="choice-copy"><b>' + esc(t.title) + '</b><small>' + esc(t.sub) + '</small></span><span class="choice-arrow">‹</span>';
+    }
     return true;
   }
   function start() {
-    injectCss();
+    css();
     var n = 0, iv = setInterval(function () { addCard(); if (++n > 25) clearInterval(iv); }, 300);
+    setInterval(addCard, 3000);
   }
-  if (document.body) start();
-  else document.addEventListener('DOMContentLoaded', start);
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 
   if (window.__HIFZ_TEST) {
-    window.__HIFZ_TEST = { norm: norm, nstr: nstr, sim: sim, matchFrom: matchFrom, stripBism: stripBism, onSpeech: onSpeech, freshState: freshState, S: function () { return S; }, setS: function (x) { S = x; }, BISM: BISM };
+    window.__HIFZ_TEST = { nw: nw, wmatch: wmatch, align: align, S: function () { return S; }, setS: function (x) { S = x; }, P: P };
   }
 })();
