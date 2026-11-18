@@ -150,6 +150,25 @@ export default {
 
     let body;
     try { body = await req.json(); } catch (e) { return json({ error: 'bad' }, 400); }
+    if (url.pathname === '/hifz-coach') {
+      const ayah = typeof body.ayah === 'string' ? body.ayah.trim().slice(0, 1500) : '';
+      if (!ayah) return json({ error: 'bad' }, 400);
+      const ipH = req.headers.get('CF-Connecting-IP') || 'anon';
+      try {
+        const rl = await limit(env, ipH, 'h', Number(env.HIFZ_LIMIT || 80));
+        if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
+        const HL = { ckb: 'Central Kurdish (Sorani, Arabic script)', en: 'English', ar: 'Modern Standard Arabic', tr: 'Turkish', fa: 'Persian', ur: 'Urdu', fr: 'French', de: 'German', id: 'Indonesian', ru: 'Russian', es: 'Spanish' };
+        const lang = typeof body.lang === 'string' && HL[body.lang] ? body.lang : 'en';
+        const miss = Array.isArray(body.miss) ? body.miss.slice(0, 8).map((x) => String(x).slice(0, 30)) : [];
+        const sys = 'You are a kind, precise Quran-memorisation (hifz) coach. Write ONLY in ' + HL[lang] + '. Reply as JSON {"text": "..."} with plain text (no markdown), at most 75 words: (1) the simple meaning of the ayah in one sentence, (2) one practical memory tip for THIS ayah (patterns, repeated words, rhyme/ending, link to the previous ayah), (3) if mistaken words are listed, say how to avoid confusing them. Never give legal rulings. Do not invent meanings; if unsure, stay general.';
+        const out = await gemini(env, sys, JSON.stringify({ surah: String(body.sura || '').slice(0, 40), ayah_number: Number(body.n) || 0, ayah_arabic: ayah, mistaken_words: miss }), 900, null);
+        const text = typeof out.text === 'string' ? out.text.trim().slice(0, 1200) : '';
+        if (!text) return json({ error: 'upstream', message: MSG_BUSY }, 502);
+        return json({ text });
+      } catch (e) {
+        return json({ error: (e && e.status === 429) ? 'busy' : 'upstream', message: MSG_BUSY }, 502);
+      }
+    }
     if (url.pathname === '/translate') {
       const ar = typeof body.ar === 'string' ? body.ar.trim().slice(0, 3500) : '';
       if (!ar) return json({ error: 'bad' }, 400);
