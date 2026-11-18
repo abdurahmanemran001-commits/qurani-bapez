@@ -143,7 +143,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('lang-fix-leaks.js?v=1'); })
     .then(function () { return loadScript('share-app.js?v=1'); })
     .then(function () { return loadScript('mushaf/hifz.js?v=6'); })
-    .then(function () { return loadScript('mushaf/hifz-quiz.js?v=1'); });
+    .then(function () { return loadScript('mushaf/hifz-quiz.js?v=1'); })
+    .then(function () { return loadScript('mushaf/hifz-page.js?v=1'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
