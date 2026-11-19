@@ -126,6 +126,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/build_tafsir_ku.py dist/tafsir-ku
 
+      - name: Cache Quran ASR model
+        id: asrcache
+        uses: actions/cache@v4
+        with:
+          path: dist/quran-asr
+          key: quran-asr-${{ hashFiles('tools/build_quran_asr.sh') }}
+
+      - name: Build Quran ASR model (open Whisper -> int8 ONNX)
+        if: steps.asrcache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: bash tools/build_quran_asr.sh dist/quran-asr
+
       - name: Offline manifest (files the service worker pre-downloads)
         run: |
           python3 - <<'PY'
@@ -134,7 +146,7 @@ jobs:
           for root, dirs, files in os.walk('dist'):
               rel = os.path.relpath(root, 'dist')
               top = rel.split(os.sep)[0]
-              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters', 'tafsir-ku') or '/data' in rel:
+              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters', 'tafsir-ku', 'quran-asr') or '/data' in rel:
                   dirs[:] = []
                   continue
               for f in files:
