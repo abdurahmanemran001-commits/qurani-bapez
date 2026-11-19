@@ -142,7 +142,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('notify.js?v=2'); })
     .then(function () { return loadScript('lang-fix-leaks.js?v=1'); })
     .then(function () { return loadScript('share-app.js?v=1'); })
-    .then(function () { return loadScript('mushaf/hifz.js?v=10'); })
+    .then(function () { return loadScript('mushaf/hifz.js?v=11'); })
     .then(function () { return loadScript('mushaf/hifz-quiz.js?v=1'); })
     .then(function () { return loadScript('mushaf/hifz-page.js?v=2'); });
 
