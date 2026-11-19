@@ -1,5 +1,7 @@
 name: Build Quran ASR model (manual)
 on: workflow_dispatch
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,3 +15,12 @@ jobs:
         with:
           name: quran-asr
           path: out/quran-asr
+      - name: Publish as release assets (flat names; Pages deploy downloads them)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd out/quran-asr
+          cp onnx/encoder_model_quantized.onnx onnx__encoder_model_quantized.onnx
+          cp onnx/decoder_model_merged_quantized.onnx onnx__decoder_model_merged_quantized.onnx
+          gh release delete asr-v1 -y --cleanup-tag 2>/dev/null || true
+          gh release create asr-v1 -t "Quran ASR model (int8 ONNX)" -n "tarteel-ai/whisper-base-ar-quran, int8 ONNX for transformers.js" *.json onnx__*.onnx
