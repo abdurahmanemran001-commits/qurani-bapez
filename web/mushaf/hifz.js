@@ -33,7 +33,7 @@
 
   /* ---------- saved data ---------- */
   function loadPrefs() {
-    var d = { level: 1, last: 0, prog: {}, hist: [] };
+    var d = { show: 0, level: 1, last: 0, prog: {}, hist: [] };
     try { var j = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); for (var k in j) if (k in d) d[k] = j[k]; } catch (e) {}
     if (!d.prog || typeof d.prog !== 'object') d.prog = {};
     if (!Array.isArray(d.hist)) d.hist = [];
@@ -174,6 +174,7 @@
 
   /* ---------- listening ---------- */
   function engine() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
+  setInterval(function () { if (S.listening) paintDock(); }, 1000);
   function startListen() {
     if (!engine()) { S.err = L().nomic; paintAll(); return; }
     if (S.finished) return;
@@ -262,6 +263,7 @@
     S.msg = L().wrong;
     if (c >= 2) S.hint[i] = Math.min(c - 1, 3);
     if (c >= 4) S.hint[i] = 99;
+    var we = $('hfW' + i); if (we && P.show) we.classList.add('err');
     paintWord(i, 'bad');
     clearTimeout(flashT[i]); flashT[i] = setTimeout(function () { paintWord(i, null); }, 700);
     try { if (navigator.vibrate) navigator.vibrate(70); } catch (e) {}
@@ -342,7 +344,7 @@
       '.hf-ws{flex:1;display:flex;flex-wrap:wrap;gap:4px 9px;font-size:27px;line-height:2.1;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;direction:rtl}',
       '.hf-w{border-radius:9px;padding:0 5px;color:transparent;background:rgba(255,255,255,.075);transition:background .18s,color .18s,transform .18s;user-select:none;-webkit-user-select:none}',
       '.hf-w.ok{color:var(--ink);background:transparent;animation:hfPop .28s ease-out}.hf-w.ok.given{color:var(--gold)}',
-      '.hf-w.soft{box-shadow:0 -2px 0 #d99a4e inset}.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
+      '.hf-w.soft{box-shadow:0 -2px 0 #d99a4e inset}.hf-w.vis{color:var(--ink);background:transparent}.hf-w.err{color:#ff6b6b!important;text-decoration:underline dotted #ff6b6b 2px;text-underline-offset:8px}.hf-stat{display:flex;gap:8px;font-size:13px;color:var(--ink)}.hf-stat span{background:rgba(255,255,255,.09);border-radius:14px;padding:4px 11px;border:1px solid var(--line)}.hf-stat .bad{color:#ff8a8a}.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
       '.hf-w.bad{background:rgba(224,82,82,.35);animation:hfShake .35s}',
       '.hf-w .h{color:var(--gold)}',
       '.hf-w.rev{color:rgba(245,239,221,.45)}',
@@ -383,7 +385,7 @@
     v.dir = isRtlUi() ? 'rtl' : 'ltr';
     v.innerHTML = S.view === 'run' ? runHtml() : S.view === 'hub' ? hubHtml() : homeHtml();
     if (S.view === 'home') paintGrid();
-    else if (!S.loading) { paintWords(); updateBar(); paintDock(); paintCursor(); }
+    else if (S.view === 'run' && !S.loading) { paintWords(); updateBar(); paintDock(); paintCursor(); }
   }
   function paintAll() { render(); }
 
@@ -427,15 +429,15 @@
       var ws = '';
       for (i = S.starts[a]; i < (a < S.to ? S.starts[a + 1] : S.words.length); i++) {
         var w = S.words[i];
-        ws += '<span class="hf-w' + (w.given ? ' ok given' : '') + '" id="hfW' + i + '">' + esc(w.disp) + '</span>';
+        ws += '<span class="hf-w' + (w.given ? ' ok given' : '') + (P.show ? ' vis' : '') + '" id="hfW' + i + '">' + esc(w.disp) + '</span>';
       }
       rows += '<div class="hf-ay' + (n === 1 && a === 1 ? ' done' : '') + '" id="hfAy' + a + '" data-act="jump" data-a="' + a + '"><span class="hf-num">' + num(a) + '</span><div class="hf-ws">' + ws + '</div></div>';
     }
     var bism = (S.from === 1 && n !== 1 && n !== 9) ? '<div class="hf-bism">' + BISM_T + '</div>' : '';
     var fin = S.finished ? finHtml() : '';
     return head + bism + '<div class="hf-page">' + rows + '</div>' + fin +
-      '<div class="hf-dock"><div class="hf-said" id="hfSaid"></div><div class="hf-row">' +
-      '<button type="button" class="hf-sm" data-act="hint">💡<br><span style="font-size:10px">' + esc(t.hint) + '</span></button>' +
+      '<div class="hf-dock"><div class="hf-stat" id="hfStat"></div><div class="hf-said" id="hfSaid"></div><div class="hf-row">' +
+      '<button type="button" class="hf-sm" id="hfEye" data-act="eye">' + (P.show ? '🙈' : '👁') + '</button><button type="button" class="hf-sm" data-act="hint">💡<br><span style="font-size:10px">' + esc(t.hint) + '</span></button>' +
       '<button type="button" class="hf-mic" id="hfMic" data-act="mic">🎙</button>' +
       '<button type="button" class="hf-sm" data-act="ai">' + esc(t.ai) + '</button></div></div>' +
       '<div class="hf-sheet" id="hfCoach" hidden data-act="closeCoach"><div class="hf-sbox" data-stop="1"><h3>' + esc(t.coachT) + '</h3><div class="hf-cbody"></div></div></div>';
@@ -471,7 +473,7 @@
     return out;
   }
   function paintHint(i, el) {
-    var h = S.hint[i], w = S.words[i]; if (!h || i < S.pos || w.given) return;
+    var h = S.hint[i], w = S.words[i]; if (!h || i < S.pos || w.given || P.show) return;
     if (h >= 99) { el.classList.add('rev'); el.innerHTML = esc(w.disp); return; }
     var pre = firstLetters(w.disp, h);
     el.innerHTML = '<i class="h" style="font-style:normal">' + esc(pre) + '</i>' + esc(w.disp.slice(pre.length));
@@ -491,6 +493,13 @@
     var m = $('hfMic'), s = $('hfSaid'), t = L(); if (!m) return;
     m.classList.toggle('on', S.listening); m.textContent = S.listening ? '⏹' : '🎙';
     if (s) { s.classList.toggle('err', !!(S.err || S.msg)); s.textContent = S.err || S.msg || (S.listening ? (S.said ? t.say + ': ' + S.said : t.listen) : t.tap); }
+    var st = $('hfStat');
+    if (st) {
+      var k, wrongN = 0; for (k in S.fails) wrongN += S.fails[k];
+      var att = S.pos - (S.sura === 1 && S.from === 1 ? 4 : 0) + wrongN, acc = att > 0 ? Math.max(0, Math.round((att - wrongN) / att * 100)) : 100;
+      var sec = S.t0 ? Math.round((Date.now() - S.t0) / 1000) : 0, mm = ('0' + Math.floor(sec / 60)).slice(-2) + ':' + ('0' + sec % 60).slice(-2);
+      st.innerHTML = '<span class="bad">✗ ' + num(wrongN) + '</span><span>' + num(acc) + '%</span><span>' + (S.listening ? '🔴 ' : '') + mm + '</span>';
+    }
     var lv = $('hfLv');
     if (lv) lv.innerHTML = t.lvl.map(function (n, k) { return '<button type="button" class="hf-chip' + (k === P.level ? ' on' : '') + '" data-act="lvl" data-k="' + k + '">' + esc(n) + '</button>'; }).join('');
   }
@@ -520,6 +529,11 @@
       var was = S.listening; if (was) stopListen();
       var i; for (i = 0; i < S.words.length; i++) { var el = $('hfW' + i); if (el) { if (i < np) el.classList.add('ok'); else { el.classList.remove('ok'); paintHint(i, el); } } }
       S.pos = S.cur = S.base = np; paintCursor(); if (was) startListen(); return;
+    }
+    if (act === 'eye') {
+      P.show = P.show ? 0 : 1; savePrefs();
+      Array.prototype.forEach.call(document.querySelectorAll('#hifzView .hf-w'), function (el) { el.classList.toggle('vis', !!P.show); if (!P.show) el.classList.remove('err'); });
+      b.textContent = P.show ? '🙈' : '👁'; return;
     }
     if (act === 'hint') {
       if (S.loading || S.finished) return;
