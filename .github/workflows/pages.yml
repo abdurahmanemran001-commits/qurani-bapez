@@ -133,6 +133,12 @@ jobs:
           path: dist/quran-asr
           key: quran-asr-${{ hashFiles('tools/build_quran_asr.sh') }}
 
+      - name: Python 3.11 for the model export
+        if: steps.asrcache.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Build Quran ASR model (open Whisper -> int8 ONNX)
         if: steps.asrcache.outputs.cache-hit != 'true'
         continue-on-error: true

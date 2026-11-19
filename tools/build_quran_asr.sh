@@ -4,7 +4,8 @@
 set -euo pipefail
 OUT="${1:-dist/quran-asr}"
 TMP="$(mktemp -d)"
-pip install -q --break-system-packages "optimum[onnxruntime]" transformers onnx onnxruntime 2>&1 | tail -2 || pip install -q "optimum[onnxruntime]" transformers onnx onnxruntime
+pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+pip install -q "optimum[onnxruntime]==1.23.3" "transformers==4.46.3" onnx onnxruntime
 optimum-cli export onnx --model tarteel-ai/whisper-base-ar-quran --task automatic-speech-recognition-with-past "$TMP/m"
 mkdir -p "$OUT/onnx"
 python3 - "$TMP/m" "$OUT" <<'PY'
