@@ -113,7 +113,7 @@
     return t;
   }
 
-  window.__hifzData = { TEXT: TEXT, ensureSura: ensureSura, sname: sname, cnt: cnt, L: L, lang: lang, nw: nw, esc: esc, num: num, leave: leave, rtl: isRtlUi };
+  window.__hifzData = { TEXT: TEXT, ensureSura: ensureSura, sname: sname, cnt: cnt, L: L, lang: lang, nw: nw, esc: esc, num: num, leave: leave, rtl: isRtlUi, wmatch: wmatch, sim: sim, pf: pf, P: P, save: savePrefs, loadEds: loadEds, loadTr: loadTr, edInfo: edInfo, curEd: curEd, stripBism: stripBism };
 
   /* ---------- session state ---------- */
   var S = { view: 'home', filter: 'all', q: '' };
@@ -570,7 +570,7 @@
     if (act === 'letter') { S = { view: 'home', filter: S.filter, q: S.q }; return render(); }
     if (act === 'home') { stopListen(); S = { view: 'home', filter: S.filter, q: S.q }; return render(); }
     if (act === 'filter') { S.filter = b.getAttribute('data-f'); return render(); }
-    if (act === 'pagemode') { if (window.enterHifzPage) window.enterHifzPage(); return; }
+    if (act === 'pagemode') { if (window.enterHifzRead) window.enterHifzRead(); else if (window.enterHifzPage) window.enterHifzPage(); return; }
     if (act === 'quiz') { if (window.hifzQuiz) window.hifzQuiz(); return; }
     if (act === 'page') { var pn = parseInt(($('hfPg') || {}).value, 10); if (pn >= 1 && pn <= 604) openPage(pn); return; }
     if (act === 'open') return openSura(+b.getAttribute('data-n'));
