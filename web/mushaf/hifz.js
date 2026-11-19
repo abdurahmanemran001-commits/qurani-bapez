@@ -449,7 +449,7 @@
     function card(act, ic, ti, su) { return '<button type="button" class="hf-hub" data-act="' + act + '"><span class="hf-hi">' + ic + '</span><span><b>' + esc(ti) + '</b><small>' + esc(su) + '</small></span><i>‹</i></button>'; }
     return '<div class="hf-top"><button type="button" class="hf-btn" data-act="exit">‹ ' + esc(t.exit) + '</button></div>' +
       '<div class="hf-hero"><div class="hf-ring" style="--p:' + pct + '"><b>' + num(pct) + '%</b></div><div><h1>' + esc(t.title) + '</h1><p>' + esc(t.sub) + '</p><p style="margin-top:6px;color:var(--gold)">' + num(tot) + ' / ' + num(6236) + ' ' + esc(t.ay) + ' · ' + esc(t.mast) + '</p></div></div>' +
-      '<div class="hf-hubs">' + card('letter', 'ح', t.hLetter, t.hLetterS) + card('pagemode', '📖', t.hPage, t.hPageS) + card('quiz', '❓', t.hQuiz, t.hQuizS) + '</div>';
+      '<div class="hf-hubs">' + card('pagemode', '📖', t.hPage, t.hPageS) + card('quiz', '❓', t.hQuiz, t.hQuizS) + '</div>';
   }
   function homeHtml() {
     var t = L(), tot = totalMastered(), pct = Math.round(tot / 6236 * 100);
