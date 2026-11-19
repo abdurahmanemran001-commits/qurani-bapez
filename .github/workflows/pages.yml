@@ -126,24 +126,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/build_tafsir_ku.py dist/tafsir-ku
 
-      - name: Cache Quran ASR model
-        id: asrcache
-        uses: actions/cache@v4
-        with:
-          path: dist/quran-asr
-          key: quran-asr-${{ hashFiles('tools/build_quran_asr.sh') }}
-
-      - name: Python 3.11 for the model export
-        if: steps.asrcache.outputs.cache-hit != 'true'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Build Quran ASR model (open Whisper -> int8 ONNX)
-        if: steps.asrcache.outputs.cache-hit != 'true'
-        continue-on-error: true
-        run: bash tools/build_quran_asr.sh dist/quran-asr
-
       - name: Offline manifest (files the service worker pre-downloads)
         run: |
           python3 - <<'PY'
