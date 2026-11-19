@@ -14,9 +14,9 @@
   var rec = null, restartT = null, flashT = {};
 
   var T = {
-    ckb: { title: 'لەبەرکردنی قورئان', sub: 'بە دەنگ بخوێنەوە، وشەکان بە زیندوویی دەنووسرێنەوە', search: 'گەڕان بە ناو یان ژمارە…', all: 'هەموو', prog: 'لە ڕێگادا', done: 'تەواو', ay: 'ئایەت', mast: 'لەبەرکراو', cont: 'بەردەوام بە', lvl: ['ئاسان', 'ناوەند', 'سەخت'], level: 'ئاستی ڕەخنە', back: '‹ سورەتەکان', exit: 'بەشەکان', tap: 'مایک دابگرە و بخوێنە', listen: 'گوێم لێیە…', stop: 'ڕاگرتن', hint: 'ئاماژە', ai: '✨ AI', loading: 'بارکردن…', loadfail: 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', wrong: 'هەڵەیە، دووبارە بیڵێ', fin: 'ماشاءاللە! سورەتەکەت تەواو کرد', clean: 'ئایەتی بێ هەڵە', fails: 'هەڵە', again: 'دووبارە', coachT: 'ڕاهێنەری AI', coachWait: 'AI بیر دەکاتەوە…', coachFail: 'AI ئێستا بەردەست نییە.', say: 'دەمیت', jump: 'لێرەوە دەست پێ بکە', hLetter: 'لەبەرکردنی حەرفی', hLetterS: 'سورەتێک هەڵبژێرە و وشە بە وشە بە دەنگ بینووسەوە', hPage: 'لەبەرکردنی لاپەڕەیی', hPageS: 'لاپەڕەی موسحەف بێ ئایەت، بە دەنگ پڕی بکەرەوە', hQuiz: 'پرسیار و وەڵام', hQuizS: 'ئایەت بە دەنگ، ٢٠ چرکە، ٤ هەڵبژاردن', pgm: '📖 لەبەرکردن لەسەر لاپەڕە', pgmS: 'لاپەڕەی موسحەف بێ ئایەت، بە دەنگ پڕی بکەرەوە', quiz: '❓ پرسیار و وەڵام', pg: 'لاپەڕە', pgGo: 'بڕۆ', pgPh: 'ژمارەی لاپەڕە (١–٦٠٤)', pgBad: 'لاپەڕە نەدۆزرایەوە. ئینتەرنێت بپشکنە.', note: 'ناسینەوەی دەنگ تەنها پیتەکان دەناسێتەوە، نەک فەتحە و زەمە.' },
-    en: { title: 'Quran Memorisation', sub: 'Recite aloud — words appear live as you say them', search: 'Search by name or number…', all: 'All', prog: 'In progress', done: 'Mastered', ay: 'ayat', mast: 'memorised', cont: 'Continue', lvl: ['Easy', 'Medium', 'Strict'], level: 'Strictness', back: '‹ Surahs', exit: 'Sections', tap: 'Hold the mic and recite', listen: 'Listening…', stop: 'Stop', hint: 'Hint', ai: '✨ AI', loading: 'Loading…', loadfail: 'Could not load the Quran text. Check your internet.', nomic: 'This browser does not support voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', wrong: 'Wrong, say it again', fin: 'Mashallah! You finished the surah', clean: 'Clean ayat', fails: 'Mistakes', again: 'Again', coachT: 'AI coach', coachWait: 'AI is thinking…', coachFail: 'AI is not available right now.', say: 'Heard', jump: 'Start from here', hLetter: 'Word-by-word memorisation', hLetterS: 'Pick a surah and write it by voice word by word', hPage: 'Page memorisation', hPageS: 'Mushaf page with hidden ayat — fill it by voice', hQuiz: 'Quiz', hQuizS: 'Ayah read aloud, 20s, 4 choices', pgm: '📖 Memorise on the page', pgmS: 'Mushaf page with hidden ayat — fill it by voice', quiz: '❓ Quiz', pg: 'Page', pgGo: 'Go', pgPh: 'Page number (1–604)', pgBad: 'Page not found. Check your internet.', note: 'Voice recognition hears letters, not short vowels (fatha, damma).' },
-    ar: { title: 'حفظ القرآن', sub: 'اقرأ بصوتك — تظهر الكلمات مباشرةً أثناء القراءة', search: 'ابحث بالاسم أو الرقم…', all: 'الكل', prog: 'قيد الحفظ', done: 'متقن', ay: 'آية', mast: 'محفوظ', cont: 'تابع', lvl: ['سهل', 'متوسط', 'صارم'], level: 'درجة الصرامة', back: '‹ السور', exit: 'الأقسام', tap: 'اضغط على الميكروفون واقرأ', listen: 'أستمع…', stop: 'إيقاف', hint: 'تلميح', ai: '✨ ذكاء', loading: 'جارٍ التحميل…', loadfail: 'تعذّر تحميل نص القرآن. تحقق من الإنترنت.', nomic: 'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', wrong: 'خطأ، أعد الكلمة', fin: 'ما شاء الله! أتممت السورة', clean: 'آيات بلا خطأ', fails: 'أخطاء', again: 'إعادة', coachT: 'المدرّب الذكي', coachWait: 'جارٍ التفكير…', coachFail: 'الذكاء الاصطناعي غير متاح الآن.', say: 'سمعتُ', jump: 'ابدأ من هنا', hLetter: 'الحفظ حرفياً', hLetterS: 'اختر سورة واكتبها بصوتك كلمة كلمة', hPage: 'الحفظ على الصفحة', hPageS: 'صفحة المصحف مخفية — املأها بصوتك', hQuiz: 'أسئلة واختيارات', hQuizS: 'آية بالصوت، ٢٠ ثانية، ٤ خيارات', pgm: '📖 الحفظ على الصفحة', pgmS: 'صفحة المصحف مخفية — املأها بصوتك', quiz: '❓ أسئلة واختيارات', pg: 'صفحة', pgGo: 'اذهب', pgPh: 'رقم الصفحة (١–٦٠٤)', pgBad: 'تعذّر إيجاد الصفحة. تحقق من الإنترنت.', note: 'التعرف على الصوت يميّز الحروف لا الحركات القصيرة (الفتحة والضمة).' }
+    ckb: { title: 'لەبەرکردنی قورئان', sub: 'بە دەنگ بخوێنەوە، وشەکان بە زیندوویی دەنووسرێنەوە', search: 'گەڕان بە ناو یان ژمارە…', all: 'هەموو', prog: 'لە ڕێگادا', done: 'تەواو', ay: 'ئایەت', mast: 'لەبەرکراو', cont: 'بەردەوام بە', lvl: ['ئاسان', 'ناوەند', 'سەخت'], level: 'ئاستی ڕەخنە', back: '‹ سورەتەکان', exit: 'بەشەکان', tap: 'مایک دابگرە و بخوێنە', listen: 'گوێم لێیە…', stop: 'ڕاگرتن', hint: 'ئاماژە', ai: '✨ AI', loading: 'بارکردن…', loadfail: 'دەقی قورئان بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', wrong: 'هەڵەیە، دووبارە بیڵێ', fin: 'ماشاءاللە! سورەتەکەت تەواو کرد', clean: 'ئایەتی بێ هەڵە', fails: 'هەڵە', again: 'دووبارە', coachT: 'ڕاهێنەری AI', coachWait: 'AI بیر دەکاتەوە…', coachFail: 'AI ئێستا بەردەست نییە.', say: 'دەمیت', jump: 'لێرەوە دەست پێ بکە', mText: 'دەق', mTr: 'وەرگێڕان', mPage: 'موسحەف', trPick: 'وەرگێڕ هەڵبگرە', trLoad: 'وەرگێڕان بار دەکرێت…', trNone: 'وەرگێڕان بەردەست نییە (ئینتەرنێت)', trSearch: 'گەڕان لە وەرگێڕەکان…', hLetter: 'لەبەرکردنی حەرفی', hLetterS: 'سورەتێک هەڵبژێرە و وشە بە وشە بە دەنگ بینووسەوە', hPage: 'لەبەرکردنی لاپەڕەیی', hPageS: 'لاپەڕەی موسحەف بێ ئایەت، بە دەنگ پڕی بکەرەوە', hQuiz: 'پرسیار و وەڵام', hQuizS: 'ئایەت بە دەنگ، ٢٠ چرکە، ٤ هەڵبژاردن', pgm: '📖 لەبەرکردن لەسەر لاپەڕە', pgmS: 'لاپەڕەی موسحەف بێ ئایەت، بە دەنگ پڕی بکەرەوە', quiz: '❓ پرسیار و وەڵام', pg: 'لاپەڕە', pgGo: 'بڕۆ', pgPh: 'ژمارەی لاپەڕە (١–٦٠٤)', pgBad: 'لاپەڕە نەدۆزرایەوە. ئینتەرنێت بپشکنە.', note: 'ناسینەوەی دەنگ تەنها پیتەکان دەناسێتەوە، نەک فەتحە و زەمە.' },
+    en: { title: 'Quran Memorisation', sub: 'Recite aloud — words appear live as you say them', search: 'Search by name or number…', all: 'All', prog: 'In progress', done: 'Mastered', ay: 'ayat', mast: 'memorised', cont: 'Continue', lvl: ['Easy', 'Medium', 'Strict'], level: 'Strictness', back: '‹ Surahs', exit: 'Sections', tap: 'Hold the mic and recite', listen: 'Listening…', stop: 'Stop', hint: 'Hint', ai: '✨ AI', loading: 'Loading…', loadfail: 'Could not load the Quran text. Check your internet.', nomic: 'This browser does not support voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', wrong: 'Wrong, say it again', fin: 'Mashallah! You finished the surah', clean: 'Clean ayat', fails: 'Mistakes', again: 'Again', coachT: 'AI coach', coachWait: 'AI is thinking…', coachFail: 'AI is not available right now.', say: 'Heard', jump: 'Start from here', mText: 'Text', mTr: 'Translation', mPage: 'Mushaf', trPick: 'Choose translator', trLoad: 'Loading translation…', trNone: 'Translation unavailable (internet)', trSearch: 'Search translators…', hLetter: 'Word-by-word memorisation', hLetterS: 'Pick a surah and write it by voice word by word', hPage: 'Page memorisation', hPageS: 'Mushaf page with hidden ayat — fill it by voice', hQuiz: 'Quiz', hQuizS: 'Ayah read aloud, 20s, 4 choices', pgm: '📖 Memorise on the page', pgmS: 'Mushaf page with hidden ayat — fill it by voice', quiz: '❓ Quiz', pg: 'Page', pgGo: 'Go', pgPh: 'Page number (1–604)', pgBad: 'Page not found. Check your internet.', note: 'Voice recognition hears letters, not short vowels (fatha, damma).' },
+    ar: { title: 'حفظ القرآن', sub: 'اقرأ بصوتك — تظهر الكلمات مباشرةً أثناء القراءة', search: 'ابحث بالاسم أو الرقم…', all: 'الكل', prog: 'قيد الحفظ', done: 'متقن', ay: 'آية', mast: 'محفوظ', cont: 'تابع', lvl: ['سهل', 'متوسط', 'صارم'], level: 'درجة الصرامة', back: '‹ السور', exit: 'الأقسام', tap: 'اضغط على الميكروفون واقرأ', listen: 'أستمع…', stop: 'إيقاف', hint: 'تلميح', ai: '✨ ذكاء', loading: 'جارٍ التحميل…', loadfail: 'تعذّر تحميل نص القرآن. تحقق من الإنترنت.', nomic: 'هذا المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', wrong: 'خطأ، أعد الكلمة', fin: 'ما شاء الله! أتممت السورة', clean: 'آيات بلا خطأ', fails: 'أخطاء', again: 'إعادة', coachT: 'المدرّب الذكي', coachWait: 'جارٍ التفكير…', coachFail: 'الذكاء الاصطناعي غير متاح الآن.', say: 'سمعتُ', jump: 'ابدأ من هنا', mText: 'نص', mTr: 'ترجمة', mPage: 'مصحف', trPick: 'اختر المترجم', trLoad: 'جارٍ تحميل الترجمة…', trNone: 'الترجمة غير متاحة (إنترنت)', trSearch: 'ابحث في المترجمين…', hLetter: 'الحفظ حرفياً', hLetterS: 'اختر سورة واكتبها بصوتك كلمة كلمة', hPage: 'الحفظ على الصفحة', hPageS: 'صفحة المصحف مخفية — املأها بصوتك', hQuiz: 'أسئلة واختيارات', hQuizS: 'آية بالصوت، ٢٠ ثانية، ٤ خيارات', pgm: '📖 الحفظ على الصفحة', pgmS: 'صفحة المصحف مخفية — املأها بصوتك', quiz: '❓ أسئلة واختيارات', pg: 'صفحة', pgGo: 'اذهب', pgPh: 'رقم الصفحة (١–٦٠٤)', pgBad: 'تعذّر إيجاد الصفحة. تحقق من الإنترنت.', note: 'التعرف على الصوت يميّز الحروف لا الحركات القصيرة (الفتحة والضمة).' }
   };
   function lang() { var l = window.appLang || 'ckb'; return l === 'bad' ? 'ckb' : l; }
   function L() { return T[lang()] || T.en; }
@@ -33,7 +33,7 @@
 
   /* ---------- saved data ---------- */
   function loadPrefs() {
-    var d = { show: 0, level: 1, last: 0, prog: {}, hist: [] };
+    var d = { mode: 'text', tr: '', show: 0, level: 1, last: 0, prog: {}, hist: [] };
     try { var j = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); for (var k in j) if (k in d) d[k] = j[k]; } catch (e) {}
     if (!d.prog || typeof d.prog !== 'object') d.prog = {};
     if (!Array.isArray(d.hist)) d.hist = [];
@@ -304,6 +304,61 @@
       .catch(function () { if (!sheet.hidden) body.innerHTML = cur + '<p class="hf-dim">' + esc(L().coachFail) + '</p>'; });
   }
 
+  /* ---------- translations (fawazahmed0/quran-api via jsDelivr: every translator, any language) ---------- */
+  var TRB = 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/';
+  var EDS = null, TRC = {};
+  var EDS0 = [['kur-burhanmuhammad', 'Burhan Muhammad-Amin', 'Kurdish', 'rtl'], ['ckb-muhammadsalehbamoki', 'Muhammad Saleh Bamoki', 'Kurdish', 'rtl'], ['eng-abdullahyusufali', 'Abdullah Yusuf Ali', 'English', 'ltr'], ['ara-jalalayn', 'Tafsir Al-Jalalayn', 'Arabic', 'rtl']];
+  function defEd() { var l = lang(); return l === 'ar' ? 'ara-jalalayn' : l === 'en' ? 'eng-abdullahyusufali' : 'kur-burhanmuhammad'; }
+  function curEd() { return P.tr || defEd(); }
+  function loadEds() {
+    if (EDS) return Promise.resolve(EDS);
+    try { var c = JSON.parse(localStorage.getItem('hifz_eds') || 'null'); if (c && c.length > 10) EDS = c; } catch (e) {}
+    if (EDS) return Promise.resolve(EDS);
+    return fetch(TRB + 'editions.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+      EDS = Object.keys(j).map(function (k) { var e = j[k]; return [k, e.author || e.name || k, e.language || '', e.direction || 'ltr']; });
+      try { localStorage.setItem('hifz_eds', JSON.stringify(EDS)); } catch (e) {}
+      return EDS;
+    }).catch(function () { EDS = EDS0; return EDS; });
+  }
+  function edInfo(id) { var l = EDS || EDS0, i; for (i = 0; i < l.length; i++) if (l[i][0] === id) return l[i]; return [id, id, '', /^(ara|kur|ckb|fas|urd|pes)/.test(id) ? 'rtl' : 'ltr']; }
+  function loadTr(ed, n) {
+    var key = ed + ':' + n; if (TRC[key]) return Promise.resolve(TRC[key]);
+    try { var c = JSON.parse(localStorage.getItem('hifz_tr_' + key) || 'null'); if (c) { TRC[key] = c; return Promise.resolve(c); } } catch (e) {}
+    return fetch(TRB + 'editions/' + ed + '/' + n + '.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+      var a = (j.chapter || []).map(function (x) { return String(x.text || ''); });
+      if (!a.length) throw 0; TRC[key] = a;
+      try { localStorage.setItem('hifz_tr_' + key, JSON.stringify(a)); } catch (e) {}
+      return a;
+    });
+  }
+  function paintTr() {
+    var v = $('hifzView'); if (!v || S.view !== 'run' || S.loading) return;
+    var ed = curEd(), info = edInfo(ed), a, el;
+    if (P.mode !== 'tr') { Array.prototype.forEach.call(v.querySelectorAll('.hf-tr'), function (e) { e.textContent = ''; e.style.display = 'none'; }); return; }
+    var n = S.sura;
+    for (a = S.from; a <= S.to; a++) { el = $('hfT' + a); if (el) { el.style.display = 'block'; el.textContent = L().trLoad; } }
+    loadEds().then(function () { info = edInfo(ed); return loadTr(ed, n); }).then(function (arr) {
+      if (S.sura !== n) return;
+      var rtl = info[3] === 'rtl';
+      for (a = S.from; a <= S.to; a++) { el = $('hfT' + a); if (el) { el.dir = rtl ? 'rtl' : 'ltr'; el.style.textAlign = rtl ? 'right' : 'left'; el.textContent = arr[a - 1] || ''; } }
+    }).catch(function () { for (a = S.from; a <= S.to; a++) { el = $('hfT' + a); if (el) el.textContent = L().trNone; } });
+  }
+  function trSheet() {
+    var sh = $('hfTrSheet'); if (!sh) return;
+    sh.hidden = false;
+    var box = sh.querySelector('.hf-cbody'), t = L();
+    box.innerHTML = '<input id="hfTrQ" class="hf-in" style="width:100%;margin-bottom:8px" type="search" placeholder="' + esc(t.trSearch) + '"><div id="hfTrL"></div>';
+    function list(q) {
+      loadEds().then(function (l) {
+        var cur = curEd(), groups = {}, ql = (q || '').toLowerCase(), pref = { Kurdish: 0, Arabic: 1, English: 2 };
+        l.forEach(function (e) { if (ql && (e[1] + ' ' + e[2] + ' ' + e[0]).toLowerCase().indexOf(ql) < 0) return; (groups[e[2] || '—'] = groups[e[2] || '—'] || []).push(e); });
+        var names = Object.keys(groups).sort(function (a, b) { return (pref[a] != null ? pref[a] : 9) - (pref[b] != null ? pref[b] : 9) || a.localeCompare(b); });
+        $('hfTrL').innerHTML = names.map(function (g) { return '<div class="hf-dim" style="margin:10px 0 4px">' + esc(g) + '</div>' + groups[g].map(function (e) { return '<button type="button" class="hf-chip' + (e[0] === cur ? ' on' : '') + '" style="display:block;width:100%;text-align:start;margin:4px 0;border-radius:12px" data-act="trSet" data-e="' + esc(e[0]) + '">' + esc(e[1]) + '</button>'; }).join(''); }).join('');
+      });
+    }
+    list(''); $('hfTrQ').addEventListener('input', function () { list(this.value); });
+  }
+
   /* ---------- UI: css ---------- */
   function css() {
     if ($('hifzCss')) return;
@@ -344,7 +399,7 @@
       '.hf-ws{flex:1;display:flex;flex-wrap:wrap;gap:4px 9px;font-size:27px;line-height:2.1;font-family:"Amiri","Scheherazade New","Noto Naskh Arabic",serif;direction:rtl}',
       '.hf-w{border-radius:9px;padding:0 5px;color:transparent;background:rgba(255,255,255,.075);transition:background .18s,color .18s,transform .18s;user-select:none;-webkit-user-select:none}',
       '.hf-w.ok{color:var(--ink);background:transparent;animation:hfPop .28s ease-out}.hf-w.ok.given{color:var(--gold)}',
-      '.hf-w.soft{box-shadow:0 -2px 0 #d99a4e inset}.hf-w.vis{color:var(--ink);background:transparent}.hf-w.err{color:#ff6b6b!important;text-decoration:underline dotted #ff6b6b 2px;text-underline-offset:8px}.hf-stat{display:flex;gap:8px;font-size:13px;color:var(--ink)}.hf-stat span{background:rgba(255,255,255,.09);border-radius:14px;padding:4px 11px;border:1px solid var(--line)}.hf-stat .bad{color:#ff8a8a}.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
+      '.hf-w.soft{box-shadow:0 -2px 0 #d99a4e inset}.hf-modes{display:flex;gap:6px;justify-content:center;margin:6px 14px;flex-wrap:wrap}.hf-tr{margin:2px 4px 6px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.06);color:var(--ink);font-size:15px;line-height:1.9;display:none}.hf-wc{flex:1;min-width:0}.hf-wc .hf-ws{flex:none}.hf-w.vis{color:var(--ink);background:transparent}.hf-w.err{color:#ff6b6b!important;text-decoration:underline dotted #ff6b6b 2px;text-underline-offset:8px}.hf-stat{display:flex;gap:8px;font-size:13px;color:var(--ink)}.hf-stat span{background:rgba(255,255,255,.09);border-radius:14px;padding:4px 11px;border:1px solid var(--line)}.hf-stat .bad{color:#ff8a8a}.hf-w.cur{background:rgba(230,196,111,.22);box-shadow:0 0 0 1.5px var(--gold) inset}',
       '.hf-w.bad{background:rgba(224,82,82,.35);animation:hfShake .35s}',
       '.hf-w .h{color:var(--gold)}',
       '.hf-w.rev{color:rgba(245,239,221,.45)}',
@@ -385,7 +440,7 @@
     v.dir = isRtlUi() ? 'rtl' : 'ltr';
     v.innerHTML = S.view === 'run' ? runHtml() : S.view === 'hub' ? hubHtml() : homeHtml();
     if (S.view === 'home') paintGrid();
-    else if (S.view === 'run' && !S.loading) { paintWords(); updateBar(); paintDock(); paintCursor(); }
+    else if (S.view === 'run' && !S.loading) { paintTr(); paintWords(); updateBar(); paintDock(); paintCursor(); }
   }
   function paintAll() { render(); }
 
@@ -421,7 +476,7 @@
   function runHtml() {
     var t = L(), n = S.sura;
     var head = '<div class="hf-top"><button type="button" class="hf-btn" data-act="home">' + esc(t.back) + '</button><div class="hf-lv" id="hfLv"></div></div>' +
-      '<div class="hf-ttl"><h2>' + esc(sname(n)) + '</h2><small>' + (S.page ? esc(t.pg) + ' ' + num(S.page) + ' · ' : '') + num(S.to - S.from + 1) + ' ' + esc(t.ay) + '</small></div><div class="hf-prog"><i id="hfProg"></i></div>';
+      '<div class="hf-ttl"><h2>' + esc(sname(n)) + '</h2><small>' + (S.page ? esc(t.pg) + ' ' + num(S.page) + ' · ' : '') + num(S.to - S.from + 1) + ' ' + esc(t.ay) + '</small></div><div class="hf-prog"><i id="hfProg"></i></div><div class="hf-modes"><button type="button" class="hf-chip' + (P.mode !== 'tr' ? ' on' : '') + '" data-act="mode" data-m="text">' + esc(t.mText) + '</button><button type="button" class="hf-chip' + (P.mode === 'tr' ? ' on' : '') + '" data-act="mode" data-m="tr">' + esc(t.mTr) + '</button><button type="button" class="hf-chip" data-act="pagemode">' + esc(t.mPage) + '</button>' + (P.mode === 'tr' ? '<button type="button" class="hf-chip" data-act="trPick">⚙ ' + esc(edInfo(curEd())[1]) + '</button>' : '') + '</div>';
     if (S.loading) return head + '<div class="hf-note" style="padding:60px 24px">' + esc(t.loading) + '</div>';
     if (S.err && !S.words.length) return head + '<div class="hf-note" style="padding:60px 24px;color:#ff9b9b">' + esc(S.err) + '</div>';
     var rows = '', a, i;
@@ -431,7 +486,7 @@
         var w = S.words[i];
         ws += '<span class="hf-w' + (w.given ? ' ok given' : '') + (P.show ? ' vis' : '') + '" id="hfW' + i + '">' + esc(w.disp) + '</span>';
       }
-      rows += '<div class="hf-ay' + (n === 1 && a === 1 ? ' done' : '') + '" id="hfAy' + a + '" data-act="jump" data-a="' + a + '"><span class="hf-num">' + num(a) + '</span><div class="hf-ws">' + ws + '</div></div>';
+      rows += '<div class="hf-ay' + (n === 1 && a === 1 ? ' done' : '') + '" id="hfAy' + a + '" data-act="jump" data-a="' + a + '"><span class="hf-num">' + num(a) + '</span><div class="hf-wc"><div class="hf-ws">' + ws + '</div><div class="hf-tr" id="hfT' + a + '"></div></div></div>';
     }
     var bism = (S.from === 1 && n !== 1 && n !== 9) ? '<div class="hf-bism">' + BISM_T + '</div>' : '';
     var fin = S.finished ? finHtml() : '';
@@ -440,6 +495,7 @@
       '<button type="button" class="hf-sm" id="hfEye" data-act="eye">' + (P.show ? '🙈' : '👁') + '</button><button type="button" class="hf-sm" data-act="hint">💡<br><span style="font-size:10px">' + esc(t.hint) + '</span></button>' +
       '<button type="button" class="hf-mic" id="hfMic" data-act="mic">🎙</button>' +
       '<button type="button" class="hf-sm" data-act="ai">' + esc(t.ai) + '</button></div></div>' +
+      '<div class="hf-sheet" id="hfTrSheet" hidden data-act="closeTr"><div class="hf-sbox" data-stop="1"><h3>' + esc(t.trPick) + '</h3><div class="hf-cbody"></div></div></div>' +
       '<div class="hf-sheet" id="hfCoach" hidden data-act="closeCoach"><div class="hf-sbox" data-stop="1"><h3>' + esc(t.coachT) + '</h3><div class="hf-cbody"></div></div></div>';
   }
   function finHtml() {
@@ -530,6 +586,10 @@
       var i; for (i = 0; i < S.words.length; i++) { var el = $('hfW' + i); if (el) { if (i < np) el.classList.add('ok'); else { el.classList.remove('ok'); paintHint(i, el); } } }
       S.pos = S.cur = S.base = np; paintCursor(); if (was) startListen(); return;
     }
+    if (act === 'mode') { P.mode = b.getAttribute('data-m'); savePrefs(); render(); return; }
+    if (act === 'trPick') return trSheet();
+    if (act === 'closeTr') { if (e.target.closest('[data-stop]')) return; $('hfTrSheet').hidden = true; return; }
+    if (act === 'trSet') { P.tr = b.getAttribute('data-e'); savePrefs(); $('hfTrSheet').hidden = true; render(); return; }
     if (act === 'eye') {
       P.show = P.show ? 0 : 1; savePrefs();
       Array.prototype.forEach.call(document.querySelectorAll('#hifzView .hf-w'), function (el) { el.classList.toggle('vis', !!P.show); if (!P.show) el.classList.remove('err'); });
