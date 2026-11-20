@@ -53,7 +53,7 @@
         if (speechAt) buf.push(resample(d, ctx.sampleRate));
       };
       src.connect(node); node.connect(ctx.destination);
-      loop = setInterval(tickLoop, 700);
+      loop = setInterval(tickLoop, 400);
     });
   }
   function resample(d, rate) {
@@ -75,7 +75,7 @@
     if (!active || !speechAt) return;
     var now = Date.now(), silent = now - lastVoice > 900;
     if (silent) { if (busy) return; run(true).then(function () { buf = []; speechAt = 0; }); }
-    else if (now - speechAt > 600) run(false);
+    else if (now - speechAt > 450) run(false);
   }
   function stop() {
     active = false; clearInterval(loop); loop = null;
