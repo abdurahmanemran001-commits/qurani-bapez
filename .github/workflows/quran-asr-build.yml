@@ -1,5 +1,11 @@
 name: Build Quran ASR model (manual)
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        default: tarteel-ai/whisper-tiny-ar-quran
+      tag:
+        default: asr-tiny-v1
 permissions:
   contents: write
 jobs:
@@ -10,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: bash tools/build_quran_asr.sh out/quran-asr
+      - run: MODEL="${{ inputs.model }}" bash tools/build_quran_asr.sh out/quran-asr
       - uses: actions/upload-artifact@v4
         with:
           name: quran-asr
@@ -22,5 +28,5 @@ jobs:
           cd out/quran-asr
           cp onnx/encoder_model_quantized.onnx onnx__encoder_model_quantized.onnx
           cp onnx/decoder_model_merged_quantized.onnx onnx__decoder_model_merged_quantized.onnx
-          gh release delete asr-v1 -y --cleanup-tag 2>/dev/null || true
-          gh release create asr-v1 -t "Quran ASR model (int8 ONNX)" -n "tarteel-ai/whisper-base-ar-quran, int8 ONNX for transformers.js" *.json onnx__*.onnx
+          gh release delete "${{ inputs.tag }}" -y --cleanup-tag 2>/dev/null || true
+          gh release create "${{ inputs.tag }}" -t "Quran ASR model (int8 ONNX)" -n "tarteel-ai/whisper-base-ar-quran, int8 ONNX for transformers.js" *.json onnx__*.onnx
