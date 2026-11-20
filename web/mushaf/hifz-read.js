@@ -132,6 +132,19 @@
     if (!engine()) { R.err = L().nomic; return paintFoot(); }
     if (!R.ready) { R.wantListen = true; R.listening = true; return paintFoot(); }
     R.err = ''; R.listening = true; if (!R.t0) R.t0 = Date.now(); paintFoot();
+    if (window.hifzLive && navigator.onLine && Q.live !== 0) {
+      /* online: stream to Gemini Live (real-time, like Tarteel). Any failure falls back to the on-device engines below. */
+      R.base = R.pos; R.cur = R.pos;
+      var rr = R;
+      window.hifzLive.start(function (text, fin) { if (R === rr) onSpeech([text], fin); }, function () { if (R === rr && R.listening && R.live) { R.live = false; localStart(); } })
+        .then(function () { if (R === rr && R.listening) { R.live = true; paintFoot(); } else window.hifzLive.stop(); })
+        .catch(function () { if (R === rr && R.listening) { R.live = false; localStart(); } });
+      return;
+    }
+    localStart();
+  }
+  function localStart() {
+    if (!R || !R.listening) return; paintFoot();
     if (Q.asr && window.hifzASR && window.hifzASR.ready()) {
       /* hybrid: the browser engine gives instant word-by-word progress; the Quran model re-checks every phrase and repairs it */
       R.asrBase = R.pos;
@@ -143,6 +156,8 @@
     if (R) R.listening = false; clearTimeout(restartT);
     try { if (rec) { var r = rec; rec = null; r.abort(); } } catch (e) {}
     try { if (window.hifzASR) window.hifzASR.stop(); } catch (e) {}
+    try { if (window.hifzLive) window.hifzLive.stop(); } catch (e) {}
+    if (R) R.live = false;
     if (!silent) paintFoot();
   }
   function openRec() {
@@ -268,7 +283,7 @@
     if (!R) return; paint();
     var t = L(), tot = R.ok + R.mist, acc = tot ? Math.round(R.ok / tot * 1000) / 10 : 100;
     var sec = R.t0 ? Math.round((Date.now() - R.t0) / 1000) : 0, mm = ('0' + Math.floor(sec / 60)).slice(-2) + ':' + ('0' + sec % 60).slice(-2);
-    var c = $('rdChips'); if (c) c.innerHTML = '<div class="rd-chip ' + (R.mist ? 'bad' : '') + '">🧠 ' + num(R.mist) + '</div><div class="rd-chip good">' + num(acc) + '%</div><div class="rd-chip tm">' + (R.listening ? '<span class="rd-dot"></span>' : '') + mm + '</div>';
+    var c = $('rdChips'); if (c) c.innerHTML = '<div class="rd-chip ' + (R.mist ? 'bad' : '') + '">🧠 ' + num(R.mist) + '</div><div class="rd-chip good">' + num(acc) + '%</div><div class="rd-chip tm">' + (R.live ? 'LIVE · ' : '') + (R.listening ? '<span class="rd-dot"></span>' : '') + mm + '</div>';
     var b = $('rdBtns'); if (b) b.innerHTML = '<button type="button" class="rd-b" data-act="view" aria-label="' + esc(t.view) + '">📖</button><button type="button" class="rd-b' + (Q.hide ? ' on' : '') + '" data-act="hide" aria-label="hidden">' + (Q.hide ? '🙈' : '👁') + '</button><button type="button" class="rd-b" data-act="hw" title="' + esc(t.hintW) + '">›</button><button type="button" class="rd-b" data-act="ha" title="' + esc(t.hintA) + '">»</button>';
     var m = $('rdMic'); if (m) m.classList.toggle('on', !!R.listening);
     var sd = $('rdSaid'); if (sd) sd.textContent = R.err || R.said || (R.listening ? '' : t.tap);

@@ -146,7 +146,8 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     .then(function () { return loadScript('mushaf/hifz-quiz.js?v=1'); })
     .then(function () { return loadScript('mushaf/hifz-page.js?v=2'); })
     .then(function () { return loadScript('mushaf/hifz-asr.js?v=3'); })
-    .then(function () { return loadScript('mushaf/hifz-read.js?v=5'); });
+    .then(function () { return loadScript('mushaf/hifz-live.js?v=1'); })
+    .then(function () { return loadScript('mushaf/hifz-read.js?v=6'); });
 
   var sp = document.createElement('script');
   sp.src = 'salah-places-data.js?v=1';
