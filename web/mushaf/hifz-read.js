@@ -162,7 +162,7 @@
       else if (c === 'audio-capture') { stopListen(true); R.err = L().nomic; paintFoot(); }
       else if (c === 'network') { stopListen(true); R.err = L().net; paintFoot(); }
     };
-    r.onend = function () { if (rec !== r) return; clearTimeout(restartT); restartT = setTimeout(function () { if (R && R.listening && R.ready) openRec(); }, 120); };
+    r.onend = function () { if (rec !== r) return; clearTimeout(restartT); restartT = setTimeout(function () { if (R && R.listening && R.ready) openRec(); }, 0); };
     try { r.start(); } catch (e2) { R.listening = false; R.err = L().nomic; paintFoot(); }
   }
   function align(tokens, base, fin) {
@@ -173,7 +173,12 @@
       if (d.wmatch(t, e)) { p++; i++; continue; }
       if (i + 1 < tokens.length && d.wmatch(t + tokens[i + 1], e)) { p++; i += 2; continue; }
       if (p + 1 < N && d.wmatch(t, e + nwAt(p + 1))) { p += 2; i++; continue; }
-      if (!fin && i === tokens.length - 1) break;
+      if (!fin && i === tokens.length - 1) {
+        /* still being spoken: a clear prefix of the expected word already counts (one word faster) */
+        var pt = d.pf(t), pe = d.pf(e);
+        if (t.length >= 3 && pe.length > pt.length && pe.indexOf(pt.slice(0, Math.max(2, pt.length - 1))) === 0 && d.sim(pt, pe.slice(0, pt.length)) >= 0.75) { p++; i++; continue; }
+        break;
+      }
       if (len) {
         if (i + 1 < tokens.length && d.wmatch(tokens[i + 1], e)) { i++; continue; }
         if (i + 1 < tokens.length && p + 1 < N && d.wmatch(tokens[i + 1], nwAt(p + 1))) { soft.push(p); p++; i++; continue; }
