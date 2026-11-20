@@ -16,6 +16,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   s0.async = true;
   document.head.appendChild(s0);
 
+  var sTar = document.createElement('script');
+  sTar.src = 'mushaf/tarteel.js?v=21';
+  sTar.async = true;
+  document.head.appendChild(sTar);
+
   var s2 = document.createElement('script');
   s2.src = 'mushaf/ayah-actions.js?v=9';
   s2.async = true;
