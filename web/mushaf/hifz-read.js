@@ -133,9 +133,9 @@
     if (!R.ready) { R.wantListen = true; R.listening = true; return paintFoot(); }
     R.err = ''; R.listening = true; if (!R.t0) R.t0 = Date.now(); paintFoot();
     if (Q.asr && window.hifzASR && window.hifzASR.ready()) {
-      R.base = R.pos; R.cur = R.pos;
-      window.hifzASR.start(function (text, fin) { onSpeech([text], fin); }).catch(function () { R.listening = false; R.err = L().denied; paintFoot(); });
-      return;
+      /* hybrid: the browser engine gives instant word-by-word progress; the Quran model re-checks every phrase and repairs it */
+      R.asrBase = R.pos;
+      window.hifzASR.start(function (text, fin) { onAsr(text, fin); }).catch(function () { /* keep the browser engine */ });
     }
     openRec();
   }
@@ -192,6 +192,16 @@
     best.soft.forEach(function (x) { R.soft[x] = 1; });
     if (best.p > R.cur) { R.cur = best.p; advance(best.p); }
     if (fin) { if (best.wrong >= 0 && best.wrong === R.pos) mistake(best.wrong); R.base = R.pos; }
+    paintFoot();
+  }
+  function onAsr(text, fin) {
+    if (!R || !R.listening || !R.ready) return;
+    var a = align(toks(text), R.asrBase, true), i;
+    for (i = R.asrBase; i < a.p; i++) {
+      if (R.fails[i]) { delete R.fails[i]; R.mist = Math.max(0, R.mist - 1); setCls(i, null, ['er']); }
+    }
+    if (a.p > R.pos) { R.cur = Math.max(R.cur, a.p); advance(a.p); R.base = R.pos; }
+    if (fin) R.asrBase = Math.max(R.pos, a.p);
     paintFoot();
   }
   function advance(p) {
