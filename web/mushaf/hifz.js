@@ -113,7 +113,7 @@
     return t;
   }
 
-  window.__hifzData = { TEXT: TEXT, ensureSura: ensureSura, sname: sname, cnt: cnt, L: L, lang: lang, nw: nw, esc: esc, num: num, leave: leave, rtl: isRtlUi, wmatch: wmatch, sim: sim, pf: pf, P: P, save: savePrefs, loadEds: loadEds, loadTr: loadTr, edInfo: edInfo, curEd: curEd, stripBism: stripBism };
+  window.__hifzData = { TEXT: TEXT, ensureSura: ensureSura, sname: sname, cnt: cnt, L: L, lang: lang, nw: nw, esc: esc, num: num, leave: leave, rtl: isRtlUi, wmatch: wmatch, sim: sim, pf: pf, P: P, save: savePrefs, loadEds: loadEds, loadTr: loadTr, edInfo: edInfo, curEd: curEd, stripBism: stripBism, corpus: loadCorpus };
 
   /* ---------- session state ---------- */
   var S = { view: 'home', filter: 'all', q: '' };
