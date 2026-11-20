@@ -150,6 +150,23 @@ export default {
 
     let body;
     try { body = await req.json(); } catch (e) { return json({ error: 'bad' }, 400); }
+    if (url.pathname === '/live-token') {
+      /* short-lived one-use token so the browser can stream the microphone straight to Gemini Live (real-time Quran transcription) */
+      const ipL = req.headers.get('CF-Connecting-IP') || 'anon';
+      try {
+        const rl = await limit(env, ipL, 'l', Number(env.LIVE_LIMIT || 40));
+        if (!rl.ok) return json({ error: 'rate', message: MSG_RATE }, 429);
+        const now = Date.now();
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+          body: JSON.stringify({ uses: 1, expireTime: new Date(now + 15 * 60000).toISOString(), newSessionExpireTime: new Date(now + 90000).toISOString() })
+        });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok || !d.name) return json({ error: 'upstream', status: r.status }, 502);
+        return json({ token: d.name, model: env.LIVE_MODEL || 'gemini-3.5-transcribe-live' });
+      } catch (e) { return json({ error: 'fail' }, 500); }
+    }
     if (url.pathname === '/hifz-coach') {
       const ayah = typeof body.ayah === 'string' ? body.ayah.trim().slice(0, 1500) : '';
       if (!ayah) return json({ error: 'bad' }, 400);
