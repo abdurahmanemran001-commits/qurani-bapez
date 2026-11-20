@@ -1,5 +1,5 @@
 /* hifz-asr.js — optional high-accuracy Quran microphone.
-   Runs the open model tarteel-ai/whisper-base-ar-quran (int8 ONNX, ~100MB, built by tools/build_quran_asr.sh) inside the browser
+   Runs the open model tarteel-ai/whisper-base-ar-quran (int8 ONNX, ~40MB, built by tools/build_quran_asr.sh) inside the browser
    with transformers.js. Downloaded once on request, then works offline. Audio never leaves the device. */
 (function () {
   if (window.hifzASR) return;
@@ -18,7 +18,7 @@
       T.env.allowLocalModels = true; T.env.allowRemoteModels = false; T.env.localModelPath = location.origin + ROOT;
       T.env.useBrowserCache = true;
       try { T.env.backends.onnx.wasm.wasmPaths = TJS; T.env.backends.onnx.wasm.proxy = true; } catch (e) {}
-      return T.pipeline('automatic-speech-recognition', 'quran-asr', {
+      return T.pipeline('automatic-speech-recognition', 'quran-asr-tiny', {
         quantized: true,
         progress_callback: function (p) {
           if (!p || !p.file) return;

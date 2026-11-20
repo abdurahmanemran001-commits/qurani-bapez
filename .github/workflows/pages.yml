@@ -126,17 +126,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/build_tafsir_ku.py dist/tafsir-ku
 
-      - name: Fetch Quran ASR model (release asr-v1, optional)
+      - name: Fetch Quran ASR model (release asr-tiny-v1, optional)
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p dist/quran-asr/onnx /tmp/asr
-          gh release download asr-v1 -D /tmp/asr
-          for f in /tmp/asr/*.json; do cp "$f" dist/quran-asr/; done
-          cp /tmp/asr/onnx__encoder_model_quantized.onnx dist/quran-asr/onnx/encoder_model_quantized.onnx
-          cp /tmp/asr/onnx__decoder_model_merged_quantized.onnx dist/quran-asr/onnx/decoder_model_merged_quantized.onnx
-          du -sh dist/quran-asr
+          mkdir -p dist/quran-asr-tiny/onnx /tmp/asr
+          gh release download asr-tiny-v1 -D /tmp/asr
+          for f in /tmp/asr/*.json; do cp "$f" dist/quran-asr-tiny/; done
+          cp /tmp/asr/onnx__encoder_model_quantized.onnx dist/quran-asr-tiny/onnx/encoder_model_quantized.onnx
+          cp /tmp/asr/onnx__decoder_model_merged_quantized.onnx dist/quran-asr-tiny/onnx/decoder_model_merged_quantized.onnx
+          du -sh dist/quran-asr-tiny
 
       - name: Offline manifest (files the service worker pre-downloads)
         run: |
@@ -146,7 +146,7 @@ jobs:
           for root, dirs, files in os.walk('dist'):
               rel = os.path.relpath(root, 'dist')
               top = rel.split(os.sep)[0]
-              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters', 'tafsir-ku', 'quran-asr') or '/data' in rel:
+              if top in ('madani-bounds', 'madani-timing', 'data', 'reciters', 'tafsir-ku', 'quran-asr', 'quran-asr-tiny') or '/data' in rel:
                   dirs[:] = []
                   continue
               for f in files:
