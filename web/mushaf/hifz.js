@@ -41,7 +41,7 @@
   }
   var P = loadPrefs();
   /* Migrate obsolete Kurdish translator IDs to the verified bundled edition. */
-  if (P.tr === 'kur-burhanmuhammad' || P.tr === 'ckb-muhammadsalehbamoki') { P.tr = ''; try { localStorage.removeItem('hifz_tr_' + P.tr); } catch (e) {} }
+  if (P.tr === 'kur-burhanmuhammad' || P.tr === 'ckb-muhammadsalehbamoki') { P.tr = ''; savePrefs(); }
   function savePrefs() { try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) {} }
   function masteredIn(n) { var o = P.prog[n] || {}, c = 0, k; for (k in o) if (o[k] > 0) c++; return c; }
   function totalMastered() { var t = 0, n; for (n = 1; n <= 114; n++) t += masteredIn(n); return t; }
