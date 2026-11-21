@@ -40,6 +40,8 @@
     return d;
   }
   var P = loadPrefs();
+  /* Migrate obsolete Kurdish translator IDs to the verified bundled edition. */
+  if (P.tr === 'kur-burhanmuhammad' || P.tr === 'ckb-muhammadsalehbamoki') { P.tr = ''; try { localStorage.removeItem('hifz_tr_' + P.tr); } catch (e) {} }
   function savePrefs() { try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) {} }
   function masteredIn(n) { var o = P.prog[n] || {}, c = 0, k; for (k in o) if (o[k] > 0) c++; return c; }
   function totalMastered() { var t = 0, n; for (n = 1; n <= 114; n++) t += masteredIn(n); return t; }
@@ -307,8 +309,8 @@
   /* ---------- translations (fawazahmed0/quran-api via jsDelivr: every translator, any language) ---------- */
   var TRB = 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/';
   var EDS = null, TRC = {};
-  var EDS0 = [['kur-burhanmuhammad', 'Burhan Muhammad-Amin', 'Kurdish', 'rtl'], ['ckb-muhammadsalehbamoki', 'Muhammad Saleh Bamoki', 'Kurdish', 'rtl'], ['eng-abdullahyusufali', 'Abdullah Yusuf Ali', 'English', 'ltr'], ['ara-jalalayn', 'Tafsir Al-Jalalayn', 'Arabic', 'rtl']];
-  function defEd() { var l = lang(); return l === 'ar' ? 'ara-jalalayn' : l === 'en' ? 'eng-abdullahyusufali' : 'kur-burhanmuhammad'; }
+  var EDS0 = [['kur-muhammadsalehba', 'Muhammad Saleh Bamoki', 'Kurdish', 'rtl'], ['eng-abdullahyusufali', 'Abdullah Yusuf Ali', 'English', 'ltr'], ['ara-jalalayn', 'Tafsir Al-Jalalayn', 'Arabic', 'rtl']];
+  function defEd() { var l = lang(); return l === 'ar' ? 'ara-jalalayn' : l === 'en' ? 'eng-abdullahyusufali' : 'kur-muhammadsalehba'; }
   function curEd() { return P.tr || defEd(); }
   function loadEds() {
     if (EDS) return Promise.resolve(EDS);
@@ -326,8 +328,15 @@
     try { var c = JSON.parse(localStorage.getItem('hifz_tr_' + key) || 'null'); if (c) { TRC[key] = c; return Promise.resolve(c); } } catch (e) {}
     var u = 'editions/' + ed + '/' + n + '.json', bases = [TRB, 'https://fastly.jsdelivr.net/gh/fawazahmed0/quran-api@1/', 'https://raw.githubusercontent.com/fawazahmed0/quran-api/1/', 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/'];
     var tryB = function (i) { return fetch(bases[i] + u).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function (e) { if (i + 1 < bases.length) return tryB(i + 1); throw e; }); };
-    return tryB(0).then(function (j) {
-      var a = (j.chapter || []).map(function (x) { return String(x.text || ''); });
+    /* Kurdish Bamoki translation is already shipped with the web build; prefer it so it works even when a CDN is blocked. */
+    var bundled = ed === 'kur-muhammadsalehba' ? fetch('ai/quran-ku.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+      var all = j && j.v; if (!Array.isArray(all) || all.length < 6236) throw 0;
+      var offset = 0, s; for (s = 1; s < n; s++) offset += cnt(s);
+      var local = all.slice(offset, offset + cnt(n)).map(function (x) { return String(x || ''); });
+      if (local.length !== cnt(n) || local.some(function (x) { return !x; })) throw 0;
+      return local;
+    }).catch(function () { return tryB(0).then(function (j) { return (j.chapter || []).map(function (x) { return String(x.text || ''); }); }); }) : tryB(0).then(function (j) { return (j.chapter || []).map(function (x) { return String(x.text || ''); }); });
+    return bundled.then(function (a) {
       if (!a.length) throw 0; TRC[key] = a;
       try { localStorage.setItem('hifz_tr_' + key, JSON.stringify(a)); } catch (e) {}
       return a;
