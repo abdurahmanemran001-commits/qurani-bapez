@@ -14,14 +14,14 @@
   function $(i) { return document.getElementById(i); }
   var esc = function (x) { return D().esc(x); }, num = function (n) { return D().num(n); };
   var R = null, rec = null, restartT = null, frame = null, loadId = 0, tick = null, toastT = null;
-  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 1, gap: 2.3, tl: 0, trOn: 1, tfont: 18 };
+  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 0, qcfv: 0, tjt: 1, gap: 2.3, tl: 0, trOn: 1, tfont: 18 };
   var BM_KEY = 'hifz_read_page_bookmarks_v1', pageMarks = [], startPages = null, homeQuery = '', marksFromHome = false;
   try { pageMarks = JSON.parse(localStorage.getItem(BM_KEY) || '[]'); if (!Array.isArray(pageMarks)) pageMarks = []; } catch (e) { pageMarks = []; }
   function savePageMarks() { try { localStorage.setItem(BM_KEY, JSON.stringify(pageMarks)); } catch (e) {} }
   function pageMarked(p) { return pageMarks.indexOf(+p) >= 0; }
   function togglePageMark(p) { p = +p; var i = pageMarks.indexOf(p); if (i >= 0) pageMarks.splice(i, 1); else pageMarks.push(p); pageMarks.sort(function(a,b){return a-b;}); savePageMarks(); paintPageMark(); }
   function loadStarts() { if (startPages) return Promise.resolve(startPages); return fetch('starts.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){startPages=a;return a;}).catch(function(){startPages=[1];return startPages;}); }
-  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; if (j.taj === 0 && !j.tajStyleConfirmed) { Q.taj = 1; Q.tajStyleConfirmed = 1; saveQ(); } } catch (e) {}
+  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; if (!j.qcfv) { Q.taj = 0; Q.qcfv = 1; saveQ(); } } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
   var CSS_WORDS = '.hz,.hz *{color:transparent!important;border-bottom:2px solid #dcdcdc;border-radius:3px}.ok{animation:rdIn .4s}.er,.er *{color:#d6342b!important;text-decoration:underline dotted #d6342b 2px;text-underline-offset:7px}.cur{background:rgba(0,0,0,.13);border-radius:6px}.hp{box-shadow:inset 0 -3px 0 #d99a4e}@keyframes rdIn{0%{color:#1fa75a}100%{color:inherit}}';
@@ -373,7 +373,7 @@
     return t.replace(/\[([a-z])(?::\d+)?\[([^\]]*)\]/g, function (m, c, x) { return TJC[c] ? '<span style="color:' + TJC[c] + '">' + esc(x) + '</span>' : esc(x); }).replace(/\[[^\]]*$/g, '');
   }
   function paintTaj() {
-    if (!R || !Q.taj || Q.mode === 'mushaf') return;
+    if (!R || !Q.tjt || Q.mode === 'mushaf') return;
     var ss = {}; R.ays.forEach(function (a) { ss[a.s] = 1; });
     Promise.all(Object.keys(ss).map(function (s) { return tjLoad(+s).then(function (arr) { return [s, arr]; }).catch(function () { return [s, null]; }); })).then(function (all) {
       var m = {}; all.forEach(function (x) { m[x[0]] = x[1]; });
@@ -473,7 +473,7 @@
     sb.innerHTML = '<h3>' + esc(t.fmt) + '</h3><div style="color:#888;margin:4px 0">' + esc(t.rmode) + '</div>' +
       opt('mushaf', '📖', t.mushaf, t.mushafSub) + opt('text', '📄', t.text, t.textSub) + opt('tr', '🌐', t.tr, t.trSub) +
       '<button type="button" class="rd-opt" data-act="mtype"><span>🕌</span><span style="flex:1">' + esc(t.mtype) + '</span><span>›</span></button>' +
-      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) + sw('taj', Q.taj, t.taj) : '') +
+      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) + sw('tjt', Q.tjt, t.taj) : '') +
       (Q.mode === 'tr' ? sw('tl', Q.tl, t.tlOn) + sw('trOn', Q.trOn, t.trOn) +
         '<button type="button" class="rd-opt" data-act="trPick"><span>⚙</span><span style="flex:1">' + esc(t.trOf) + ': ' + esc(D().edInfo(D().curEd())[1]) + '</span><span>›</span></button>' + sl('rdTf', t.fontTr, 12, 30, Q.tfont) : '') +
       '<button type="button" class="rd-opt' + (Q.asr ? ' on' : '') + '" data-act="asr" id="rdAsr"><span>🎯</span><span style="flex:1">' + esc(asrLabel()) + '</span><i></i></button><div style="color:#888;font-size:12px">' + esc(t.asrHint) + '</div>';
@@ -534,6 +534,7 @@
     if (a === 'mode') { Q.mode = b.getAttribute('data-m'); saveQ(); fr_show(); var tx = $('rdText'); if (tx) tx.style.display = Q.mode === 'mushaf' ? 'none' : 'block'; paintTr(); sheetView(); return; }
     if (a === 'tl') { Q.tl = Q.tl ? 0 : 1; saveQ(); paintTr(); return sheetView(); }
     if (a === 'trOn') { Q.trOn = Q.trOn ? 0 : 1; saveQ(); paintTr(); return sheetView(); }
+    if (a === 'tjt') { Q.tjt = Q.tjt ? 0 : 1; saveQ(); $('rdSheet').hidden = true; return load(R.page); }
     if (a === 'trRetry') return paintTr();
     if (a === 'mtype') return sheetView('mtype');
     if (a === 'fmtBack') return sheetView();
