@@ -1,4 +1,4 @@
-/* ruqyah-reciters.js v7 — settings + continuous sessions + calm themes */
+/* ruqyah-reciters.js v8 — settings + continuous sessions + calm themes */
 (function () {
   if (window.__ruqyahRecitersV7) return;
   window.__ruqyahRecitersV7 = true;
@@ -79,7 +79,8 @@
 
   var OrigAudio = window.Audio;
   window.Audio = function (src) {
-    if (typeof src === 'string' && src.indexOf('everyayah.com/data/') >= 0) {
+    var rqEl = document.getElementById('rqContPanel') || document.getElementById('rqReciterBar');
+    if (rqEl && rqEl.offsetParent !== null && typeof src === 'string' && src.indexOf('everyayah.com/data/') >= 0) {
       src = src.replace(/https:\/\/everyayah\.com\/data\/[^/]+\//, 'https://everyayah.com/data/' + folderOf() + '/');
     }
     return new OrigAudio(src);
