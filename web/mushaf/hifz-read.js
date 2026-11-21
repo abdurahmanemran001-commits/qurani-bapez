@@ -21,7 +21,7 @@
   function pageMarked(p) { return pageMarks.indexOf(+p) >= 0; }
   function togglePageMark(p) { p = +p; var i = pageMarks.indexOf(p); if (i >= 0) pageMarks.splice(i, 1); else pageMarks.push(p); pageMarks.sort(function(a,b){return a-b;}); savePageMarks(); paintPageMark(); }
   function loadStarts() { if (startPages) return Promise.resolve(startPages); return fetch('starts.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){startPages=a;return a;}).catch(function(){startPages=[1];return startPages;}); }
-  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {}
+  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; if (j.taj === 0 && !j.tajStyleConfirmed) { Q.taj = 1; Q.tajStyleConfirmed = 1; saveQ(); } } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
   var CSS_WORDS = '.hz,.hz *{color:transparent!important;border-bottom:2px solid #dcdcdc;border-radius:3px}.ok{animation:rdIn .4s}.er,.er *{color:#d6342b!important;text-decoration:underline dotted #d6342b 2px;text-underline-offset:7px}.cur{background:rgba(0,0,0,.13);border-radius:6px}.hp{box-shadow:inset 0 -3px 0 #d99a4e}@keyframes rdIn{0%{color:#1fa75a}100%{color:inherit}}';
@@ -84,7 +84,7 @@
     var suras = [], seen = {}; groups.forEach(function (g) { if (!seen[g.s]) { seen[g.s] = 1; suras.push(g.s); } });
     Promise.all(suras.map(D().ensureSura)).then(function (oks) {
       if (id !== loadId) return;
-      if (!groups.length && Q.taj) { Q.taj = 0; saveQ(); return load(R.page); }
+      if (!groups.length && Q.taj) { R.err = L().loadErr; return paintFoot(); }
       if (!groups.length || oks.some(function (x) { return !x; })) { R.err = L().loadErr; return paintFoot(); }
       groups.forEach(function (g, gi) {
         var toks = tokensOf(g.s, g.a), nw = toks.length, nsp = g.spans.length, last = gi === groups.length - 1 && groups.length > 1, first = gi === 0 && groups.length > 1;
