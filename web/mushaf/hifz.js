@@ -314,11 +314,11 @@
   function curEd() { return P.tr || defEd(); }
   function loadEds() {
     if (EDS) return Promise.resolve(EDS);
-    try { var c = JSON.parse(localStorage.getItem('hifz_eds') || 'null'); if (c && c.length > 10) EDS = c; } catch (e) {}
+    try { var c = JSON.parse(localStorage.getItem('hifz_eds_v2') || 'null'); if (c && c.length > 10) EDS = c; } catch (e) {}
     if (EDS) return Promise.resolve(EDS);
     return fetch(TRB + 'editions.json').catch(function () { return fetch('https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions.json'); }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
-      EDS = Object.keys(j).map(function (k) { var e = j[k]; return [k, e.author || e.name || k, e.language || '', e.direction || 'ltr']; });
-      try { localStorage.setItem('hifz_eds', JSON.stringify(EDS)); } catch (e) {}
+      EDS = Object.keys(j).map(function (k) { var e = j[k]; return [e.name || k.replace(/_/g, '-'), e.author || e.name || k, e.language || '', e.direction || 'ltr']; });
+      try { localStorage.setItem('hifz_eds_v2', JSON.stringify(EDS)); } catch (e) {}
       return EDS;
     }).catch(function () { EDS = EDS0; return EDS; });
   }
