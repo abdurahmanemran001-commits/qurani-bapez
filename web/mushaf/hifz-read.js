@@ -14,14 +14,14 @@
   function $(i) { return document.getElementById(i); }
   var esc = function (x) { return D().esc(x); }, num = function (n) { return D().num(n); };
   var R = null, rec = null, restartT = null, frame = null, loadId = 0, tick = null, toastT = null;
-  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 0, gap: 2.3, tl: 0, trOn: 1, tfont: 18 };
+  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 1, gap: 2.3, tl: 0, trOn: 1, tfont: 18 };
   var BM_KEY = 'hifz_read_page_bookmarks_v1', pageMarks = [], startPages = null, homeQuery = '';
   try { pageMarks = JSON.parse(localStorage.getItem(BM_KEY) || '[]'); if (!Array.isArray(pageMarks)) pageMarks = []; } catch (e) { pageMarks = []; }
   function savePageMarks() { try { localStorage.setItem(BM_KEY, JSON.stringify(pageMarks)); } catch (e) {} }
   function pageMarked(p) { return pageMarks.indexOf(+p) >= 0; }
   function togglePageMark(p) { p = +p; var i = pageMarks.indexOf(p); if (i >= 0) pageMarks.splice(i, 1); else pageMarks.push(p); pageMarks.sort(function(a,b){return a-b;}); savePageMarks(); paintPageMark(); }
   function loadStarts() { if (startPages) return Promise.resolve(startPages); return fetch('starts.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){startPages=a;return a;}).catch(function(){startPages=[1];return startPages;}); }
-  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {}
+  try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {} Q.taj = 1;
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
   var CSS_WORDS = '.hz,.hz *{color:transparent!important;border-bottom:2px solid #dcdcdc;border-radius:3px}.ok{animation:rdIn .4s}.er,.er *{color:#d6342b!important;text-decoration:underline dotted #d6342b 2px;text-underline-offset:7px}.cur{background:rgba(0,0,0,.13);border-radius:6px}.hp{box-shadow:inset 0 -3px 0 #d99a4e}@keyframes rdIn{0%{color:#1fa75a}100%{color:inherit}}';
@@ -421,7 +421,7 @@
     var v = view(), t = L();
     v.dir = D().rtl() ? 'rtl' : 'ltr'; v.hidden = false;
     v.innerHTML = '<div class="rd-top"><button type="button" class="rd-ib" data-act="exit" aria-label="' + esc(t.back) + '">✕</button><button type="button" class="rd-ib" data-act="next" aria-label="next">›</button>' +
-      '<div class="rd-t"><b id="rdSura"></b><small id="rdPg"></small></div><button type="button" class="rd-pagebm" id="rdPageBm" data-act="pageBm" aria-label="bookmark page">🔖</button><button type="button" class="rd-ib" data-act="prev" aria-label="prev">‹</button></div>' +
+      '<div class="rd-t"><b id="rdSura"></b><small id="rdPg"></small></div><button type="button" class="rd-ib" data-act="showMarks" aria-label="bookmarked pages" title="bookmarked pages">▤</button><button type="button" class="rd-pagebm" id="rdPageBm" data-act="pageBm" aria-label="bookmark page">🔖</button><button type="button" class="rd-ib" data-act="prev" aria-label="prev">‹</button></div>' +
       '<div class="rd-body"><iframe id="rdFrame" class="rd-frame" title="mushaf" style="visibility:hidden"></iframe><div class="rd-text" id="rdText"></div><div class="rd-toast" id="rdToast"></div><div class="rd-oh" id="rdOh"><span id="rdOhL"></span><span id="rdOhR"></span></div><div class="rd-op" id="rdOp"></div></div>' +
       '<div class="rd-foot"><div class="rd-said" id="rdSaid"></div><div class="rd-row" id="rdChips"></div><div class="rd-row" id="rdBtns"></div><button type="button" class="rd-mic" id="rdMic" data-act="mic"><span>🎙</span></button></div>' +
       '<div class="rd-sheet" id="rdSheet" hidden data-act="closeSheet"><div class="rd-sb" data-stop="1" id="rdSb"></div></div>' + '<div class="rd-home" id="rdHome" hidden></div>';
@@ -448,7 +448,7 @@
     loadStarts().then(paintSurahList);
   }
   function paintSurahList() { var g=$('rdSurahs'); if(!g)return; var q=(homeQuery||'').toLowerCase(), a=[]; for(var n=1;n<=114;n++){var nm=D().sname(n); if(q && (String(n).indexOf(q)<0 && String(nm).toLowerCase().indexOf(q)<0))continue; a.push('<button type="button" class="rd-surah" data-act="openSurah" data-s="'+n+'"><span><b>'+esc(nm)+'</b><small style="display:block">'+num(n)+' · '+num(D().cnt(n))+' ئایەت</small></span><small>لاپەڕە '+num(startPages && startPages[n-1] || 1)+'</small></button>');} g.innerHTML=a.join('') || '<div style="padding:20px;color:#888">هیچ سوڕەتێک نەدۆزرایەوە.</div>'; }
-  function installSwipe(el) { if(!el || el.__rdSwipe)return; el.__rdSwipe=true; var x=0,y=0; el.addEventListener('touchstart',function(e){if(!e.touches||e.touches.length!==1)return;x=e.touches[0].clientX;y=e.touches[0].clientY;},{passive:true}); el.addEventListener('touchend',function(e){if(!R || !R.ready || Q.mode!=='mushaf' || !e.changedTouches || !e.changedTouches.length)return;var dx=e.changedTouches[0].clientX-x,dy=e.changedTouches[0].clientY-y;if(Math.abs(dx)>65 && Math.abs(dx)>Math.abs(dy)*1.25){if(dx<0 && R.page<604)load(R.page+1);else if(dx>0 && R.page>1)load(R.page-1);}},{passive:true}); }
+  function installSwipe(el) { if(!el || el.__rdSwipe)return; el.__rdSwipe=true; var x=0,y=0; el.addEventListener('touchstart',function(e){if(!e.touches||e.touches.length!==1)return;x=e.touches[0].clientX;y=e.touches[0].clientY;},{passive:true}); el.addEventListener('touchend',function(e){if(!R || !R.ready || Q.mode!=='mushaf' || !e.changedTouches || !e.changedTouches.length)return;var dx=e.changedTouches[0].clientX-x,dy=e.changedTouches[0].clientY-y;if(Math.abs(dx)>65 && Math.abs(dx)>Math.abs(dy)*1.25){if(dx>0 && R.page<604)load(R.page+1);else if(dx<0 && R.page>1)load(R.page-1);}},{passive:true}); }
   function paintFoot() {
     if (!R) return; paint(); paintPageMark();
     var t = L(), tot = R.ok + R.mist, acc = tot ? Math.round(R.ok / tot * 1000) / 10 : 100;
@@ -466,14 +466,14 @@
     function sw(act, on, nm, id) { return '<button type="button" class="rd-opt' + (on ? ' on' : '') + '" data-act="' + act + '"' + (id ? ' id="' + id + '"' : '') + '><span style="flex:1">' + esc(nm) + '</span><i></i></button>'; }
     function sl(id, nm, mn, mx, v) { return '<div style="margin:10px 0"><div>' + esc(nm) + '</div><input type="range" min="' + mn + '" max="' + mx + '" value="' + v + '" id="' + id + '" style="width:100%"></div>'; }
     if (sub === 'mtype') {
-      sb.innerHTML = '<h3><button type="button" class="rd-ib" data-act="fmtBack" style="color:#222">‹</button> ' + esc(t.mtype) + '</h3>' + opt('mushaf', '📖', t.mmad, t.mushafSub) + sw('taj', Q.taj, t.taj) + sl('rdGap', t.gap, 18, 34, Math.round(Q.gap * 10));
+      sb.innerHTML = '<h3><button type="button" class="rd-ib" data-act="fmtBack" style="color:#222">‹</button> ' + esc(t.mtype) + '</h3>' + '<div class="rd-opt on"><span>🎨</span><span style="flex:1">' + esc(t.taj) + '</span><i></i></div>' + sl('rdGap', t.gap, 18, 34, Math.round(Q.gap * 10));
       var g = $('rdGap'); if (g) g.oninput = function () { Q.gap = +this.value / 10; saveQ(); try { frame.contentDocument.documentElement.style.setProperty('--lh', String(Q.gap)); } catch (e) {} };
       return;
     }
     sb.innerHTML = '<h3>' + esc(t.fmt) + '</h3><div style="color:#888;margin:4px 0">' + esc(t.rmode) + '</div>' +
       opt('mushaf', '📖', t.mushaf, t.mushafSub) + opt('text', '📄', t.text, t.textSub) + opt('tr', '🌐', t.tr, t.trSub) +
       '<button type="button" class="rd-opt" data-act="mtype"><span>🕌</span><span style="flex:1">' + esc(t.mtype) + '</span><span>›</span></button>' +
-      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) + sw('taj', Q.taj, t.taj) : '') +
+      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) : '') +
       (Q.mode === 'tr' ? sw('tl', Q.tl, t.tlOn) + sw('trOn', Q.trOn, t.trOn) +
         '<button type="button" class="rd-opt" data-act="trPick"><span>⚙</span><span style="flex:1">' + esc(t.trOf) + ': ' + esc(D().edInfo(D().curEd())[1]) + '</span><span>›</span></button>' + sl('rdTf', t.fontTr, 12, 30, Q.tfont) : '') +
       '<button type="button" class="rd-opt' + (Q.asr ? ' on' : '') + '" data-act="asr" id="rdAsr"><span>🎯</span><span style="flex:1">' + esc(asrLabel()) + '</span><i></i></button><div style="color:#888;font-size:12px">' + esc(t.asrHint) + '</div>';
@@ -495,6 +495,13 @@
     A.load().then(function () { Q.asr = 1; saveQ(); upd(); }).catch(function () { upd(); });
     upd();
   }
+  function sheetMarks() {
+    var sb = $('rdSb'), sh = $('rdSheet');
+    sh.hidden = false;
+    sb.innerHTML = '<h3>🔖 لاپەڕە نیشانکراوەکان</h3>' +
+      (pageMarks.length ? pageMarks.map(function(p){return '<button type="button" class="rd-opt" data-act="openMark" data-p="'+p+'"><span>🔖</span><span style="flex:1">لاپەڕە '+num(p)+'</span><i></i></button>';}).join('') :
+      '<div style="padding:18px;color:#888;text-align:center">هێشتا لاپەڕەیەک نیشان نەکراوە.</div>');
+  }
   function sheetTr() {
     var d = D(), t = L(), sb = $('rdSb'); sb._ay = null;
     sb.innerHTML = '<h3>' + esc(t.trPick) + '</h3><input class="rd-in" id="rdTq" type="search" placeholder="' + esc(t.search) + '"><div id="rdTl"></div>';
@@ -514,7 +521,7 @@
     if (/^(aFrom|aListen|aTr|aTaf|aBm|aSim|aCopy|aShare|closeSheet2)$/.test(a)) { ayahAct(a, b); return; }
     if (a === 'exit' || a === 'exitHome') return leave();
     if (a === 'pageBm') { if (R) { togglePageMark(R.page); toast(pageMarked(R.page) ? 'لاپەڕەکە نیشان کرا ✓' : 'نیشانەی لاپەڕە لابرا'); } return; }
-    if (a === 'openMark') { var mp=+b.getAttribute('data-p'); var hm=$('rdHome'); if(hm)hm.hidden=true; return load(mp); }
+    if (a === 'showMarks') { return sheetMarks(); }\n    if (a === 'openMark') { var mp=+b.getAttribute('data-p'); var hm=$('rdHome'); if(hm)hm.hidden=true; $('rdSheet').hidden=true; return load(mp); }
     if (a === 'openSurah') { var sn=+b.getAttribute('data-s'), sp=(startPages && startPages[sn-1]) || 1; var hm2=$('rdHome'); if(hm2)hm2.hidden=true; return load(sp); }
     if (a === 'mic') { if (!R) return; return R.listening ? stopListen() : startListen(); }
     if (a === 'next') return load(R.page + 1);
@@ -529,7 +536,7 @@
     if (a === 'trRetry') return paintTr();
     if (a === 'mtype') return sheetView('mtype');
     if (a === 'fmtBack') return sheetView();
-    if (a === 'taj') { Q.taj = Q.taj ? 0 : 1; saveQ(); $('rdSheet').hidden = true; return load(R.page); }
+    if (a === 'taj') { Q.taj = 1; saveQ(); $('rdSheet').hidden = true; return load(R.page); }
     if (a === 'asr') return toggleAsr();
     if (a === 'trPick') return sheetTr();
     if (a === 'trSet') { D().P.tr = b.getAttribute('data-e'); D().save(); $('rdSheet').hidden = true; paintTr(); return; }
