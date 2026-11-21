@@ -457,7 +457,7 @@
     sb.innerHTML = '<h3>' + esc(t.fmt) + '</h3><div style="color:#888;margin:4px 0">' + esc(t.rmode) + '</div>' +
       opt('mushaf', '📖', t.mushaf, t.mushafSub) + opt('text', '📄', t.text, t.textSub) + opt('tr', '🌐', t.tr, t.trSub) +
       '<button type="button" class="rd-opt" data-act="mtype"><span>🕌</span><span style="flex:1">' + esc(t.mtype) + '</span><span>›</span></button>' +
-      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) + sw('taj', Q.taj, t.taj) : '') +
+      sw('taj', Q.taj, t.taj) + (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) : '') +
       (Q.mode === 'tr' ? sw('tl', Q.tl, t.tlOn) + sw('trOn', Q.trOn, t.trOn) +
         '<button type="button" class="rd-opt" data-act="trPick"><span>⚙</span><span style="flex:1">' + esc(t.trOf) + ': ' + esc(D().edInfo(D().curEd())[1]) + '</span><span>›</span></button>' + sl('rdTf', t.fontTr, 12, 30, Q.tfont) : '') +
       '<button type="button" class="rd-opt' + (Q.asr ? ' on' : '') + '" data-act="asr" id="rdAsr"><span>🎯</span><span style="flex:1">' + esc(asrLabel()) + '</span><i></i></button><div style="color:#888;font-size:12px">' + esc(t.asrHint) + '</div>';
