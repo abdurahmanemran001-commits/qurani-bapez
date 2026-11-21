@@ -144,18 +144,19 @@
   }
   function jumpIdx(text) {
     if (!R || !R.words.length) return -1;
-    var d = D(), tk = toks(text), W = R.words; if (tk.length < 2) return -1;
+    var d = D(), tk = toks(text), W = R.words, N = W.length; if (tk.length < 2) return -1;
     var cw = W[R.pos] ? W[R.pos].nw : '';
-    if (R.pos < W.length && (d.wmatch(tk[0], cw) || (W[R.pos + 1] && d.wmatch(tk[0], W[R.pos + 1].nw)))) return -1;
-    var best = -1;
-    R.ays.forEach(function (ay) {
-      var st = W.indexOf(ay.words[0]); if (st < 0 || st >= R.pos) return;
-      var n = Math.min(3, tk.length, ay.words.length), ok = 0, i;
-      for (i = 0; i < n; i++) if (d.wmatch(tk[i], ay.words[i].nw)) ok++; else break;
-      if (ok === n && n >= 2 && st > best) best = st;
-    });
+    if (R.pos < N && (d.wmatch(tk[0], cw) || (W[R.pos + 1] && d.wmatch(tk[0], W[R.pos + 1].nw)))) return -1;
+    var n = Math.min(3, tk.length), best = -1, bd = 1e9, j, i;
+    for (j = 0; j + n <= N; j++) {
+      if (j === R.pos) continue;
+      for (i = 0; i < n; i++) if (!d.wmatch(tk[i], W[j + i].nw)) break;
+      if (i === n) { var dist = Math.abs(j - R.pos) + (j < R.pos ? 0.5 : 0); if (dist < bd) { bd = dist; best = j; } }
+    }
     return best;
   }
+  function skipTo(idx) { R.pos = R.base = R.cur = idx; R.asrBase = idx; cursor(); }
+  function jumpTo(jx) { if (jx < R.pos) rewindTo(jx); else skipTo(jx); }
   function rewindTo(idx) {
     var i; for (i = idx; i < R.words.length; i++) {
       if (R.fails[i]) { R.mist = Math.max(0, R.mist - 1); }
@@ -428,7 +429,7 @@
   function toks(s) { return D().nw ? String(s).split(/\s+/).map(function (w) { return D().nw(w).replace(/[اء]/g, ''); }).filter(Boolean) : []; }
   function onSpeech(alts, fin) {
     if (!R || !R.listening || !R.ready) return;
-    var jx = jumpIdx(alts[0]); if (jx >= 0) rewindTo(jx);
+    var jx = jumpIdx(alts[0]); if (jx >= 0) jumpTo(jx);
     var best = null, ba = '', k;
     for (k = 0; k < alts.length; k++) { var r = align(toks(alts[k]), R.base, fin); if (!best || r.p > best.p || (r.p === best.p && r.wrong < 0 && best.wrong >= 0)) { best = r; ba = alts[k]; } }
     R.said = String(ba).trim().split(/\s+/).slice(-6).join(' ');
@@ -443,7 +444,7 @@
   }
   function onAsr(text, fin) {
     if (!R || !R.listening || !R.ready) return;
-    var jx = jumpIdx(text); if (jx >= 0) rewindTo(jx);
+    var jx = jumpIdx(text); if (jx >= 0) jumpTo(jx);
     var a = align(toks(text), R.asrBase, true), i;
     var es = {}; a.errs.forEach(function (x) { es[x] = 1; });
     for (i = R.asrBase; i < a.p; i++) {
