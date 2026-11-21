@@ -124,7 +124,7 @@
   var HC = ['255,214,102', '120,205,140', '130,190,250', '248,150,185', '190,160,240'];
   function hcRgb() { return HC[Q.hc] || HC[0]; }
   var PL = null;
-  var IC_PLAY = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+  var IC_PLAY = '<svg viewBox="0 0 24 24" width="28" height="28" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.8"/><path d="M10 8.2v7.6a.6.6 0 0 0 .9.5l6-3.8a.6.6 0 0 0 0-1l-6-3.8a.6.6 0 0 0-.9.5z" fill="currentColor"/></svg>';
   var IC_STOP = '<svg viewBox="0 0 24 24" width="22" height="22"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>';
   var RECS = null;
   function loadRecs() {
@@ -271,7 +271,7 @@
   function bmIdx(l, s, a) { for (var i = 0; i < l.length; i++) { var q = String(l[i]).split(':'); if (+q[0] === s && +q[1] === a) return i; } return -1; }
   function playAyah(s, a, btn) {
     try { if (AU) { AU.pause(); AU = null; } } catch (e) {}
-    var u = 'https://everyayah.com/data/Alafasy_128kbps/' + ('00' + s).slice(-3) + ('00' + a).slice(-3) + '.mp3';
+    var u = 'https://everyayah.com/data/' + Q.rec + '/' + ('00' + s).slice(-3) + ('00' + a).slice(-3) + '.mp3';
     try { AU = new Audio(u); AU.play().catch(function () {}); } catch (e) {}
   }
   function simAyahs(ay) {
