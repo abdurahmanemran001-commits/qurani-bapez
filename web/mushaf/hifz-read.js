@@ -218,7 +218,7 @@
     var lens = ay.words.map(function (w) { return Math.max(2, String(w.disp).replace(/[ً-ٰٟۖ-ۭ]/g, '').length); }), tot = lens.reduce(function (x, y) { return x + y; }, 0);
     try { if (AU) { AU.pause(); AU = null; } } catch (e) {}
     try {
-      var au = AU = new Audio(u);
+      var au = AU = document.createElement('audio'); au.src = u;
       au.ontimeupdate = function () {
         if (!PL || AU !== au || !au.duration || !isFinite(au.duration)) return;
         var t = Math.min(0.999, Math.max(0, (au.currentTime - 0.15) / Math.max(0.1, au.duration - 0.3))) * tot, i = 0, c = 0;
@@ -276,7 +276,7 @@
   function playAyah(s, a, btn) {
     try { if (AU) { AU.pause(); AU = null; } } catch (e) {}
     var u = 'https://everyayah.com/data/' + Q.rec + '/' + ('00' + s).slice(-3) + ('00' + a).slice(-3) + '.mp3';
-    try { AU = new Audio(u); AU.play().catch(function () {}); } catch (e) {}
+    try { AU = document.createElement('audio'); AU.src = u; AU.play().catch(function () {}); } catch (e) {}
   }
   function simAyahs(ay) {
     var d = D(); return d.corpus().then(function () {
