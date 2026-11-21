@@ -521,7 +521,8 @@
     if (/^(aFrom|aListen|aTr|aTaf|aBm|aSim|aCopy|aShare|closeSheet2)$/.test(a)) { ayahAct(a, b); return; }
     if (a === 'exit' || a === 'exitHome') return leave();
     if (a === 'pageBm') { if (R) { togglePageMark(R.page); toast(pageMarked(R.page) ? 'لاپەڕەکە نیشان کرا ✓' : 'نیشانەی لاپەڕە لابرا'); } return; }
-    if (a === 'showMarks') { var rh=$('rdHome'); marksFromHome=!!(rh && !rh.hidden); if(rh)rh.hidden=true; return sheetMarks(); }\n    if (a === 'openMark') { var mp=+b.getAttribute('data-p'); marksFromHome=false; var hm=$('rdHome'); if(hm)hm.hidden=true; $('rdSheet').hidden=true; return load(mp); }
+    if (a === 'showMarks') { var rh=$('rdHome'); marksFromHome=!!(rh && !rh.hidden); if(rh)rh.hidden=true; return sheetMarks(); }
+    if (a === 'openMark') { var mp=+b.getAttribute('data-p'); marksFromHome=false; var hm=$('rdHome'); if(hm)hm.hidden=true; $('rdSheet').hidden=true; return load(mp); }
     if (a === 'openSurah') { var sn=+b.getAttribute('data-s'), sp=(startPages && startPages[sn-1]) || 1; var hm2=$('rdHome'); if(hm2)hm2.hidden=true; return load(sp); }
     if (a === 'mic') { if (!R) return; return R.listening ? stopListen() : startListen(); }
     if (a === 'next') return load(R.page + 1);
