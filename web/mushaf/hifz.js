@@ -314,7 +314,7 @@
     if (EDS) return Promise.resolve(EDS);
     try { var c = JSON.parse(localStorage.getItem('hifz_eds') || 'null'); if (c && c.length > 10) EDS = c; } catch (e) {}
     if (EDS) return Promise.resolve(EDS);
-    return fetch(TRB + 'editions.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+    return fetch(TRB + 'editions.json').catch(function () { return fetch('https://raw.githubusercontent.com/fawazahmed0/quran-api/1/editions.json'); }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
       EDS = Object.keys(j).map(function (k) { var e = j[k]; return [k, e.author || e.name || k, e.language || '', e.direction || 'ltr']; });
       try { localStorage.setItem('hifz_eds', JSON.stringify(EDS)); } catch (e) {}
       return EDS;
@@ -324,7 +324,9 @@
   function loadTr(ed, n) {
     var key = ed + ':' + n; if (TRC[key]) return Promise.resolve(TRC[key]);
     try { var c = JSON.parse(localStorage.getItem('hifz_tr_' + key) || 'null'); if (c) { TRC[key] = c; return Promise.resolve(c); } } catch (e) {}
-    return fetch(TRB + 'editions/' + ed + '/' + n + '.json').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) {
+    var u = 'editions/' + ed + '/' + n + '.json', bases = [TRB, 'https://fastly.jsdelivr.net/gh/fawazahmed0/quran-api@1/', 'https://raw.githubusercontent.com/fawazahmed0/quran-api/1/', 'https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/'];
+    var tryB = function (i) { return fetch(bases[i] + u).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function (e) { if (i + 1 < bases.length) return tryB(i + 1); throw e; }); };
+    return tryB(0).then(function (j) {
       var a = (j.chapter || []).map(function (x) { return String(x.text || ''); });
       if (!a.length) throw 0; TRC[key] = a;
       try { localStorage.setItem('hifz_tr_' + key, JSON.stringify(a)); } catch (e) {}

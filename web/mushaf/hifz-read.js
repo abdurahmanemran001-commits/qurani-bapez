@@ -407,7 +407,7 @@
         if (showTr) { var rt = info && info[3] === 'rtl'; h += '<div dir="' + (rt ? 'rtl' : 'ltr') + '" style="text-align:' + (rt ? 'right' : 'left') + '">' + esc((m[ay.s] && m[ay.s][ay.a - 1]) || '') + '</div>'; }
         el.innerHTML = h;
       });
-    }).catch(function () { R.ays.forEach(function (ay, ai) { var el = $('rdTr' + ai); if (el) el.textContent = L().trNone; }); });
+    }).catch(function () { R.ays.forEach(function (ay, ai) { var el = $('rdTr' + ai); if (el) { el.innerHTML = '<button type="button" class="rd-opt" data-act="trRetry" style="margin:0"><span>⟳</span><span style="flex:1">' + esc(L().trNone) + '</span></button>'; } }); });
   }
 
   /* ---------- UI ---------- */
@@ -507,6 +507,7 @@
     if (a === 'mode') { Q.mode = b.getAttribute('data-m'); saveQ(); fr_show(); var tx = $('rdText'); if (tx) tx.style.display = Q.mode === 'mushaf' ? 'none' : 'block'; paintTr(); sheetView(); return; }
     if (a === 'tl') { Q.tl = Q.tl ? 0 : 1; saveQ(); paintTr(); return sheetView(); }
     if (a === 'trOn') { Q.trOn = Q.trOn ? 0 : 1; saveQ(); paintTr(); return sheetView(); }
+    if (a === 'trRetry') return paintTr();
     if (a === 'mtype') return sheetView('mtype');
     if (a === 'fmtBack') return sheetView();
     if (a === 'taj') { Q.taj = Q.taj ? 0 : 1; saveQ(); $('rdSheet').hidden = true; return load(R.page); }
