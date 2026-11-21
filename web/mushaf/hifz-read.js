@@ -6,9 +6,9 @@
   if (window.__hifzRead) return; window.__hifzRead = true;
   var D = function () { return window.__hifzData; };
   var T = {
-    ckb: { fmt:'ڕێکخستنی موسحەف',rmode:'شێوازی خوێندنەوە',mushafSub:'موسحەفی تەجویدی بە ڕەنگ',textSub:'دەقی قورئان بە قەبارەی گۆڕاو',trSub:'وەرگێڕان و نووسینی لاتینی',mtype:'جۆری موسحەف و خەت',madinah:'موسحەفی مەدینە',mmad:'موسحەفی تەجویدی',fontAr:'قەبارەی نووسین — قورئانی عەرەبی',fontTr:'قەبارەی نووسین — وەرگێڕان',tlOn:'نووسینی لاتینی (تەرانسلیتەرەیشن)',trOn:'نیشاندانی وەرگێڕان',trOf:'وەرگێڕان',back2:'گەڕانەوە', title: 'خوێندنەوە و لەبەرکردن', page: 'لاپەڕە', hidOn: 'ئایەتە شاراوەکان: چالاک', hidOff: 'ئایەتە شاراوەکان: ناچالاک', mist: 'هەڵە', acc: 'ڕاستی', view: 'شێوازی بینین', mushaf: 'موسحەف', text: 'دەقی قورئان', tr: 'وەرگێڕان', font: 'قەبارەی نووسین', trPick: 'وەرگێڕ', loadErr: 'لاپەڕەکە یان دەقەکە بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', done: 'لاپەڕە تەواو بوو ✓', close: 'داخستن', hintW: 'وشەی دواتر', hintA: 'ئایەتەکە پیشان بدە', back: 'گەڕانەوە', trLoad: 'وەرگێڕان بار دەکرێت…', trNone: 'وەرگێڕان نەهات', search: 'گەڕان…', tap: 'مایک دابگرە و بخوێنە', taj: 'ڕەنگی تەجوید', gap: 'ڕێژەی نێوان دێڕەکان', aya: 'ئایەت', aListen: 'گوێ بگرە', aTr: 'وەرگێڕان', aTaf: 'تەفسیر', aBm: 'نیشانەی ئایەت زیاد بکە', aBmOff: 'نیشانەی ئایەت لابە', aSim: 'ئایەتە لێکچووەکان', aNoSim: 'ئایەتی لێکچوو نییە', aCopy: 'کۆپی', aShare: 'بڵاوکردنەوە', aFrom: 'لێرەوە دەست پێ بکە', aCopied: 'کۆپی کرا ✓', aTafNo: 'تەفسیر بەردەست نییە', aLoad: 'چاوەڕێ بکە…', asr: 'ناسینەوەی وردتر (مۆدێلی قورئان، ~٤٠MB)', asrOn: 'ناسینەوەی وردتر: چالاک', asrOff: 'ناسینەوەی وردتر: ناچالاک', asrLoad: 'مۆدێل دادەبەزێت', asrErr: 'مۆدێل دانەبەزی. ئینتەرنێت بپشکنە.', asrHint: 'یەکجار دادەبەزێت و دواتر بێ ئینتەرنێت کار دەکات.' },
-    en: { fmt:'Mushaf format',rmode:'Reading mode',mushafSub:'Colour-coded Tajweed Mushaf',textSub:'Resizable Quran text',trSub:'Translation & transliteration',mtype:'Mushaf type & font',madinah:'Madani Mushaf',mmad:'Tajweed Mushaf',fontAr:'Font size — Arabic Quran',fontTr:'Font size — translation',tlOn:'Transliteration',trOn:'Show translation',trOf:'Translation',back2:'Back', title: 'Read & memorise', page: 'Page', hidOn: 'Hidden ayat: on', hidOff: 'Hidden ayat: off', mist: 'Mistakes', acc: 'Accuracy', view: 'View', mushaf: 'Mushaf', text: 'Quran text', tr: 'Translation', font: 'Font size', trPick: 'Translator', loadErr: 'Could not load the page or text. Check your internet.', nomic: 'This browser has no voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', done: 'Page complete ✓', close: 'Close', hintW: 'Next word', hintA: 'Show the ayah', back: 'Back', trLoad: 'Loading translation…', trNone: 'Translation unavailable', search: 'Search…', tap: 'Tap the mic and recite', taj: 'Tajweed colours', gap: 'Line spacing', aya: 'Ayah', aListen: 'Listen', aTr: 'Translation', aTaf: 'Tafsir', aBm: 'Add bookmark', aBmOff: 'Remove bookmark', aSim: 'Similar ayat', aNoSim: 'No similar ayat', aCopy: 'Copy', aShare: 'Share', aFrom: 'Start from here', aCopied: 'Copied ✓', aTafNo: 'Tafsir unavailable', aLoad: 'Loading…', asr: 'High-accuracy mic (Quran model, ~40MB)', asrOn: 'High-accuracy mic: on', asrOff: 'High-accuracy mic: off', asrLoad: 'Downloading model', asrErr: 'Model download failed. Check your internet.', asrHint: 'Downloads once, then works offline.' },
-    ar: { fmt:'تنسيق المصحف',rmode:'وضع القراءة',mushafSub:'مصحف التجويد الملوّن',textSub:'نص قرآني بحجم قابل للتعديل',trSub:'ترجمة ونقل صوتي بالحروف اللاتينية',mtype:'تنسيق المصحف وخطه',madinah:'مصحف المدينة',mmad:'مصحف التجويد',fontAr:'حجم الخط — قرآن عربي',fontTr:'حجم الخط — ترجمة',tlOn:'نقل صوتي بالحروف اللاتينية',trOn:'عرض الترجمة',trOf:'الترجمة',back2:'رجوع', title: 'القراءة والحفظ', page: 'صفحة', hidOn: 'الآيات المخفية: مفعل', hidOff: 'الآيات المخفية: غير مفعل', mist: 'أخطاء', acc: 'الدقة', view: 'العرض', mushaf: 'مصحف', text: 'نص قرآني', tr: 'ترجمة', font: 'حجم الخط', trPick: 'المترجم', loadErr: 'تعذّر تحميل الصفحة أو النص. تحقق من الإنترنت.', nomic: 'المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', done: 'اكتملت الصفحة ✓', close: 'إغلاق', hintW: 'الكلمة التالية', hintA: 'إظهار الآية', back: 'رجوع', trLoad: 'جارٍ تحميل الترجمة…', trNone: 'الترجمة غير متاحة', search: 'بحث…', tap: 'اضغط على الميكروفون واقرأ', taj: 'ألوان التجويد', gap: 'تباعد الأسطر', aya: 'الآية', aListen: 'استمع', aTr: 'ترجمة', aTaf: 'تفسير', aBm: 'أضف إشارة مرجعية', aBmOff: 'احذف الإشارة المرجعية', aSim: 'المتشابهات', aNoSim: 'لا توجد آيات متشابهة', aCopy: 'نسخ', aShare: 'شارك', aFrom: 'ابدأ من هنا', aCopied: 'تم النسخ ✓', aTafNo: 'التفسير غير متاح', aLoad: 'جارٍ التحميل…', asr: 'ميكروفون عالي الدقة (نموذج القرآن ~٤٠MB)', asrOn: 'الميكروفون عالي الدقة: مفعل', asrOff: 'الميكروفون عالي الدقة: غير مفعل', asrLoad: 'جارٍ تنزيل النموذج', asrErr: 'فشل تنزيل النموذج. تحقق من الإنترنت.', asrHint: 'يُنزَّل مرة واحدة ثم يعمل دون إنترنت.' }
+    ckb: { rec:'گوێگرتن لە خوێندنەوە',recErr:'دەنگەکە نەهات — ئینتەرنێت بپشکنە', fmt:'ڕێکخستنی موسحەف',rmode:'شێوازی خوێندنەوە',mushafSub:'موسحەفی تەجویدی بە ڕەنگ',textSub:'دەقی قورئان بە قەبارەی گۆڕاو',trSub:'وەرگێڕان و نووسینی لاتینی',mtype:'جۆری موسحەف و خەت',madinah:'موسحەفی مەدینە',mmad:'موسحەفی تەجویدی',fontAr:'قەبارەی نووسین — قورئانی عەرەبی',fontTr:'قەبارەی نووسین — وەرگێڕان',tlOn:'نووسینی لاتینی (تەرانسلیتەرەیشن)',trOn:'نیشاندانی وەرگێڕان',trOf:'وەرگێڕان',back2:'گەڕانەوە', title: 'خوێندنەوە و لەبەرکردن', page: 'لاپەڕە', hidOn: 'ئایەتە شاراوەکان: چالاک', hidOff: 'ئایەتە شاراوەکان: ناچالاک', mist: 'هەڵە', acc: 'ڕاستی', view: 'شێوازی بینین', mushaf: 'موسحەف', text: 'دەقی قورئان', tr: 'وەرگێڕان', font: 'قەبارەی نووسین', trPick: 'وەرگێڕ', loadErr: 'لاپەڕەکە یان دەقەکە بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', done: 'لاپەڕە تەواو بوو ✓', close: 'داخستن', hintW: 'وشەی دواتر', hintA: 'ئایەتەکە پیشان بدە', back: 'گەڕانەوە', trLoad: 'وەرگێڕان بار دەکرێت…', trNone: 'وەرگێڕان نەهات', search: 'گەڕان…', tap: 'مایک دابگرە و بخوێنە', taj: 'ڕەنگی تەجوید', gap: 'ڕێژەی نێوان دێڕەکان', aya: 'ئایەت', aListen: 'گوێ بگرە', aTr: 'وەرگێڕان', aTaf: 'تەفسیر', aBm: 'نیشانەی ئایەت زیاد بکە', aBmOff: 'نیشانەی ئایەت لابە', aSim: 'ئایەتە لێکچووەکان', aNoSim: 'ئایەتی لێکچوو نییە', aCopy: 'کۆپی', aShare: 'بڵاوکردنەوە', aFrom: 'لێرەوە دەست پێ بکە', aCopied: 'کۆپی کرا ✓', aTafNo: 'تەفسیر بەردەست نییە', aLoad: 'چاوەڕێ بکە…', asr: 'ناسینەوەی وردتر (مۆدێلی قورئان، ~٤٠MB)', asrOn: 'ناسینەوەی وردتر: چالاک', asrOff: 'ناسینەوەی وردتر: ناچالاک', asrLoad: 'مۆدێل دادەبەزێت', asrErr: 'مۆدێل دانەبەزی. ئینتەرنێت بپشکنە.', asrHint: 'یەکجار دادەبەزێت و دواتر بێ ئینتەرنێت کار دەکات.' },
+    en: { rec:'Listen to recitation',recErr:'Audio unavailable — check internet', fmt:'Mushaf format',rmode:'Reading mode',mushafSub:'Colour-coded Tajweed Mushaf',textSub:'Resizable Quran text',trSub:'Translation & transliteration',mtype:'Mushaf type & font',madinah:'Madani Mushaf',mmad:'Tajweed Mushaf',fontAr:'Font size — Arabic Quran',fontTr:'Font size — translation',tlOn:'Transliteration',trOn:'Show translation',trOf:'Translation',back2:'Back', title: 'Read & memorise', page: 'Page', hidOn: 'Hidden ayat: on', hidOff: 'Hidden ayat: off', mist: 'Mistakes', acc: 'Accuracy', view: 'View', mushaf: 'Mushaf', text: 'Quran text', tr: 'Translation', font: 'Font size', trPick: 'Translator', loadErr: 'Could not load the page or text. Check your internet.', nomic: 'This browser has no voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', done: 'Page complete ✓', close: 'Close', hintW: 'Next word', hintA: 'Show the ayah', back: 'Back', trLoad: 'Loading translation…', trNone: 'Translation unavailable', search: 'Search…', tap: 'Tap the mic and recite', taj: 'Tajweed colours', gap: 'Line spacing', aya: 'Ayah', aListen: 'Listen', aTr: 'Translation', aTaf: 'Tafsir', aBm: 'Add bookmark', aBmOff: 'Remove bookmark', aSim: 'Similar ayat', aNoSim: 'No similar ayat', aCopy: 'Copy', aShare: 'Share', aFrom: 'Start from here', aCopied: 'Copied ✓', aTafNo: 'Tafsir unavailable', aLoad: 'Loading…', asr: 'High-accuracy mic (Quran model, ~40MB)', asrOn: 'High-accuracy mic: on', asrOff: 'High-accuracy mic: off', asrLoad: 'Downloading model', asrErr: 'Model download failed. Check your internet.', asrHint: 'Downloads once, then works offline.' },
+    ar: { rec:'الاستماع للتلاوة',recErr:'تعذر تشغيل الصوت — تحقق من الإنترنت', fmt:'تنسيق المصحف',rmode:'وضع القراءة',mushafSub:'مصحف التجويد الملوّن',textSub:'نص قرآني بحجم قابل للتعديل',trSub:'ترجمة ونقل صوتي بالحروف اللاتينية',mtype:'تنسيق المصحف وخطه',madinah:'مصحف المدينة',mmad:'مصحف التجويد',fontAr:'حجم الخط — قرآن عربي',fontTr:'حجم الخط — ترجمة',tlOn:'نقل صوتي بالحروف اللاتينية',trOn:'عرض الترجمة',trOf:'الترجمة',back2:'رجوع', title: 'القراءة والحفظ', page: 'صفحة', hidOn: 'الآيات المخفية: مفعل', hidOff: 'الآيات المخفية: غير مفعل', mist: 'أخطاء', acc: 'الدقة', view: 'العرض', mushaf: 'مصحف', text: 'نص قرآني', tr: 'ترجمة', font: 'حجم الخط', trPick: 'المترجم', loadErr: 'تعذّر تحميل الصفحة أو النص. تحقق من الإنترنت.', nomic: 'المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', done: 'اكتملت الصفحة ✓', close: 'إغلاق', hintW: 'الكلمة التالية', hintA: 'إظهار الآية', back: 'رجوع', trLoad: 'جارٍ تحميل الترجمة…', trNone: 'الترجمة غير متاحة', search: 'بحث…', tap: 'اضغط على الميكروفون واقرأ', taj: 'ألوان التجويد', gap: 'تباعد الأسطر', aya: 'الآية', aListen: 'استمع', aTr: 'ترجمة', aTaf: 'تفسير', aBm: 'أضف إشارة مرجعية', aBmOff: 'احذف الإشارة المرجعية', aSim: 'المتشابهات', aNoSim: 'لا توجد آيات متشابهة', aCopy: 'نسخ', aShare: 'شارك', aFrom: 'ابدأ من هنا', aCopied: 'تم النسخ ✓', aTafNo: 'التفسير غير متاح', aLoad: 'جارٍ التحميل…', asr: 'ميكروفون عالي الدقة (نموذج القرآن ~٤٠MB)', asrOn: 'الميكروفون عالي الدقة: مفعل', asrOff: 'الميكروفون عالي الدقة: غير مفعل', asrLoad: 'جارٍ تنزيل النموذج', asrErr: 'فشل تنزيل النموذج. تحقق من الإنترنت.', asrHint: 'يُنزَّل مرة واحدة ثم يعمل دون إنترنت.' }
   };
   function L() { var l = D().lang(); return T[l] || T.en; }
   function $(i) { return document.getElementById(i); }
@@ -63,7 +63,7 @@
   }
   function load(pg) {
     pg = Math.max(1, Math.min(604, +pg || 1)); Q.page = pg; saveQ();
-    var id = ++loadId; stopListen(true);
+    var id = ++loadId; stopListen(true); recStop();
     R = { ui: true, page: pg, ready: false, words: [], ays: [], pos: 0, fails: {}, soft: {}, ok: 0, mist: 0, msg: '', said: '', listening: false, t0: 0, base: 0, cur: 0, err: '' };
     paint(); paintFoot();
     var fr = $('rdFrame'); fr.style.visibility = 'hidden'; fr.src = 'mushaf/view.html?m=' + (Q.taj ? 't' : 'q') + '&p=' + pg;
@@ -73,7 +73,7 @@
     var doc, id = loadId; try { doc = frame.contentDocument; } catch (e) { doc = null; }
     if (!doc) { R.err = L().loadErr; return paintFoot(); }
     var st = doc.createElement('style');
-    st.textContent = CSS_WORDS + 'html,body{background:#f7f6f6!important;margin:0}.pg{display:flex;flex-direction:column;justify-content:space-evenly;min-height:100vh;box-sizing:border-box;padding:38px 0 34px}.pg .line:not(.hd){line-height:var(--lh,2.3)!important}.pg .line.hd{margin:6px 0!important}';
+    st.textContent = CSS_WORDS + '.cur{background:none!important}html,body{background:#f7f6f6!important;margin:0}.pg{display:flex;flex-direction:column;justify-content:space-evenly;min-height:100vh;box-sizing:border-box;padding:38px 0 34px}.pg .line:not(.hd){line-height:var(--lh,2.3)!important}.pg .line.hd{margin:6px 0!important}';
     doc.head.appendChild(st); doc.documentElement.style.setProperty('--lh', String(Q.gap)); installSwipe(doc);
     var groups = [], map = {};
     [].slice.call(doc.querySelectorAll('.line .ayah')).forEach(function (sp) {
@@ -118,8 +118,77 @@
     box.ontouchmove = box.onmouseup = box.ontouchend = function () { clearTimeout(lpT); };
     box.onclick = function (ev) { var dt = ev.target.closest && ev.target.closest('.rd-dots'); if (dt) { ayahSheet(R.ays[+dt.getAttribute('data-ai')]); return; } if (lpF) { lpF = false; return; } if ($('rdSheet').hidden) setUi(!R.ui); };
     box.style.display = Q.mode === 'mushaf' ? 'none' : 'block';
-    if (!$('rdTextCss')) { var st = document.createElement('style'); st.id = 'rdTextCss'; st.textContent = CSS_WORDS; document.head.appendChild(st); }
+    if (!$('rdTextCss')) { var st = document.createElement('style'); st.id = 'rdTextCss'; st.textContent = CSS_WORDS + '.pa{background:rgba(255,213,79,.38);border-radius:4px}.pw{background:rgba(255,179,0,.75);border-radius:6px}'; document.head.appendChild(st); }
     paintTr(); paintTaj();
+  }
+  var PL = null;
+  function allEls(ws) { var o = []; ws.forEach(function (w) { w.els.forEach(function (e) { o.push(e); }); }); return o; }
+  function hlDraw(doc, id, els, bg) {
+    var old = doc.getElementById(id); if (old) old.remove();
+    if (!els.length) return;
+    var wrap = doc.createElement('div'); wrap.id = id; wrap.style.cssText = 'position:absolute;left:0;top:0;pointer-events:none;z-index:0';
+    var sx = doc.defaultView.pageXOffset || 0, sy = doc.defaultView.pageYOffset || 0, lines = [];
+    els.forEach(function (e) {
+      var r = e.getBoundingClientRect(); if (!r.width) return;
+      var mid = r.top + r.height / 2, ln = null;
+      lines.forEach(function (l) { if (!ln && mid >= l.t && mid <= l.b) ln = l; });
+      if (!ln) { ln = { t: r.top, b: r.bottom, l: r.left, r: r.right }; lines.push(ln); } else { ln.l = Math.min(ln.l, r.left); ln.r = Math.max(ln.r, r.right); ln.t = Math.min(ln.t, r.top); ln.b = Math.max(ln.b, r.bottom); }
+    });
+    lines.forEach(function (l) {
+      var d = doc.createElement('div');
+      d.style.cssText = 'position:absolute;border-radius:10px;mix-blend-mode:multiply;background:' + bg + ';left:' + (l.l + sx - 4) + 'px;top:' + (l.t + sy - 2) + 'px;width:' + (l.r - l.l + 8) + 'px;height:' + (l.b - l.t + 4) + 'px';
+      wrap.appendChild(d);
+    });
+    doc.body.appendChild(wrap);
+  }
+  function hlUpdate() {
+    if (!R || !R.ready) return;
+    var ay = null, wi = -1;
+    if (PL) { ay = R.ays[PL.ai]; wi = PL.wi; }
+    else if (R.listening && R.pos < R.words.length) { var w0 = R.words[R.pos]; ay = w0.ay; wi = ay ? ay.words.indexOf(w0) : -1; }
+    var doc = null; try { doc = frame.contentDocument; } catch (e) {}
+    [].slice.call(document.querySelectorAll('#rdText .pa,#rdText .pw')).forEach(function (e) { e.classList.remove('pa'); e.classList.remove('pw'); });
+    if (doc && doc.body) { ['rdhA', 'rdhW'].forEach(function (i) { var o = doc.getElementById(i); if (o) o.remove(); }); }
+    if (!ay) return;
+    var ws = ay.words[wi];
+    if (Q.mode === 'mushaf') {
+      if (!doc || !doc.body) return;
+      hlDraw(doc, 'rdhA', allEls(ay.words), 'rgba(255,224,130,.55)');
+      if (ws) hlDraw(doc, 'rdhW', ws.els, 'rgba(255,179,0,.75)');
+    } else {
+      allEls(ay.words).forEach(function (e) { e.classList.add('pa'); });
+      if (ws) ws.els.forEach(function (e) { e.classList.add('pw'); });
+      if (PL && ws && ws.els[0]) try { ws.els[0].scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {}
+    }
+  }
+  function recStop() {
+    try { if (AU) { AU.pause(); AU.onended = AU.ontimeupdate = AU.onerror = null; AU = null; } } catch (e) {}
+    PL = null; hlUpdate(); if (R) paintFoot();
+  }
+  function recAyah() {
+    var ay = R && R.ays[PL.ai]; if (!ay) return recStop();
+    var u = 'https://everyayah.com/data/Alafasy_128kbps/' + ('00' + ay.s).slice(-3) + ('00' + ay.a).slice(-3) + '.mp3';
+    var lens = ay.words.map(function (w) { return Math.max(2, String(w.disp).replace(/[ً-ٰٟۖ-ۭ]/g, '').length); }), tot = lens.reduce(function (x, y) { return x + y; }, 0);
+    try { if (AU) { AU.pause(); AU = null; } } catch (e) {}
+    try {
+      var au = AU = new Audio(u);
+      au.ontimeupdate = function () {
+        if (!PL || AU !== au || !au.duration || !isFinite(au.duration)) return;
+        var t = Math.min(0.999, Math.max(0, (au.currentTime - 0.15) / Math.max(0.1, au.duration - 0.3))) * tot, i = 0, c = 0;
+        while (i < lens.length - 1 && c + lens[i] <= t) { c += lens[i]; i++; }
+        if (i !== PL.wi) { PL.wi = i; hlUpdate(); }
+      };
+      au.onended = function () { if (!PL || AU !== au) return; PL.ai++; PL.wi = 0; if (PL.ai < R.ays.length) recAyah(); else recStop(); };
+      au.onerror = function () { if (AU === au) { R.err = L().recErr; recStop(); } };
+      au.play().catch(function () { if (AU === au) { R.err = L().recErr; recStop(); } });
+    } catch (e) { return recStop(); }
+    hlUpdate(); paintFoot();
+  }
+  function recToggle() {
+    if (PL) return recStop();
+    if (R.listening) stopListen();
+    R.err = ''; PL = { ai: Math.max(0, R.pos < R.words.length && R.words[R.pos].ay ? R.ays.indexOf(R.words[R.pos].ay) : 0), wi: 0 };
+    if (PL.ai < 0) PL.ai = 0; recAyah();
   }
   function setCls(i, add, rem) { var w = R.words[i]; if (!w) return; w.els.forEach(function (e) { (rem || []).forEach(function (c) { e.classList.remove(c); }); (add || []).forEach(function (c) { e.classList.add(c); }); }); }
   function applyAll() {
@@ -133,6 +202,7 @@
   }
   function cursor() {
     R.words.forEach(function (w, i) { if (i !== R.pos) setCls(i, null, ['cur']); });
+    hlUpdate();
     if (R.pos < R.words.length) { setCls(R.pos, ['cur'], []); var e = R.words[R.pos].els[0]; if (e) try { e.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {} }
   }
   function tapWord(el) {
@@ -227,6 +297,7 @@
   /* ---------- recognition (word by word, forgiving) ---------- */
   function engine() { return window.SpeechRecognition || window.webkitSpeechRecognition || null; }
   function startListen() {
+    if (PL) recStop();
     if (!engine()) { R.err = L().nomic; return paintFoot(); }
     if (!R.ready) { R.wantListen = true; R.listening = true; return paintFoot(); }
     R.err = ''; R.listening = true; if (!R.t0) R.t0 = Date.now(); paintFoot();
@@ -454,7 +525,7 @@
     var t = L(), tot = R.ok + R.mist, acc = tot ? Math.round(R.ok / tot * 1000) / 10 : 100;
     var sec = R.t0 ? Math.round((Date.now() - R.t0) / 1000) : 0, mm = ('0' + Math.floor(sec / 60)).slice(-2) + ':' + ('0' + sec % 60).slice(-2);
     var c = $('rdChips'); if (c) c.innerHTML = '<div class="rd-chip ' + (R.mist ? 'bad' : '') + '">🧠 ' + num(R.mist) + '</div><div class="rd-chip good">' + num(acc) + '%</div><div class="rd-chip tm">' + (R.live ? 'LIVE · ' : '') + (R.listening ? '<span class="rd-dot"></span>' : '') + mm + '</div>';
-    var b = $('rdBtns'); if (b) b.innerHTML = '<button type="button" class="rd-b" data-act="view" aria-label="' + esc(t.view) + '">📖</button><button type="button" class="rd-b' + (Q.hide ? ' on' : '') + '" data-act="hide" aria-label="hidden">' + (Q.hide ? '🙈' : '👁') + '</button><button type="button" class="rd-b" data-act="hw" title="' + esc(t.hintW) + '">›</button><button type="button" class="rd-b" data-act="ha" title="' + esc(t.hintA) + '">»</button>';
+    var b = $('rdBtns'); if (b) b.innerHTML = '<button type="button" class="rd-b" data-act="view" aria-label="' + esc(t.view) + '">📖</button><button type="button" class="rd-b' + (Q.hide ? ' on' : '') + '" data-act="hide" aria-label="hidden">' + (Q.hide ? '🙈' : '👁') + '</button><button type="button" class="rd-b" data-act="hw" title="' + esc(t.hintW) + '">›</button><button type="button" class="rd-b" data-act="ha" title="' + esc(t.hintA) + '">»</button><button type="button" class="rd-b' + (PL ? ' on' : '') + '" data-act="rec" title="' + esc(t.rec) + '">' + (PL ? '⏹' : '🔊') + '</button>';
     var m = $('rdMic'); if (m) m.classList.toggle('on', !!R.listening);
     var sd = $('rdSaid'); if (sd) sd.textContent = R.err || R.said || (R.listening ? '' : t.tap);
     if (R.err && sd) sd.style.color = '#c0392b'; else if (sd) sd.style.color = '';
@@ -528,6 +599,7 @@
     if (a === 'next') return load(R.page + 1);
     if (a === 'prev') return load(R.page - 1);
     if (a === 'hide') { Q.hide = Q.hide ? 0 : 1; saveQ(); applyAll(); paintFoot(); toast(Q.hide ? L().hidOn : L().hidOff); return; }
+    if (a === 'rec') return recToggle();
     if (a === 'hw') return hintWord(false);
     if (a === 'ha') return hintWord(true);
     if (a === 'view') return sheetView();
@@ -550,7 +622,7 @@
     if (e.data.hold && R.ready) { var h = e.data.hold, ay = null; R.ays.forEach(function (a) { if (a.s === h[0] && a.a === h[1]) ay = a; }); if (ay) ayahSheet(ay); }
   });
   function leave() {
-    stopListen(true); clearInterval(tick); loadId++;
+    stopListen(true); recStop(); clearInterval(tick); loadId++;
     var v = $('hifzReadView'); if (v) { v.hidden = true; v.innerHTML = ''; }
     R = null; frame = null;
     if (typeof window.enterHifz === 'function') window.enterHifz();
