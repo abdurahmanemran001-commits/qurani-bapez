@@ -121,7 +121,7 @@
     if (!$('rdTextCss')) { var st = document.createElement('style'); st.id = 'rdTextCss'; st.textContent = CSS_WORDS + '.pa{background:rgba(255,213,79,.38);border-radius:4px}.pw{background:rgba(255,179,0,.75);border-radius:6px}'; document.head.appendChild(st); }
     paintTr(); paintTaj();
   }
-  var HC = ['255,214,102', '120,205,140', '130,190,250', '248,150,185', '190,160,240'];
+  var HC = ['130,130,130', '255,214,102', '120,205,140', '130,190,250', '248,150,185'];
   function hcRgb() { return HC[Q.hc] || HC[0]; }
   var PL = null;
   var IC_PLAY = '<svg viewBox="0 0 24 24" width="28" height="28" fill="none"><circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1.8"/><path d="M10 8.2v7.6a.6.6 0 0 0 .9.5l6-3.8a.6.6 0 0 0 0-1l-6-3.8a.6.6 0 0 0-.9.5z" fill="currentColor"/></svg>';
