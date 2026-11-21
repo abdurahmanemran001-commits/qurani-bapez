@@ -15,6 +15,12 @@
   var esc = function (x) { return D().esc(x); }, num = function (n) { return D().num(n); };
   var R = null, rec = null, restartT = null, frame = null, loadId = 0, tick = null, toastT = null;
   var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 0, gap: 2.3, tl: 0, trOn: 1, tfont: 18 };
+  var BM_KEY = 'hifz_read_page_bookmarks_v1', pageMarks = [], startPages = null, homeQuery = '';
+  try { pageMarks = JSON.parse(localStorage.getItem(BM_KEY) || '[]'); if (!Array.isArray(pageMarks)) pageMarks = []; } catch (e) { pageMarks = []; }
+  function savePageMarks() { try { localStorage.setItem(BM_KEY, JSON.stringify(pageMarks)); } catch (e) {} }
+  function pageMarked(p) { return pageMarks.indexOf(+p) >= 0; }
+  function togglePageMark(p) { p = +p; var i = pageMarks.indexOf(p); if (i >= 0) pageMarks.splice(i, 1); else pageMarks.push(p); pageMarks.sort(function(a,b){return a-b;}); savePageMarks(); paintPageMark(); }
+  function loadStarts() { if (startPages) return Promise.resolve(startPages); return fetch('starts.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){startPages=a;return a;}).catch(function(){startPages=[1];return startPages;}); }
   try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
@@ -24,7 +30,7 @@
     if ($('rdCss')) return;
     var s = document.createElement('style'); s.id = 'rdCss';
     s.textContent = '#hifzReadView{position:fixed;inset:0;z-index:100;background:#f7f6f6;color:#1b1b1b;display:flex;flex-direction:column;font-family:inherit}#hifzReadView[hidden]{display:none}' +
-      '.rd-top{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));background:#fff;border-bottom:1px solid #e2e2e2;flex:none}.rd-t{flex:1;text-align:center;border:1px solid #e2e2e2;border-radius:12px;padding:5px;background:#f1f1f1;line-height:1.5}.rd-t b{display:block;font-size:16px}.rd-t small{color:#666;font-size:12px}' +
+      '.rd-top{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));background:#fff;border-bottom:1px solid #e2e2e2;flex:none}.rd-t{flex:1;text-align:center;border:1px solid #e2e2e2;border-radius:12px;padding:5px;background:#f1f1f1;line-height:1.5}.rd-t b{display:block;font-size:16px}.rd-t small{color:#666;font-size:12px}.rd-pagebm{border:0;border-radius:10px;background:#f1f1f1;font-size:22px;padding:5px 9px;color:#555}.rd-pagebm.on{color:#b8860b;background:#fff3c4}.rd-home{position:absolute;inset:0;z-index:30;background:#f7f6f6;overflow:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));}.rd-home h2{margin:8px 0 4px;font-size:21px}.rd-home p{color:#777;font-size:13px;margin:0 0 14px}.rd-homebar{display:flex;gap:8px;align-items:center}.rd-homebar button{border:0;border-radius:12px;background:#fff;padding:10px 14px;font:inherit}.rd-homebar input{min-width:0;flex:1;border:1px solid #ddd;border-radius:12px;padding:11px;font:inherit;background:#fff}.rd-surahs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rd-surah{border:1px solid #e3e3e3;border-radius:13px;background:#fff;padding:12px;text-align:start;font:inherit;display:flex;justify-content:space-between;align-items:center;gap:8px}.rd-surah b{font-family:Amiri,serif;font-size:18px}.rd-surah small{color:#888;white-space:nowrap}.rd-marklist{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 18px}.rd-mark{border:1px solid #e3d39c;background:#fff8df;border-radius:10px;padding:8px 12px;font:inherit}' +
       '.rd-ib{border:0;background:transparent;font-size:24px;padding:4px 10px;color:#222}' +
       '.rd-body{flex:1;position:relative;overflow:hidden}.rd-frame{width:100%;height:100%;border:0;background:#f7f6f6}.rd-text{position:absolute;inset:0;overflow:auto;padding:14px 14px 20px;direction:rtl;display:none}' +
       '.rd-text{background:#f9f7f7}.rd-ay{padding:12px 4px 14px;border-bottom:1px solid #e4e1e1}.rd-ah{display:flex;justify-content:space-between;align-items:center;direction:ltr;margin-bottom:2px}.rd-bd{border:1.5px solid #8a8a8a;border-radius:7px;padding:3px 9px;font-size:14px;color:#444;background:#fff}.rd-dots{border:0;background:transparent;font-size:26px;line-height:1;color:#777;padding:2px 8px}' +
@@ -68,7 +74,7 @@
     if (!doc) { R.err = L().loadErr; return paintFoot(); }
     var st = doc.createElement('style');
     st.textContent = CSS_WORDS + 'html,body{background:#f7f6f6!important;margin:0}.pg{display:flex;flex-direction:column;justify-content:space-evenly;min-height:100vh;box-sizing:border-box;padding:38px 0 34px}.pg .line:not(.hd){line-height:var(--lh,2.3)!important}.pg .line.hd{margin:6px 0!important}';
-    doc.head.appendChild(st); doc.documentElement.style.setProperty('--lh', String(Q.gap));
+    doc.head.appendChild(st); doc.documentElement.style.setProperty('--lh', String(Q.gap)); installSwipe(doc);
     var groups = [], map = {};
     [].slice.call(doc.querySelectorAll('.line .ayah')).forEach(function (sp) {
       var key = sp.getAttribute('data-sura') + ':' + sp.getAttribute('data-ayah'), g = map[key];
@@ -415,12 +421,13 @@
     var v = view(), t = L();
     v.dir = D().rtl() ? 'rtl' : 'ltr'; v.hidden = false;
     v.innerHTML = '<div class="rd-top"><button type="button" class="rd-ib" data-act="exit" aria-label="' + esc(t.back) + '">✕</button><button type="button" class="rd-ib" data-act="next" aria-label="next">›</button>' +
-      '<div class="rd-t"><b id="rdSura"></b><small id="rdPg"></small></div><button type="button" class="rd-ib" data-act="prev" aria-label="prev">‹</button></div>' +
+      '<div class="rd-t"><b id="rdSura"></b><small id="rdPg"></small></div><button type="button" class="rd-pagebm" id="rdPageBm" data-act="pageBm" aria-label="bookmark page">☆</button><button type="button" class="rd-ib" data-act="prev" aria-label="prev">‹</button></div>' +
       '<div class="rd-body"><iframe id="rdFrame" class="rd-frame" title="mushaf" style="visibility:hidden"></iframe><div class="rd-text" id="rdText"></div><div class="rd-toast" id="rdToast"></div><div class="rd-oh" id="rdOh"><span id="rdOhL"></span><span id="rdOhR"></span></div><div class="rd-op" id="rdOp"></div></div>' +
       '<div class="rd-foot"><div class="rd-said" id="rdSaid"></div><div class="rd-row" id="rdChips"></div><div class="rd-row" id="rdBtns"></div><button type="button" class="rd-mic" id="rdMic" data-act="mic"><span>🎙</span></button></div>' +
-      '<div class="rd-sheet" id="rdSheet" hidden data-act="closeSheet"><div class="rd-sb" data-stop="1" id="rdSb"></div></div>';
+      '<div class="rd-sheet" id="rdSheet" hidden data-act="closeSheet"><div class="rd-sb" data-stop="1" id="rdSb"></div></div>' + '<div class="rd-home" id="rdHome" hidden></div>';
     frame = $('rdFrame');
     frame.addEventListener('load', function () { /* view.html posts ready itself */ });
+    installSwipe($('rdText'));
   }
   function paint() {
     var s = $('rdSura'), p = $('rdPg'); if (!R) return;
@@ -433,8 +440,17 @@
     if (oP) oP.textContent = num(R.page);
     if (s) s.textContent = R.ays.length ? D().sname(R.ays[0].s) : L().title;
   }
+  function paintPageMark() { var b = $('rdPageBm'); if (b && R) { b.classList.toggle('on', pageMarked(R.page)); b.textContent = pageMarked(R.page) ? '★' : '☆'; } }
+  function showHome() {
+    var h = $('rdHome'); if (!h) return; h.hidden = false;
+    h.innerHTML = '<div class="rd-homebar"><button type="button" data-act="exitHome">✕</button><input id="rdHomeQ" type="search" placeholder="گەڕان بە ناوی سوڕەت…" value="' + esc(homeQuery) + '"></div><h2>هەڵبژاردنی سوڕەت</h2><p>یەکێک لە ١١٤ سوڕەت هەڵبژێرە؛ لە لاپەڕەی دەستپێکی ئەو سوڕەتەوە دەست پێدەکەیت.</p><h3>لاپەڕە نیشانکراوەکان</h3><div class="rd-marklist">' + (pageMarks.length ? pageMarks.map(function(p){return '<button type="button" class="rd-mark" data-act="openMark" data-p="'+p+'">★ لاپەڕە '+num(p)+'</button>';}).join('') : '<span style="color:#888">هێشتا لاپەڕەیەک نیشان نەکراوە.</span>') + '</div><h3>هەموو سوڕەتەکان</h3><div class="rd-surahs" id="rdSurahs"><div style="padding:20px;color:#888">بارکردن…</div></div>';
+    var inp = $('rdHomeQ'); if (inp) inp.oninput = function(){homeQuery=this.value; paintSurahList();};
+    loadStarts().then(paintSurahList);
+  }
+  function paintSurahList() { var g=$('rdSurahs'); if(!g)return; var q=(homeQuery||'').toLowerCase(), a=[]; for(var n=1;n<=114;n++){var nm=D().sname(n); if(q && (String(n).indexOf(q)<0 && String(nm).toLowerCase().indexOf(q)<0))continue; a.push('<button type="button" class="rd-surah" data-act="openSurah" data-s="'+n+'"><span><b>'+esc(nm)+'</b><small style="display:block">'+num(n)+' · '+num(D().cnt(n))+' ئایەت</small></span><small>لاپەڕە '+num(startPages && startPages[n-1] || 1)+'</small></button>');} g.innerHTML=a.join('') || '<div style="padding:20px;color:#888">هیچ سوڕەتێک نەدۆزرایەوە.</div>'; }
+  function installSwipe(el) { if(!el || el.__rdSwipe)return; el.__rdSwipe=true; var x=0,y=0; el.addEventListener('touchstart',function(e){if(!e.touches||e.touches.length!==1)return;x=e.touches[0].clientX;y=e.touches[0].clientY;},{passive:true}); el.addEventListener('touchend',function(e){if(!R || !R.ready || Q.mode!=='mushaf' || !e.changedTouches || !e.changedTouches.length)return;var dx=e.changedTouches[0].clientX-x,dy=e.changedTouches[0].clientY-y;if(Math.abs(dx)>65 && Math.abs(dx)>Math.abs(dy)*1.25){if(dx<0 && R.page<604)load(R.page+1);else if(dx>0 && R.page>1)load(R.page-1);}},{passive:true}); }
   function paintFoot() {
-    if (!R) return; paint();
+    if (!R) return; paint(); paintPageMark();
     var t = L(), tot = R.ok + R.mist, acc = tot ? Math.round(R.ok / tot * 1000) / 10 : 100;
     var sec = R.t0 ? Math.round((Date.now() - R.t0) / 1000) : 0, mm = ('0' + Math.floor(sec / 60)).slice(-2) + ':' + ('0' + sec % 60).slice(-2);
     var c = $('rdChips'); if (c) c.innerHTML = '<div class="rd-chip ' + (R.mist ? 'bad' : '') + '">🧠 ' + num(R.mist) + '</div><div class="rd-chip good">' + num(acc) + '%</div><div class="rd-chip tm">' + (R.live ? 'LIVE · ' : '') + (R.listening ? '<span class="rd-dot"></span>' : '') + mm + '</div>';
@@ -496,7 +512,10 @@
     var b = e.target.closest('[data-act]'); if (!b) return; var a = b.getAttribute('data-act');
     if (a === 'closeSheet') { if (e.target.closest('[data-stop]')) return; var was = !!($('rdSb') && $('rdSb')._ay); ayahAct('closeSheet2'); $('rdSheet').hidden = true; if (was) setUi(false); return; }
     if (/^(aFrom|aListen|aTr|aTaf|aBm|aSim|aCopy|aShare|closeSheet2)$/.test(a)) { ayahAct(a, b); return; }
-    if (a === 'exit') return leave();
+    if (a === 'exit' || a === 'exitHome') return leave();
+    if (a === 'pageBm') { if (R) { togglePageMark(R.page); toast(pageMarked(R.page) ? 'لاپەڕەکە نیشان کرا ✓' : 'نیشانەی لاپەڕە لابرا'); } return; }
+    if (a === 'openMark') { var mp=+b.getAttribute('data-p'); var hm=$('rdHome'); if(hm)hm.hidden=true; return load(mp); }
+    if (a === 'openSurah') { var sn=+b.getAttribute('data-s'), sp=(startPages && startPages[sn-1]) || 1; var hm2=$('rdHome'); if(hm2)hm2.hidden=true; return load(sp); }
     if (a === 'mic') { if (!R) return; return R.listening ? stopListen() : startListen(); }
     if (a === 'next') return load(R.page + 1);
     if (a === 'prev') return load(R.page - 1);
@@ -530,7 +549,7 @@
   window.enterHifzRead = function (pg) {
     css(); shell();
     clearInterval(tick); tick = setInterval(function () { if (R && R.listening) paintFoot(); }, 1000);
-    load(pg || Q.page);
+    if (pg) load(pg); else { R = null; showHome(); }
   };
   if (window.__HIFZ_TEST) window.__HIFZ_READ = { R: function () { return R; }, onSpeech: onSpeech, align: align };
 })();
