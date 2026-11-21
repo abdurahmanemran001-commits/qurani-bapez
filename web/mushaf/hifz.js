@@ -42,6 +42,8 @@
   var P = loadPrefs();
   /* Migrate obsolete Kurdish translator IDs to the verified bundled edition. */
   if (P.tr === 'kur-burhanmuhammad' || P.tr === 'ckb-muhammadsalehbamoki') { P.tr = ''; savePrefs(); }
+  /* Editions API uses underscore object keys but hyphenated canonical edition names. */
+  if (P.tr && P.tr.indexOf('_') >= 0) { P.tr = P.tr.replace(/_/g, '-'); savePrefs(); }
   function savePrefs() { try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) {} }
   function masteredIn(n) { var o = P.prog[n] || {}, c = 0, k; for (k in o) if (o[k] > 0) c++; return c; }
   function totalMastered() { var t = 0, n; for (n = 1; n <= 114; n++) t += masteredIn(n); return t; }
