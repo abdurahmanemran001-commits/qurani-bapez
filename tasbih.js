@@ -63,10 +63,12 @@
   if (!byId[S.sel]) S.sel = 'sub';
   if (S.vib === undefined) S.vib = true;
   if (!(S.size >= 1 && S.size <= 5)) S.size = 3;
-  var STYLES = [['ring', '⭕ بازنە'], ['beads', '📿 مسبحە'], ['rosary', '🧿 مسبحەی هەڵواسراو'], ['digital', '🔢 دیجیتاڵ'], ['mechanical', '⚙ میکانیکی'], ['minimal', '▭ سادە'], ['wave', '🌊 ئاو'], ['star', '✴ ئەستێرە'], ['flower', '🌸 گوڵ'], ['heart', '❤ دڵ'], ['neon', '✨ نیۆن'], ['ripple', '💧 شەپۆل'], ['grid', '▦ ڕیزی دەنک'], ['moon', '🌙 مانگ'], ['full', '⬛ تەواوی شاشە']];
+  var STYLES = [['bead3d', '📿 مسبحەی دار (وەک ڤیدیۆ)'], ['ring', '⭕ بازنە'], ['beads', '📿 مسبحە'], ['rosary', '🧿 مسبحەی هەڵواسراو'], ['digital', '🔢 دیجیتاڵ'], ['mechanical', '⚙ میکانیکی'], ['minimal', '▭ سادە'], ['wave', '🌊 ئاو'], ['star', '✴ ئەستێرە'], ['flower', '🌸 گوڵ'], ['heart', '❤ دڵ'], ['neon', '✨ نیۆن'], ['ripple', '💧 شەپۆل'], ['grid', '▦ ڕیزی دەنک'], ['moon', '🌙 مانگ'], ['full', '⬛ تەواوی شاشە']];
+  if (!S.style) S.style = 'bead3d';
   if (!STYLES.some(function (s) { return s[0] === S.style; })) S.style = 'ring';
   if (S.theme !== 'dark') S.theme = 'light';
-  var BGS = [['plain', 'ساده'], ['pattern', 'نەخش'], ['green', 'سەوز'], ['night', 'شەو'], ['sand', 'لم']];
+  var BGS = [['ivory', 'عاج'], ['plain', 'ساده'], ['pattern', 'نەخش'], ['green', 'سەوز'], ['night', 'شەو'], ['sand', 'لم']];
+  if (!S.bg) S.bg = 'ivory';
   if (!BGS.some(function (b) { return b[0] === S.bg; })) S.bg = 'plain';
   var panelOpen = false, wakeLock = null;
   function save() {
@@ -113,6 +115,7 @@
   /* ---------- backgrounds ---------- */
   var PAT = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23176b4b' stroke-opacity='.14' stroke-width='1'%3E%3Crect x='15' y='15' width='30' height='30'/%3E%3Crect x='15' y='15' width='30' height='30' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/svg%3E\")";
   var BGCSS = {
+    ivory: ['linear-gradient(180deg,#fefdfb,#f4f0e9)', 'linear-gradient(180deg,#1b1f1c,#101411)'],
     plain: ['#f4f7f5', '#111815'],
     pattern: [PAT + ' #eef5f1', PAT + ' #0f1a15'],
     green: ['linear-gradient(160deg,#e3f3ea,#b9dcc9)', 'linear-gradient(160deg,#0f3d2c,#0a2219)'],
@@ -225,6 +228,12 @@
 
       '#tasbih .tb-sm .tb-num{font-size:34px}',
       '#tasbih .tb-sm .tb-of{font-size:11px;margin-top:2px}',
+      '#tasbih .tb-b3{width:290px;height:310px}',
+      '#tasbih .tb-b3 svg{transform:none;filter:drop-shadow(0 8px 14px rgba(120,100,60,.18))}',
+      '#tasbih .tb-b3 .tb-tap{inset:62px 62px 82px 62px;background:transparent;box-shadow:none;color:#14231c;font-family:Georgia,"Playfair Display",serif;display:flex;flex-direction:column;align-items:center;justify-content:center}',
+      '#tasbih .tb-b3 .tb-tap .tb-num{font-size:60px;font-weight:800}',
+      '#tasbih .tb-b3 .tb-tap.done{background:transparent;box-shadow:none}',
+      '#tasbih.tb-dark .tb-b3 .tb-tap{color:#eaf3ee}',
       '#tasbih .tb-rosary{width:260px;height:300px}',
       '#tasbih .tb-rosary .tb-tap{inset:auto;left:75px;top:60px;width:110px;height:110px}',
       '#tasbih .tb-tap.tb-clear{background:transparent!important;box-shadow:none!important}',
@@ -316,6 +325,15 @@
     if (st === 'ripple') return '<button type="button" class="tb-mtap tb-rip" id="tbTap" data-act="tap">' + NUM + BARH + '</button>';
     if (st === 'grid') return '<button type="button" class="tb-mtap tb-grid" id="tbTap" data-act="tap"><div class="tb-dots" id="tbDots"></div>' + NUM + '</button>';
     if (st === 'mechanical') return '<div class="tb-mech"><div class="tb-mwin" id="tbNum"></div><div class="tb-mof" id="tbOf"></div><button type="button" class="tb-mbtn" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
+    if (st === 'bead3d') return '<div class="tb-ring tb-b3"><svg width="290" height="310" viewBox="0 0 290 310" id="tbB3">' +
+      '<defs><radialGradient id="b3w" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#f6e8cd"/><stop offset=".6" stop-color="#d8bd8e"/><stop offset="1" stop-color="#b89562"/></radialGradient>' +
+      '<radialGradient id="b3g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4f9b7a"/><stop offset=".55" stop-color="#1a5c43"/><stop offset="1" stop-color="#0b2e21"/></radialGradient>' +
+      '<radialGradient id="b3d" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9f1ed"/></radialGradient></defs>' +
+      '<circle cx="145" cy="145" r="128" fill="#efe4cd" opacity=".55"/><circle cx="145" cy="145" r="106" fill="url(#b3d)" stroke="#e4dcc9" stroke-width="2"/>' +
+      '<g id="tbB3g"></g>' +
+      '<path d="M54 232 C50 244 49 250 49 256" stroke="#14452f" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="49" cy="262" rx="6.5" ry="9" fill="url(#b3g)"/>' +
+      '<path d="M49 271 C38 280 30 292 28 308 L70 308 C68 292 60 280 49 271Z" fill="#0f3d2a"/><path d="M49 273 L40 308 M49 273 L49 308 M49 273 L58 308" stroke="#2c6d51" stroke-width="1.2" fill="none" opacity=".7"/>' +
+      '</svg><button type="button" class="tb-tap" id="tbTap" data-act="tap">' + NUM + '</button></div>';
     if (st === 'beads') return '<div class="tb-ring"><svg width="230" height="230" viewBox="0 0 230 230" id="tbBeads"></svg><button type="button" class="tb-tap" id="tbTap" data-act="tap" style="inset:46px">' + NUM + '</button></div>';
     if (st === 'rosary') return '<div class="tb-ring tb-rosary"><svg width="260" height="300" viewBox="0 0 260 300" id="tbRos" ' + nt + '></svg><button type="button" class="tb-tap tb-sm" id="tbTap" data-act="tap">' + NUM + '</button></div>';
     if (st === 'wave') return '<div class="tb-ring"><button type="button" class="tb-tap tb-wave" id="tbTap" data-act="tap" style="inset:0"><i class="tb-wf" id="tbWf"></i>' + NUM + '</button></div>';
@@ -380,6 +398,15 @@
   function filledOf(c, t, n) { return (t > 0 && c >= t) ? n : (c % n); }
   function unlit() { return S.theme === 'dark' ? '#3a4a43' : '#cfd9d4'; }
   var PX = {
+    bead3d: function (c, t) {
+      var g = $('tbB3g'); if (!g) return;
+      var n = nDots(t), filled = filledOf(c, t, n), r = n > 70 ? 6.2 : (n > 40 ? 7.4 : 9.4), h = '', R0 = 118;
+      for (var i = 0; i < n; i++) {
+        var a = (135 + (i / n) * 360) * Math.PI / 180, x = 145 + R0 * Math.cos(a), y = 145 + R0 * Math.sin(a), on = i < filled;
+        h += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r + '" fill="url(#' + (on ? 'b3g' : 'b3w') + ')" stroke="' + (on ? '#0b2e21' : '#b99a68') + '" stroke-width=".7"/>';
+      }
+      g.innerHTML = h;
+    },
     rosary: function (c, t) {
       var svg = $('tbRos'); if (!svg) return;
       var n = nDots(t), f = filledOf(c, t, n), r = n > 60 ? 3.2 : (n > 40 ? 4.5 : 6), h = '', i;
@@ -498,7 +525,7 @@
       S.counts[it.id] = 0; save(); paint(); return;
     }
     if (act === 'panel') { panelOpen = !panelOpen; build(); return; }
-    if (el.hasAttribute('data-style')) { S.style = el.getAttribute('data-style'); save(); build(); return; }
+    if (el.hasAttribute('data-style')) { S.style = el.getAttribute('data-style'); if (S.style === 'bead3d' && S.bg === 'plain') S.bg = 'ivory'; save(); build(); return; }
     if (el.hasAttribute('data-theme')) { S.theme = el.getAttribute('data-theme'); save(); build(); return; }
     if (el.hasAttribute('data-bgset')) { S.bg = el.getAttribute('data-bgset'); save(); build(); return; }
     if (el.hasAttribute('data-flag')) {
