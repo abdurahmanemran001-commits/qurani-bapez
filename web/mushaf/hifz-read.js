@@ -18,7 +18,7 @@
   try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
-  var CSS_WORDS = '.hz{color:transparent!important;border-bottom:2px solid #dcdcdc;border-radius:3px}.ok{animation:rdIn .4s}.er{color:#d6342b!important;text-decoration:underline dotted #d6342b 2px;text-underline-offset:7px}.cur{background:rgba(0,0,0,.13);border-radius:6px}.hp{box-shadow:inset 0 -3px 0 #d99a4e}@keyframes rdIn{0%{color:#1fa75a}100%{color:inherit}}';
+  var CSS_WORDS = '.hz,.hz *{color:transparent!important;border-bottom:2px solid #dcdcdc;border-radius:3px}.ok{animation:rdIn .4s}.er,.er *{color:#d6342b!important;text-decoration:underline dotted #d6342b 2px;text-underline-offset:7px}.cur{background:rgba(0,0,0,.13);border-radius:6px}.hp{box-shadow:inset 0 -3px 0 #d99a4e}@keyframes rdIn{0%{color:#1fa75a}100%{color:inherit}}';
 
   function css() {
     if ($('rdCss')) return;
@@ -113,7 +113,7 @@
     box.onclick = function (ev) { var dt = ev.target.closest && ev.target.closest('.rd-dots'); if (dt) { ayahSheet(R.ays[+dt.getAttribute('data-ai')]); return; } if (lpF) { lpF = false; return; } if ($('rdSheet').hidden) setUi(!R.ui); };
     box.style.display = Q.mode === 'mushaf' ? 'none' : 'block';
     if (!$('rdTextCss')) { var st = document.createElement('style'); st.id = 'rdTextCss'; st.textContent = CSS_WORDS; document.head.appendChild(st); }
-    paintTr();
+    paintTr(); paintTaj();
   }
   function setCls(i, add, rem) { var w = R.words[i]; if (!w) return; w.els.forEach(function (e) { (rem || []).forEach(function (c) { e.classList.remove(c); }); (add || []).forEach(function (c) { e.classList.add(c); }); }); }
   function applyAll() {
@@ -356,6 +356,30 @@
   }
 
   /* ---------- translation inside text/tr mode ---------- */
+  var TJC = { h: '#9a9a9a', l: '#9a9a9a', s: '#9a9a9a', n: '#e08a00', p: '#e08a00', m: '#d6342b', o: '#d6342b', q: '#2a6fdb', g: '#2e9e4f', c: '#d6338a', f: '#d6338a', w: '#1b9bd7', i: '#1fa05a', a: '#1fa05a', u: '#1fa05a', d: '#1fa05a', b: '#1fa05a' };
+  function tjLoad(sura) {
+    var key = 'rd_tj_' + sura;
+    try { var c = localStorage.getItem(key); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
+    return fetch('https://api.alquran.cloud/v1/surah/' + sura + '/quran-tajweed').then(function (r) { return r.json(); }).then(function (j) {
+      var arr = j.data.ayahs.map(function (x) { return x.text; }); try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) {} return arr; });
+  }
+  function tjHtml(t) {
+    return t.replace(/\[([a-z])(?::\d+)?\[([^\]]*)\]/g, function (m, c, x) { return TJC[c] ? '<span style="color:' + TJC[c] + '">' + esc(x) + '</span>' : esc(x); }).replace(/\[[^\]]*$/g, '');
+  }
+  function paintTaj() {
+    if (!R || !Q.taj || Q.mode === 'mushaf') return;
+    var ss = {}; R.ays.forEach(function (a) { ss[a.s] = 1; });
+    Promise.all(Object.keys(ss).map(function (s) { return tjLoad(+s).then(function (arr) { return [s, arr]; }).catch(function () { return [s, null]; }); })).then(function (all) {
+      var m = {}; all.forEach(function (x) { m[x[0]] = x[1]; });
+      R.ays.forEach(function (ay) {
+        var arr = m[ay.s]; if (!arr || !arr[ay.a - 1]) return;
+        var ws = arr[ay.a - 1].replace(/\s+/g, ' ').trim().split(' ');
+        if (ws.length === ay.words.length + 4 && ay.a === 1) ws = ws.slice(4);
+        if (ws.length !== ay.words.length) return;
+        ay.words.forEach(function (w, i) { w.els.forEach(function (el) { el.innerHTML = tjHtml(ws[i]); }); });
+      });
+    });
+  }
   function tlLoad(sura) {
     var key = 'rd_tl_' + sura;
     try { var c = localStorage.getItem(key); if (c) return Promise.resolve(JSON.parse(c)); } catch (e) {}
@@ -433,7 +457,7 @@
     sb.innerHTML = '<h3>' + esc(t.fmt) + '</h3><div style="color:#888;margin:4px 0">' + esc(t.rmode) + '</div>' +
       opt('mushaf', '📖', t.mushaf, t.mushafSub) + opt('text', '📄', t.text, t.textSub) + opt('tr', '🌐', t.tr, t.trSub) +
       '<button type="button" class="rd-opt" data-act="mtype"><span>🕌</span><span style="flex:1">' + esc(t.mtype) + '</span><span>›</span></button>' +
-      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) : '') +
+      (Q.mode !== 'mushaf' ? sl('rdFont', t.fontAr, 22, 48, Q.font) + sw('taj', Q.taj, t.taj) : '') +
       (Q.mode === 'tr' ? sw('tl', Q.tl, t.tlOn) + sw('trOn', Q.trOn, t.trOn) +
         '<button type="button" class="rd-opt" data-act="trPick"><span>⚙</span><span style="flex:1">' + esc(t.trOf) + ': ' + esc(D().edInfo(D().curEd())[1]) + '</span><span>›</span></button>' + sl('rdTf', t.fontTr, 12, 30, Q.tfont) : '') +
       '<button type="button" class="rd-opt' + (Q.asr ? ' on' : '') + '" data-act="asr" id="rdAsr"><span>🎯</span><span style="flex:1">' + esc(asrLabel()) + '</span><i></i></button><div style="color:#888;font-size:12px">' + esc(t.asrHint) + '</div>';
