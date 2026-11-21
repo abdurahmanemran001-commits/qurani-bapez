@@ -6,15 +6,15 @@
   if (window.__hifzRead) return; window.__hifzRead = true;
   var D = function () { return window.__hifzData; };
   var T = {
-    ckb: { title: 'خوێندنەوە و لەبەرکردن', page: 'لاپەڕە', hidOn: 'ئایەتە شاراوەکان: چالاک', hidOff: 'ئایەتە شاراوەکان: ناچالاک', mist: 'هەڵە', acc: 'ڕاستی', view: 'شێوازی بینین', mushaf: 'موسحەف', text: 'دەقی قورئان', tr: 'وەرگێڕان', font: 'قەبارەی نووسین', trPick: 'وەرگێڕ', loadErr: 'لاپەڕەکە یان دەقەکە بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', done: 'لاپەڕە تەواو بوو ✓', close: 'داخستن', hintW: 'وشەی دواتر', hintA: 'ئایەتەکە پیشان بدە', back: 'گەڕانەوە', trLoad: 'وەرگێڕان بار دەکرێت…', trNone: 'وەرگێڕان نەهات', search: 'گەڕان…', tap: 'مایک دابگرە و بخوێنە', aya: 'ئایەت', aListen: 'گوێ بگرە', aTr: 'وەرگێڕان', aTaf: 'تەفسیر', aBm: 'نیشانەی ئایەت زیاد بکە', aBmOff: 'نیشانەی ئایەت لابە', aSim: 'ئایەتە لێکچووەکان', aNoSim: 'ئایەتی لێکچوو نییە', aCopy: 'کۆپی', aShare: 'بڵاوکردنەوە', aFrom: 'لێرەوە دەست پێ بکە', aCopied: 'کۆپی کرا ✓', aTafNo: 'تەفسیر بەردەست نییە', aLoad: 'چاوەڕێ بکە…', asr: 'ناسینەوەی وردتر (مۆدێلی قورئان، ~٤٠MB)', asrOn: 'ناسینەوەی وردتر: چالاک', asrOff: 'ناسینەوەی وردتر: ناچالاک', asrLoad: 'مۆدێل دادەبەزێت', asrErr: 'مۆدێل دانەبەزی. ئینتەرنێت بپشکنە.', asrHint: 'یەکجار دادەبەزێت و دواتر بێ ئینتەرنێت کار دەکات.' },
-    en: { title: 'Read & memorise', page: 'Page', hidOn: 'Hidden ayat: on', hidOff: 'Hidden ayat: off', mist: 'Mistakes', acc: 'Accuracy', view: 'View', mushaf: 'Mushaf', text: 'Quran text', tr: 'Translation', font: 'Font size', trPick: 'Translator', loadErr: 'Could not load the page or text. Check your internet.', nomic: 'This browser has no voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', done: 'Page complete ✓', close: 'Close', hintW: 'Next word', hintA: 'Show the ayah', back: 'Back', trLoad: 'Loading translation…', trNone: 'Translation unavailable', search: 'Search…', tap: 'Tap the mic and recite', aya: 'Ayah', aListen: 'Listen', aTr: 'Translation', aTaf: 'Tafsir', aBm: 'Add bookmark', aBmOff: 'Remove bookmark', aSim: 'Similar ayat', aNoSim: 'No similar ayat', aCopy: 'Copy', aShare: 'Share', aFrom: 'Start from here', aCopied: 'Copied ✓', aTafNo: 'Tafsir unavailable', aLoad: 'Loading…', asr: 'High-accuracy mic (Quran model, ~40MB)', asrOn: 'High-accuracy mic: on', asrOff: 'High-accuracy mic: off', asrLoad: 'Downloading model', asrErr: 'Model download failed. Check your internet.', asrHint: 'Downloads once, then works offline.' },
-    ar: { title: 'القراءة والحفظ', page: 'صفحة', hidOn: 'الآيات المخفية: مفعل', hidOff: 'الآيات المخفية: غير مفعل', mist: 'أخطاء', acc: 'الدقة', view: 'العرض', mushaf: 'مصحف', text: 'نص قرآني', tr: 'ترجمة', font: 'حجم الخط', trPick: 'المترجم', loadErr: 'تعذّر تحميل الصفحة أو النص. تحقق من الإنترنت.', nomic: 'المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', done: 'اكتملت الصفحة ✓', close: 'إغلاق', hintW: 'الكلمة التالية', hintA: 'إظهار الآية', back: 'رجوع', trLoad: 'جارٍ تحميل الترجمة…', trNone: 'الترجمة غير متاحة', search: 'بحث…', tap: 'اضغط على الميكروفون واقرأ', aya: 'الآية', aListen: 'استمع', aTr: 'ترجمة', aTaf: 'تفسير', aBm: 'أضف إشارة مرجعية', aBmOff: 'احذف الإشارة المرجعية', aSim: 'المتشابهات', aNoSim: 'لا توجد آيات متشابهة', aCopy: 'نسخ', aShare: 'شارك', aFrom: 'ابدأ من هنا', aCopied: 'تم النسخ ✓', aTafNo: 'التفسير غير متاح', aLoad: 'جارٍ التحميل…', asr: 'ميكروفون عالي الدقة (نموذج القرآن ~٤٠MB)', asrOn: 'الميكروفون عالي الدقة: مفعل', asrOff: 'الميكروفون عالي الدقة: غير مفعل', asrLoad: 'جارٍ تنزيل النموذج', asrErr: 'فشل تنزيل النموذج. تحقق من الإنترنت.', asrHint: 'يُنزَّل مرة واحدة ثم يعمل دون إنترنت.' }
+    ckb: { title: 'خوێندنەوە و لەبەرکردن', page: 'لاپەڕە', hidOn: 'ئایەتە شاراوەکان: چالاک', hidOff: 'ئایەتە شاراوەکان: ناچالاک', mist: 'هەڵە', acc: 'ڕاستی', view: 'شێوازی بینین', mushaf: 'موسحەف', text: 'دەقی قورئان', tr: 'وەرگێڕان', font: 'قەبارەی نووسین', trPick: 'وەرگێڕ', loadErr: 'لاپەڕەکە یان دەقەکە بار نەبوو. ئینتەرنێت بپشکنە.', nomic: 'ئەم وێبگەڕە پشتگیری ناسینەوەی دەنگ ناکات. Chrome بەکاربهێنە.', denied: 'مۆڵەتی مایکرۆفۆن نەدراوە.', net: 'ناسینەوەی دەنگ ئینتەرنێت دەوێت.', done: 'لاپەڕە تەواو بوو ✓', close: 'داخستن', hintW: 'وشەی دواتر', hintA: 'ئایەتەکە پیشان بدە', back: 'گەڕانەوە', trLoad: 'وەرگێڕان بار دەکرێت…', trNone: 'وەرگێڕان نەهات', search: 'گەڕان…', tap: 'مایک دابگرە و بخوێنە', taj: 'ڕەنگی تەجوید', gap: 'ڕێژەی نێوان دێڕەکان', aya: 'ئایەت', aListen: 'گوێ بگرە', aTr: 'وەرگێڕان', aTaf: 'تەفسیر', aBm: 'نیشانەی ئایەت زیاد بکە', aBmOff: 'نیشانەی ئایەت لابە', aSim: 'ئایەتە لێکچووەکان', aNoSim: 'ئایەتی لێکچوو نییە', aCopy: 'کۆپی', aShare: 'بڵاوکردنەوە', aFrom: 'لێرەوە دەست پێ بکە', aCopied: 'کۆپی کرا ✓', aTafNo: 'تەفسیر بەردەست نییە', aLoad: 'چاوەڕێ بکە…', asr: 'ناسینەوەی وردتر (مۆدێلی قورئان، ~٤٠MB)', asrOn: 'ناسینەوەی وردتر: چالاک', asrOff: 'ناسینەوەی وردتر: ناچالاک', asrLoad: 'مۆدێل دادەبەزێت', asrErr: 'مۆدێل دانەبەزی. ئینتەرنێت بپشکنە.', asrHint: 'یەکجار دادەبەزێت و دواتر بێ ئینتەرنێت کار دەکات.' },
+    en: { title: 'Read & memorise', page: 'Page', hidOn: 'Hidden ayat: on', hidOff: 'Hidden ayat: off', mist: 'Mistakes', acc: 'Accuracy', view: 'View', mushaf: 'Mushaf', text: 'Quran text', tr: 'Translation', font: 'Font size', trPick: 'Translator', loadErr: 'Could not load the page or text. Check your internet.', nomic: 'This browser has no voice recognition. Use Chrome.', denied: 'Microphone permission denied.', net: 'Voice recognition needs internet.', done: 'Page complete ✓', close: 'Close', hintW: 'Next word', hintA: 'Show the ayah', back: 'Back', trLoad: 'Loading translation…', trNone: 'Translation unavailable', search: 'Search…', tap: 'Tap the mic and recite', taj: 'Tajweed colours', gap: 'Line spacing', aya: 'Ayah', aListen: 'Listen', aTr: 'Translation', aTaf: 'Tafsir', aBm: 'Add bookmark', aBmOff: 'Remove bookmark', aSim: 'Similar ayat', aNoSim: 'No similar ayat', aCopy: 'Copy', aShare: 'Share', aFrom: 'Start from here', aCopied: 'Copied ✓', aTafNo: 'Tafsir unavailable', aLoad: 'Loading…', asr: 'High-accuracy mic (Quran model, ~40MB)', asrOn: 'High-accuracy mic: on', asrOff: 'High-accuracy mic: off', asrLoad: 'Downloading model', asrErr: 'Model download failed. Check your internet.', asrHint: 'Downloads once, then works offline.' },
+    ar: { title: 'القراءة والحفظ', page: 'صفحة', hidOn: 'الآيات المخفية: مفعل', hidOff: 'الآيات المخفية: غير مفعل', mist: 'أخطاء', acc: 'الدقة', view: 'العرض', mushaf: 'مصحف', text: 'نص قرآني', tr: 'ترجمة', font: 'حجم الخط', trPick: 'المترجم', loadErr: 'تعذّر تحميل الصفحة أو النص. تحقق من الإنترنت.', nomic: 'المتصفح لا يدعم التعرف على الصوت. استخدم Chrome.', denied: 'تم رفض إذن الميكروفون.', net: 'التعرف على الصوت يحتاج إلى إنترنت.', done: 'اكتملت الصفحة ✓', close: 'إغلاق', hintW: 'الكلمة التالية', hintA: 'إظهار الآية', back: 'رجوع', trLoad: 'جارٍ تحميل الترجمة…', trNone: 'الترجمة غير متاحة', search: 'بحث…', tap: 'اضغط على الميكروفون واقرأ', taj: 'ألوان التجويد', gap: 'تباعد الأسطر', aya: 'الآية', aListen: 'استمع', aTr: 'ترجمة', aTaf: 'تفسير', aBm: 'أضف إشارة مرجعية', aBmOff: 'احذف الإشارة المرجعية', aSim: 'المتشابهات', aNoSim: 'لا توجد آيات متشابهة', aCopy: 'نسخ', aShare: 'شارك', aFrom: 'ابدأ من هنا', aCopied: 'تم النسخ ✓', aTafNo: 'التفسير غير متاح', aLoad: 'جارٍ التحميل…', asr: 'ميكروفون عالي الدقة (نموذج القرآن ~٤٠MB)', asrOn: 'الميكروفون عالي الدقة: مفعل', asrOff: 'الميكروفون عالي الدقة: غير مفعل', asrLoad: 'جارٍ تنزيل النموذج', asrErr: 'فشل تنزيل النموذج. تحقق من الإنترنت.', asrHint: 'يُنزَّل مرة واحدة ثم يعمل دون إنترنت.' }
   };
   function L() { var l = D().lang(); return T[l] || T.en; }
   function $(i) { return document.getElementById(i); }
   var esc = function (x) { return D().esc(x); }, num = function (n) { return D().num(n); };
   var R = null, rec = null, restartT = null, frame = null, loadId = 0, tick = null, toastT = null;
-  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0 };
+  var K = 'hifz_read_v1', Q = { hide: 1, mode: 'mushaf', font: 30, page: 1, asr: 0, taj: 0, gap: 2.3 };
   try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
@@ -37,7 +37,7 @@
       '.rd-said{font-size:12.5px;color:#777;text-align:center;direction:rtl;min-height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline-end:84px}' +
       '.rd-sheet{position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}.rd-sheet[hidden]{display:none}.rd-sb{width:100%;max-height:78%;overflow:auto;background:#fff;border-radius:20px 20px 0 0;padding:16px}.rd-sb h3{margin:0 0 10px;font-size:15px}' +
       '.rd-opt{display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:1.5px solid #e2e2e2;border-radius:14px;padding:13px;margin:8px 0;background:#fff;font:inherit;font-size:15px}.rd-opt.on{border-color:#222}.rd-opt i{margin-inline-start:auto;width:18px;height:18px;border-radius:50%;border:2px solid #aaa}.rd-opt.on i{border:5px solid #222}' +
-      '.rd-it{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:0;border-bottom:1px solid #e6e6e6;background:transparent;padding:15px 4px;font:inherit;font-size:16px;color:#222}.rd-it span:first-child{width:28px;text-align:center;font-size:20px;color:#666}.rd-exp{padding:10px 8px 14px;font-size:15px;line-height:1.95;color:#333;white-space:pre-wrap;background:#fafafa;border-radius:10px;margin:4px 0}.rd-hd{display:flex;align-items:center;gap:10px;margin-bottom:6px}.rd-hd b{flex:1}.rd-ref{border:1.5px solid #999;border-radius:8px;padding:4px 9px;font-size:14px}.rd-x{border:0;background:transparent;font-size:26px;color:#555}.sel{background:rgba(0,0,0,.09);border-radius:6px}.rd-in{width:100%;border:1px solid #ddd;border-radius:12px;padding:9px 12px;font:inherit;margin-bottom:8px}.rd-msg{text-align:center;padding:30px;color:#c0392b}';
+      '.rd-oh{position:absolute;left:0;right:0;top:0;display:none;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top)) 18px 0;font-size:15px;color:#333;pointer-events:none;direction:ltr}.rd-op{position:absolute;right:20px;bottom:calc(8px + env(safe-area-inset-bottom));display:none;font-size:16px;color:#333;pointer-events:none}.rd-full .rd-oh{display:flex}.rd-full .rd-op{display:block}.rd-full .rd-top,.rd-full .rd-foot{display:none!important}.rd-it{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:0;border-bottom:1px solid #e6e6e6;background:transparent;padding:15px 4px;font:inherit;font-size:16px;color:#222}.rd-it span:first-child{width:28px;text-align:center;font-size:20px;color:#666}.rd-exp{padding:10px 8px 14px;font-size:15px;line-height:1.95;color:#333;white-space:pre-wrap;background:#fafafa;border-radius:10px;margin:4px 0}.rd-hd{display:flex;align-items:center;gap:10px;margin-bottom:6px}.rd-hd b{flex:1}.rd-ref{border:1.5px solid #999;border-radius:8px;padding:4px 9px;font-size:14px}.rd-x{border:0;background:transparent;font-size:26px;color:#555}.sel{background:rgba(0,0,0,.09);border-radius:6px}.rd-in{width:100%;border:1px solid #ddd;border-radius:12px;padding:9px 12px;font:inherit;margin-bottom:8px}.rd-msg{text-align:center;padding:30px;color:#c0392b}';
     document.head.appendChild(s);
   }
   function view() {
@@ -56,15 +56,17 @@
   function load(pg) {
     pg = Math.max(1, Math.min(604, +pg || 1)); Q.page = pg; saveQ();
     var id = ++loadId; stopListen(true);
-    R = { page: pg, ready: false, words: [], ays: [], pos: 0, fails: {}, soft: {}, ok: 0, mist: 0, msg: '', said: '', listening: false, t0: 0, base: 0, cur: 0, err: '' };
+    R = { ui: true, page: pg, ready: false, words: [], ays: [], pos: 0, fails: {}, soft: {}, ok: 0, mist: 0, msg: '', said: '', listening: false, t0: 0, base: 0, cur: 0, err: '' };
     paint(); paintFoot();
-    var fr = $('rdFrame'); fr.style.visibility = 'hidden'; fr.src = 'mushaf/view.html?m=q&p=' + pg;
+    var fr = $('rdFrame'); fr.style.visibility = 'hidden'; fr.src = 'mushaf/view.html?m=' + (Q.taj ? 't' : 'q') + '&p=' + pg;
     R.id = id;
   }
   function onReady() {
     var doc, id = loadId; try { doc = frame.contentDocument; } catch (e) { doc = null; }
     if (!doc) { R.err = L().loadErr; return paintFoot(); }
-    var st = doc.createElement('style'); st.textContent = CSS_WORDS; doc.head.appendChild(st);
+    var st = doc.createElement('style');
+    st.textContent = CSS_WORDS + 'html,body{background:#f7f6f6!important;margin:0}.pg{display:flex;flex-direction:column;justify-content:space-evenly;min-height:100vh;box-sizing:border-box;padding:38px 0 34px}.pg .line:not(.hd){line-height:var(--lh,2.3)!important}.pg .line.hd{margin:6px 0!important}';
+    doc.head.appendChild(st); doc.documentElement.style.setProperty('--lh', String(Q.gap));
     var groups = [], map = {};
     [].slice.call(doc.querySelectorAll('.line .ayah')).forEach(function (sp) {
       var key = sp.getAttribute('data-sura') + ':' + sp.getAttribute('data-ayah'), g = map[key];
@@ -74,6 +76,7 @@
     var suras = [], seen = {}; groups.forEach(function (g) { if (!seen[g.s]) { seen[g.s] = 1; suras.push(g.s); } });
     Promise.all(suras.map(D().ensureSura)).then(function (oks) {
       if (id !== loadId) return;
+      if (!groups.length && Q.taj) { Q.taj = 0; saveQ(); return load(R.page); }
       if (!groups.length || oks.some(function (x) { return !x; })) { R.err = L().loadErr; return paintFoot(); }
       groups.forEach(function (g, gi) {
         var toks = tokensOf(g.s, g.a), nw = toks.length, nsp = g.spans.length, last = gi === groups.length - 1 && groups.length > 1, first = gi === 0 && groups.length > 1;
@@ -89,7 +92,6 @@
         });
       });
       R.ready = true; fr_show(); buildText(); applyAll(); paintFoot();
-      doc.addEventListener('click', function (ev) { var el = ev.target; while (el && !(el.classList && el.classList.contains('ayah'))) el = el.parentNode; if (el) tapAyah(el); });
       if (R.wantListen) { R.wantListen = false; startListen(); }
     });
   }
@@ -102,7 +104,10 @@
     });
     box.innerHTML = h;
     [].slice.call(box.querySelectorAll('.w')).forEach(function (sp) { R.words[+sp.getAttribute('data-t')].els.push(sp); });
-    box.onclick = function (ev) { var el = ev.target.closest && ev.target.closest('.w'); if (el) tapAyah(el); };
+    var lpT = null, lpF = false;
+    box.ontouchstart = box.onmousedown = function (ev) { var el = ev.target.closest && ev.target.closest('.w'); clearTimeout(lpT); lpF = false; if (!el) return; lpT = setTimeout(function () { lpF = true; tapAyah(el); try { navigator.vibrate && navigator.vibrate(15); } catch (x) {} }, 450); };
+    box.ontouchmove = box.onmouseup = box.ontouchend = function () { clearTimeout(lpT); };
+    box.onclick = function () { if (lpF) { lpF = false; return; } if ($('rdSheet').hidden) setUi(!R.ui); };
     box.style.display = Q.mode === 'mushaf' ? 'none' : 'block';
     if (!$('rdTextCss')) { var st = document.createElement('style'); st.id = 'rdTextCss'; st.textContent = CSS_WORDS; document.head.appendChild(st); }
     paintTr();
@@ -131,6 +136,9 @@
   var SEL = null, AU = null;
   function ayahText(ay) { return ay.words.map(function (w) { return w.disp; }).join(' '); }
   function selAyah(ay, on) { ay.words.forEach(function (w) { w.els.forEach(function (e) { e.classList[on ? 'add' : 'remove']('sel'); }); }); }
+  function setUi(on) {
+    if (!R) return; R.ui = on; var v = $('hifzReadView'); if (v) v.classList.toggle('rd-full', !on);
+  }
   function tapAyah(el) {
     if (!R || !R.ready) return;
     var w = null; R.words.forEach(function (x) { if (!w && x.els.indexOf(el) >= 0) w = x; });
@@ -177,7 +185,7 @@
   function ayahAct(a, b) {
     var sb = $('rdSb'), ay = sb && sb._ay; if (!ay) return false;
     var d = D(), t = L(), X = $('rdX_' + a);
-    if (a === 'closeSheet2') { $('rdSheet').hidden = true; if (SEL) selAyah(SEL, false); SEL = null; try { if (AU) AU.pause(); } catch (e) {} return true; }
+    if (a === 'closeSheet2') { $('rdSheet').hidden = true; try { frame.contentWindow.selectAyah(0); } catch (x) {} if (SEL) selAyah(SEL, false); SEL = null; try { if (AU) AU.pause(); } catch (e) {} return true; }
     if (a === 'aFrom') { var i0 = R.words.indexOf(ay.words[0]); if (R.listening) stopListen(true); R.pos = R.base = R.cur = i0; applyAll(); paintFoot(); ayahAct('closeSheet2'); return true; }
     if (a === 'aListen') { playAyah(ay.s, ay.a); return true; }
     var full = ayahText(ay) + ' ﴿' + ay.a + '﴾ [' + d.sname(ay.s) + ' ' + ay.s + ':' + ay.a + ']';
@@ -363,7 +371,7 @@
     v.dir = D().rtl() ? 'rtl' : 'ltr'; v.hidden = false;
     v.innerHTML = '<div class="rd-top"><button type="button" class="rd-ib" data-act="exit" aria-label="' + esc(t.back) + '">✕</button><button type="button" class="rd-ib" data-act="next" aria-label="next">›</button>' +
       '<div class="rd-t"><b id="rdSura"></b><small id="rdPg"></small></div><button type="button" class="rd-ib" data-act="prev" aria-label="prev">‹</button></div>' +
-      '<div class="rd-body"><iframe id="rdFrame" class="rd-frame" title="mushaf" style="visibility:hidden"></iframe><div class="rd-text" id="rdText"></div><div class="rd-toast" id="rdToast"></div></div>' +
+      '<div class="rd-body"><iframe id="rdFrame" class="rd-frame" title="mushaf" style="visibility:hidden"></iframe><div class="rd-text" id="rdText"></div><div class="rd-toast" id="rdToast"></div><div class="rd-oh" id="rdOh"><span id="rdOhL"></span><span id="rdOhR"></span></div><div class="rd-op" id="rdOp"></div></div>' +
       '<div class="rd-foot"><div class="rd-said" id="rdSaid"></div><div class="rd-row" id="rdChips"></div><div class="rd-row" id="rdBtns"></div><button type="button" class="rd-mic" id="rdMic" data-act="mic"><span>🎙</span></button></div>' +
       '<div class="rd-sheet" id="rdSheet" hidden data-act="closeSheet"><div class="rd-sb" data-stop="1" id="rdSb"></div></div>';
     frame = $('rdFrame');
@@ -372,6 +380,12 @@
   function paint() {
     var s = $('rdSura'), p = $('rdPg'); if (!R) return;
     if (p) p.textContent = L().page + ' ' + num(R.page);
+    var JP = [1, 22, 42, 62, 82, 102, 121, 142, 162, 182, 201, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582], j = 1, q;
+    for (q = 0; q < JP.length; q++) if (JP[q] <= R.page) j = q + 1;
+    var oL = $('rdOhL'), oR = $('rdOhR'), oP = $('rdOp');
+    if (oL) oL.textContent = R.ays.length ? D().sname(R.ays[0].s) : '';
+    if (oR) oR.textContent = (D().lang() === 'en' ? 'Juz ' : 'جزء ') + num(j);
+    if (oP) oP.textContent = num(R.page);
     if (s) s.textContent = R.ays.length ? D().sname(R.ays[0].s) : L().title;
   }
   function paintFoot() {
@@ -391,7 +405,10 @@
     sb.innerHTML = '<h3>' + esc(t.view) + '</h3>' + opt('mushaf', '📖', t.mushaf) + opt('text', '📄', t.text) + opt('tr', '🌐', t.tr) +
       (Q.mode === 'tr' ? '<button type="button" class="rd-opt" data-act="trPick"><span>⚙</span><span>' + esc(t.trPick) + ': ' + esc(D().edInfo(D().curEd())[1]) + '</span></button>' : '') +
       '<button type="button" class="rd-opt' + (Q.asr ? ' on' : '') + '" data-act="asr" id="rdAsr"><span>🎯</span><span>' + esc(asrLabel()) + '</span><i></i></button><div style="color:#888;font-size:12px">' + esc(t.asrHint) + '</div>' +
+      '<button type="button" class="rd-opt' + (Q.taj ? ' on' : '') + '" data-act="taj"><span>🎨</span><span>' + esc(t.taj) + '</span><i></i></button>' +
+      '<div style="margin:6px 0"><div>' + esc(t.gap) + '</div><input type="range" min="18" max="34" value="' + Math.round(Q.gap * 10) + '" id="rdGap" style="width:100%"></div>' +
       (Q.mode !== 'mushaf' ? '<div style="margin-top:8px"><div>' + esc(t.font) + '</div><input type="range" min="22" max="48" value="' + Q.font + '" id="rdFont" style="width:100%"></div>' : '');
+    var g = $('rdGap'); if (g) g.oninput = function () { Q.gap = +this.value / 10; saveQ(); try { frame.contentDocument.documentElement.style.setProperty('--lh', String(Q.gap)); } catch (e) {} };
     var f = $('rdFont'); if (f) f.oninput = function () { Q.font = +this.value; saveQ(); [].slice.call(document.querySelectorAll('#rdText .rd-ws')).forEach(function (e) { e.style.fontSize = Q.font + 'px'; }); };
   }
   function asrLabel() {
@@ -424,7 +441,7 @@
   }
   function onClick(e) {
     var b = e.target.closest('[data-act]'); if (!b) return; var a = b.getAttribute('data-act');
-    if (a === 'closeSheet') { if (e.target.closest('[data-stop]')) return; ayahAct('closeSheet2'); $('rdSheet').hidden = true; return; }
+    if (a === 'closeSheet') { if (e.target.closest('[data-stop]')) return; var was = !!($('rdSb') && $('rdSb')._ay); ayahAct('closeSheet2'); $('rdSheet').hidden = true; if (was) setUi(false); return; }
     if (/^(aFrom|aListen|aTr|aTaf|aBm|aSim|aCopy|aShare|closeSheet2)$/.test(a)) { ayahAct(a, b); return; }
     if (a === 'exit') return leave();
     if (a === 'mic') { if (!R) return; return R.listening ? stopListen() : startListen(); }
@@ -435,11 +452,17 @@
     if (a === 'ha') return hintWord(true);
     if (a === 'view') return sheetView();
     if (a === 'mode') { Q.mode = b.getAttribute('data-m'); saveQ(); fr_show(); var tx = $('rdText'); if (tx) tx.style.display = Q.mode === 'mushaf' ? 'none' : 'block'; paintTr(); sheetView(); return; }
+    if (a === 'taj') { Q.taj = Q.taj ? 0 : 1; saveQ(); $('rdSheet').hidden = true; return load(R.page); }
     if (a === 'asr') return toggleAsr();
     if (a === 'trPick') return sheetTr();
     if (a === 'trSet') { D().P.tr = b.getAttribute('data-e'); D().save(); $('rdSheet').hidden = true; paintTr(); return; }
   }
-  window.addEventListener('message', function (e) { if (frame && e.source === frame.contentWindow && e.data && e.data.ready && R && !R.ready) onReady(); });
+  window.addEventListener('message', function (e) {
+    if (!frame || e.source !== frame.contentWindow || !e.data || !R) return;
+    if (e.data.ready && !R.ready) return onReady();
+    if (e.data.tap) { if ($('rdSheet').hidden) setUi(!R.ui); else ayahAct('closeSheet2'); return; }
+    if (e.data.hold && R.ready) { var h = e.data.hold, ay = null; R.ays.forEach(function (a) { if (a.s === h[0] && a.a === h[1]) ay = a; }); if (ay) ayahSheet(ay); }
+  });
   function leave() {
     stopListen(true); clearInterval(tick); loadId++;
     var v = $('hifzReadView'); if (v) { v.hidden = true; v.innerHTML = ''; }
