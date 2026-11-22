@@ -1,5 +1,6 @@
-/* hadith-ai.js v2 — "AI hadith search": ask in any language, get matching hadiths (Arabic text, source, grade)
- * and translate each one on demand. Standalone; uses AiRag (offline corpus) + the Worker (/expand, /translate).
+/* hadith-ai.js v3 — "AI hadith search": ask in any language, get matching hadiths (Arabic text, source, grade)
+ * and translate each one on demand. Standalone section with its own card on the sections screen
+ * (next to the Hadith card); uses AiRag (offline corpus) + the Worker (/expand, /translate).
  * All texts follow the app language (strings come from hadith.js via window.__hdL). */
 (function () {
   if (window.__hadithAiV2) return;
@@ -60,8 +61,9 @@
       '#hadithAi .ha-act{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}',
       '#hadithAi .ha-act button,#hadithAi .ha-act select{border:1px solid #d8c68f;background:#fbf5e7;color:#5a4a1c;border-radius:10px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit}',
       '#hadithAi .ha-msg{padding:14px;text-align:center;color:#6b5a2a;font-size:13px;line-height:1.9;white-space:pre-wrap}',
-      '#hdAiEntry{background:linear-gradient(135deg,#176b4b,#0f4d36)!important;color:#fff!important;border:0!important}',
-      '#hdAiEntry b,#hdAiEntry small{color:#fff!important}'
+      /* the card of this section on the sections screen */
+      '.section-choice.hadith-ai-choice{border-color:#bcdccb;background:linear-gradient(135deg,#fff,#eef8f2)}',
+      '.section-choice.hadith-ai-choice .choice-icon{background:#d6efe1;color:#176b4b}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -131,10 +133,17 @@
 
   function text(d) { return d.ar + (d._tr ? '\n\n' + d._tr : '') + '\n\n— ' + window.AiRag.label(d); }
 
+  /* back goes to the sections screen: this is a section of its own, not a part of the Hadith section */
+  function goSections() {
+    var v = $('hadithAi'); if (v) v.classList.remove('active');
+    if (typeof window.showView === 'function') window.showView('startScreen', T('secs'));
+    else if (typeof showView === 'function') showView('startScreen', T('secs'));
+  }
+
   function onClick(e) {
     var v = $('hadithAi'); if (!v || !v.contains(e.target)) return;
     var t = e.target.closest('[data-act],[data-tr],[data-cp],[data-sh]'); if (!t) return;
-    if (t.getAttribute('data-act') === 'back') { if (typeof window.enterHadith === 'function') window.enterHadith(); return; }
+    if (t.getAttribute('data-act') === 'back') { goSections(); return; }
     if (t.getAttribute('data-act') === 'go') { search(); return; }
     var i;
     if ((i = t.getAttribute('data-tr')) !== null) return translate(Number(i));
@@ -147,7 +156,7 @@
     v.setAttribute('dir', pageRtl() ? 'rtl' : 'ltr');
     /* a result list written in another app language is translated again from scratch */
     results.forEach(function (d) { if (d._lang && d._lang !== defLang()) { d._tr = ''; d._lang = ''; } });
-    v.innerHTML = '<div class="ha-head"><div><h2>' + esc(T('ai_h')) + '</h2><small>' + esc(T('ai_hs')) + '</small></div><button type="button" class="ha-back" data-act="back">' + esc(T('ai_back')) + '</button></div>' +
+    v.innerHTML = '<div class="ha-head"><div><h2>' + esc(T('ai_h')) + '</h2><small>' + esc(T('ai_hs')) + '</small></div><button type="button" class="ha-back" data-act="back">' + esc(T('secs')) + '</button></div>' +
       '<div class="ha-body" id="haBody"></div>' +
       '<div class="ha-box"><textarea id="haQ" rows="1" placeholder="' + esc(T('ai_ph')) + '"></textarea><button type="button" class="ha-go" id="haGo" data-act="go">' + esc(T('ai_go')) + '</button></div>';
     $('haQ').value = lastQ;
@@ -159,17 +168,38 @@
   }
   window.enterHadithAi = enter;
 
-  /* entry card on the hadith home screen (hadith.js re-renders, so re-inject) */
-  function inject() {
-    var body = document.querySelector('#hadithView.active .hd-body');
-    if (!body || body.querySelector('#hdAiEntry') || !body.querySelector('.hd-search')) return;
-    var c = document.createElement('div');
-    c.className = 'hd-card'; c.id = 'hdAiEntry';
-    c.innerHTML = '<b>' + esc(T('ai_t')) + '</b><small>' + esc(T('ai_s')) + '</small>';
-    c.onclick = enter;
-    var s = body.querySelector('.hd-search'); s.parentNode.insertBefore(c, s.nextSibling);
+  /* ---------- its own card on the sections screen, right after the Hadith card ---------- */
+  function cardTitle() { return String(T('ai_h') || '').replace(/^\S+\s+/, ''); }  /* the title without its leading emoji */
+  function refreshCard() {
+    var b = document.querySelector('#startScreen .hadith-ai-choice'); if (!b) return;
+    var bt = b.querySelector('.choice-copy b'), sm = b.querySelector('.choice-copy small');
+    if (bt && bt.textContent !== cardTitle()) bt.textContent = cardTitle();
+    if (sm && sm.textContent !== T('ai_s')) sm.textContent = T('ai_s');
   }
+  function addCard() {
+    var box = document.querySelector('#startScreen .section-choices'); if (!box) return false;
+    var b = box.querySelector('.hadith-ai-choice'), h = box.querySelector('.hadith-choice');
+    if (!b) {
+      b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'section-choice hadith-ai-choice';
+      b.setAttribute('data-hadith-ai-card', '1');
+      b.innerHTML = '<span class="choice-icon">🔎</span><span class="choice-copy"><b>' + esc(cardTitle()) + '</b><small>' + esc(T('ai_s')) + '</small></span><span class="choice-arrow">›</span>';
+      b.onclick = function () { enter(); };
+      box.appendChild(b);
+    }
+    if (h && h.nextSibling !== b) box.insertBefore(b, h.nextSibling);   /* keep it next to the Hadith card */
+    refreshCard();
+    return true;
+  }
+
   document.addEventListener('click', onClick);
-  function start() { css(); new MutationObserver(function () { inject(); }).observe(document.body, { childList: true, subtree: true }); inject(); }
+  function start() {
+    css();
+    /* the old entry card that used to sit at the top of the Hadith screen is gone */
+    var old = $('hdAiEntry'); if (old && old.parentNode) old.parentNode.removeChild(old);
+    var n = 0, iv = setInterval(function () { addCard(); if (++n > 30) clearInterval(iv); }, 300);
+    setInterval(addCard, 3000);   /* survives a re-render and a change of language */
+  }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 })();
