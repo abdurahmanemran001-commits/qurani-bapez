@@ -102,7 +102,7 @@
     if ($('cpaiCss')) return;
     var s = document.createElement('style'); s.id = 'cpaiCss';
     s.textContent = '.phone:has(#companionsAi.active) .appbar,.phone:has(#companionsAi.active) .bottom,.phone:has(#companionsAi.active) .status{display:none!important}' +
-      '#companionsAi{direction:rtl;background:#f1f5ef;min-height:100%;display:flex;flex-direction:column}' +
+      '#companionsAi{direction:rtl;background:#f1f5ef;min-height:100%;flex-direction:column}#companionsAi.active{display:flex}#companionsAi:not(.active){display:none!important}' +
       '#companionsAi .ca-top{display:flex;align-items:center;gap:10px;padding:14px;background:#2f5d46;color:#fff;position:sticky;top:0;z-index:3}' +
       '#companionsAi .ca-top button{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px}#companionsAi .ca-top b{font-size:17px}' +
       '#companionsAi .ca-body{flex:1;padding:12px 12px 90px}' +
@@ -123,7 +123,7 @@
   function ensureView() {
     if ($('companionsAi')) return $('companionsAi');
     var z = $('zikr'); if (!z || !z.parentNode) return null;
-    var v = document.createElement('section'); v.id = 'companionsAi'; v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1'); z.parentNode.appendChild(v);
+    var v = document.createElement('section'); v.id = 'companionsAi'; v.className = 'view'; v.setAttribute('data-no-translate', '1'); v.setAttribute('data-keep-ar', '1'); z.parentNode.appendChild(v); try { new MutationObserver(function () { if (!v.classList.contains('active')) { var bt = document.querySelector('.bottom'); if (bt) bt.classList.remove('hidden'); } }).observe(v, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
     v.addEventListener('click', onClick);
     return v;
   }
