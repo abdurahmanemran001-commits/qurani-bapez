@@ -235,6 +235,10 @@
       '#tasbih .tb-sc .tb-num{font-size:24px;font-weight:800;line-height:1}',
       '#tasbih .tb-sc .tb-of{font-size:10px;opacity:.7}',
       '#tasbih .tb-b3{width:290px;height:310px}',
+      '#tasbih .tb-ring,#tasbih .tb-dig,#tasbih .tb-mech{zoom:var(--tbz,1)}',
+      '#tasbih .tb-mtap{min-height:42vh!important}',
+      '#tasbih .tb-sc{max-width:none;width:calc(100% + 0px);height:60vh;min-height:330px;border-radius:26px}',
+      '#tasbih .tb-sc svg{width:100%;height:100%}',
       '#tasbih .tb-b3 svg{transform:none;filter:drop-shadow(0 8px 14px rgba(120,100,60,.18))}',
       '#tasbih .tb-b3 .tb-tap{inset:62px 62px 82px 62px;background:transparent;box-shadow:none;color:#14231c;font-family:Georgia,"Playfair Display",serif;display:flex;flex-direction:column;align-items:center;justify-content:center}',
       '#tasbih .tb-b3 .tb-tap .tb-num{font-size:60px;font-weight:800}',
@@ -374,6 +378,7 @@
   function build() {
     var v = ensureView(); if (!v) return;
     var it = cur(), t = targetOf(it);
+    (function () { var bw = S.style === 'bead3d' ? 290 : (S.style === 'rosary' ? 260 : (S.style === 'digital' || S.style === 'mechanical' ? 300 : 230)), bh = S.style === 'bead3d' ? 310 : (S.style === 'rosary' ? 300 : (S.style === 'digital' || S.style === 'mechanical' ? 260 : 230)), vw = Math.min(window.innerWidth || 390, 560), vh = window.innerHeight || 780; var z = Math.max(1, Math.min(2, (vw - 28) / bw, vh * 0.52 / bh)); v.style.setProperty('--tbz', z.toFixed(2)); })();
     var chips = '';
     if (!it.seq) {
       chips = '<div class="tb-targets">' + TARGETS.map(function (n) {
@@ -408,7 +413,7 @@
   function sinsSvg() {
     var beads = '';
     for (var i = 0; i < 11; i++) beads += '<circle cx="' + (10 + i * 12) + '" cy="' + (62 + i * 2.6) + '" r="4.2" fill="url(#snG)" stroke="#b07d1c" stroke-width=".5"/>';
-    return '<svg viewBox="0 0 300 330" id="tbSc"><defs>' +
+    return '<svg viewBox="0 0 300 330" id="tbSc" preserveAspectRatio="xMidYMax slice"><defs>' +
       '<linearGradient id="snSky" x1="0" y1="0" x2="0" y2="1"><stop id="snS1" offset="0" stop-color="#b8c4d6"/><stop id="snS2" offset="1" stop-color="#8d98ad"/></linearGradient>' +
       '<radialGradient id="snG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe9a6"/><stop offset="1" stop-color="#d9a22b"/></radialGradient>' +
       '<radialGradient id="snSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffbe8"/><stop offset=".55" stop-color="#ffe9a8" stop-opacity=".95"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>' +
@@ -485,13 +490,45 @@
       return true;
     } catch (e) { return false; }
   };
-  SND.level = function (p) { if (!SND.ctx || !SND.pad) return; SND.p = p; try { SND.pad.gain.setTargetAtTime(S.snd ? .02 + .07 * p : 0, SND.ctx.currentTime, .6); } catch (e) {} };
+  SND.amb = false;
+  SND.level = function (p) { SND.amb = true; if (!SND.ctx || !SND.pad) return; SND.p = p; try { SND.pad.gain.setTargetAtTime(S.snd ? .02 + .07 * p : 0, SND.ctx.currentTime, .6); } catch (e) {} };
   SND.bell = function (p, big) {
     if (!SND.ensure()) return;
     var x = SND.ctx, now = x.currentTime, base = (big ? [523.25, 659.25, 783.99, 1046.5] : [660 + 220 * p]);
     base.forEach(function (f, i) { var o = x.createOscillator(), g = x.createGain(), o2 = x.createOscillator(); o.type = 'sine'; o2.type = 'sine'; o.frequency.value = f; o2.frequency.value = f * 2.01; g.gain.setValueAtTime(0, now + i * .18); g.gain.linearRampToValueAtTime(big ? .16 : .12, now + i * .18 + .01); g.gain.exponentialRampToValueAtTime(.0008, now + i * .18 + (big ? 1.6 : .7)); o.connect(g); o2.connect(g); g.connect(x.destination); o.start(now + i * .18); o2.start(now + i * .18); o.stop(now + i * .18 + 1.8); o2.stop(now + i * .18 + 1.8); });
   };
-  SND.stop = function () { try { if (SND.ctx) { SND.pad.gain.setTargetAtTime(0, SND.ctx.currentTime, .15); setTimeout(function () { try { SND.ctx.suspend(); } catch (e) {} }, 700); } } catch (e) {} };
+  SND.tick = function (style, p, done) {
+    if (!SND.ensure()) return;
+    var x = SND.ctx, now = x.currentTime;
+    function tone(type, f0, f1, dur, gain, delay, dest) {
+      var o = x.createOscillator(), g = x.createGain(), d = now + (delay || 0);
+      o.type = type; o.frequency.setValueAtTime(f0, d); if (f1) o.frequency.exponentialRampToValueAtTime(f1, d + dur);
+      g.gain.setValueAtTime(0, d); g.gain.linearRampToValueAtTime(gain, d + .005); g.gain.exponentialRampToValueAtTime(.0008, d + dur);
+      o.connect(g); g.connect(dest || x.destination); o.start(d); o.stop(d + dur + .05);
+    }
+    function noise(dur, gain, hp, delay) {
+      var n = x.createBuffer(1, Math.max(1, Math.floor(x.sampleRate * dur)), x.sampleRate), ch = n.getChannelData(0); for (var i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length);
+      var sr = x.createBufferSource(), f = x.createBiquadFilter(), g = x.createGain(); sr.buffer = n; f.type = 'highpass'; f.frequency.value = hp; g.gain.value = gain; sr.connect(f); f.connect(g); g.connect(x.destination); sr.start(now + (delay || 0));
+    }
+    if (done) return SND.bell(p, true);
+    switch (style) {
+      case 'ring': tone('sine', 360, 180, .12, .22); break;
+      case 'beads': case 'bead3d': case 'rosary': tone('sine', 1900, 1500, .05, .12); tone('triangle', 620, 380, .09, .2, .02); break;
+      case 'digital': tone('square', 1250, 0, .07, .05); break;
+      case 'mechanical': noise(.05, .5, 1500); tone('sine', 120, 60, .1, .3); break;
+      case 'minimal': case 'full': tone('sine', 520, 430, .08, .18); break;
+      case 'wave': tone('sine', 900, 380, .16, .2); tone('sine', 1300, 600, .1, .08, .05); break;
+      case 'star': tone('sine', 1568, 0, .6, .12); tone('sine', 2093, 0, .5, .07, .03); break;
+      case 'flower': tone('triangle', 440 + 120 * p, 0, .4, .2); break;
+      case 'heart': tone('sine', 70, 45, .18, .5); tone('sine', 62, 40, .2, .4, .17); break;
+      case 'neon': tone('sawtooth', 380, 900, .12, .07); break;
+      case 'ripple': tone('sine', 280, 720, .1, .2); break;
+      case 'grid': tone('sine', 1000, 0, .05, .14); break;
+      case 'moon': tone('sine', 392, 0, 1, .16); tone('sine', 588, 0, .8, .06, .02); break;
+      default: tone('sine', 660, 0, .3, .14);
+    }
+  };
+  SND.stop = function () { SND.amb = false; try { if (SND.ctx) { SND.pad.gain.setTargetAtTime(0, SND.ctx.currentTime, .15); setTimeout(function () { try { SND.ctx.suspend(); } catch (e) {} }, 700); } } catch (e) {} };
   document.addEventListener('visibilitychange', function () { if (document.hidden) SND.stop(); });
 
   var PXsins;
@@ -558,7 +595,7 @@
   }
 
   function paint() {
-    if (S.style === 'sins') PX.sins = PXsins; else if (S.style !== 'sins') SND.stop();
+    if (S.style === 'sins') PX.sins = PXsins; else if (SND.amb) SND.stop();
     var it = cur(), t = targetOf(it), c = S.counts[it.id] || 0;
     var ar = $('tbAr'), ku = $('tbKu'), stp = $('tbStep');
     if (!ar) return;
@@ -603,6 +640,7 @@
     else if (it.seq && stepOf(it, c).i !== prevStep && c > 1) { vibrate([40, 30, 40]); }
     else vibrate(12);
     paint();
+    if (S.style !== 'sins') { SND.tick(S.style, t ? c / t : 0, !!t && c >= t); }
     if (S.style === 'sins') { var dn = !!t && c >= t; if (SND.ensure()) { SND.level(dn ? .2 : (t ? c / t : (c % 100) / 100)); SND.bell(t ? c / t : 0, dn); } if (!dn) sinsDrop(); if (dn) setTimeout(SND.stop, 6000); }
     if (S.style === 'ripple' && e && e.clientX !== undefined) {
       var tp = $('tbTap'); if (tp) {
