@@ -62,8 +62,9 @@
   S.counts = S.counts || {}; S.targets = S.targets || {}; S.totals = S.totals || {}; S.days = S.days || {};
   if (!byId[S.sel]) S.sel = 'sub';
   if (S.vib === undefined) S.vib = true;
+  if (S.snd === undefined) S.snd = true;
   if (!(S.size >= 1 && S.size <= 5)) S.size = 3;
-  var STYLES = [['bead3d', '📿 مسبحەی دار (وەک ڤیدیۆ)'], ['ring', '⭕ بازنە'], ['beads', '📿 مسبحە'], ['rosary', '🧿 مسبحەی هەڵواسراو'], ['digital', '🔢 دیجیتاڵ'], ['mechanical', '⚙ میکانیکی'], ['minimal', '▭ سادە'], ['wave', '🌊 ئاو'], ['star', '✴ ئەستێرە'], ['flower', '🌸 گوڵ'], ['heart', '❤ دڵ'], ['neon', '✨ نیۆن'], ['ripple', '💧 شەپۆل'], ['grid', '▦ ڕیزی دەنک'], ['moon', '🌙 مانگ'], ['full', '⬛ تەواوی شاشە']];
+  var STYLES = [['sins', '🌅 بارگرانی گوناه (دەنگ + ئەنیمەیشن)'], ['bead3d', '📿 مسبحەی دار (وەک ڤیدیۆ)'], ['ring', '⭕ بازنە'], ['beads', '📿 مسبحە'], ['rosary', '🧿 مسبحەی هەڵواسراو'], ['digital', '🔢 دیجیتاڵ'], ['mechanical', '⚙ میکانیکی'], ['minimal', '▭ سادە'], ['wave', '🌊 ئاو'], ['star', '✴ ئەستێرە'], ['flower', '🌸 گوڵ'], ['heart', '❤ دڵ'], ['neon', '✨ نیۆن'], ['ripple', '💧 شەپۆل'], ['grid', '▦ ڕیزی دەنک'], ['moon', '🌙 مانگ'], ['full', '⬛ تەواوی شاشە']];
   if (!S.style) S.style = 'bead3d';
   if (!STYLES.some(function (s) { return s[0] === S.style; })) S.style = 'ring';
   if (S.theme !== 'dark') S.theme = 'light';
@@ -228,6 +229,11 @@
 
       '#tasbih .tb-sm .tb-num{font-size:34px}',
       '#tasbih .tb-sm .tb-of{font-size:11px;margin-top:2px}',
+      '#tasbih .tb-sc{position:relative;display:block;width:100%;max-width:340px;margin:6px auto;border:0;padding:0;border-radius:22px;overflow:hidden;background:#9aa6b8;box-shadow:0 10px 26px rgba(60,50,30,.22);touch-action:manipulation;-webkit-user-select:none;user-select:none;cursor:pointer}',
+      '#tasbih .tb-sc svg{display:block;width:100%;height:auto;transform:none}',
+      '#tasbih .tb-sc .tb-scn{position:absolute;left:12px;top:12px;width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#14231c;box-shadow:0 2px 8px rgba(0,0,0,.18)}',
+      '#tasbih .tb-sc .tb-num{font-size:24px;font-weight:800;line-height:1}',
+      '#tasbih .tb-sc .tb-of{font-size:10px;opacity:.7}',
       '#tasbih .tb-b3{width:290px;height:310px}',
       '#tasbih .tb-b3 svg{transform:none;filter:drop-shadow(0 8px 14px rgba(120,100,60,.18))}',
       '#tasbih .tb-b3 .tb-tap{inset:62px 62px 82px 62px;background:transparent;box-shadow:none;color:#14231c;font-family:Georgia,"Playfair Display",serif;display:flex;flex-direction:column;align-items:center;justify-content:center}',
@@ -325,6 +331,7 @@
     if (st === 'ripple') return '<button type="button" class="tb-mtap tb-rip" id="tbTap" data-act="tap">' + NUM + BARH + '</button>';
     if (st === 'grid') return '<button type="button" class="tb-mtap tb-grid" id="tbTap" data-act="tap"><div class="tb-dots" id="tbDots"></div>' + NUM + '</button>';
     if (st === 'mechanical') return '<div class="tb-mech"><div class="tb-mwin" id="tbNum"></div><div class="tb-mof" id="tbOf"></div><button type="button" class="tb-mbtn" id="tbTap" data-act="tap" aria-label="tap"></button></div>';
+    if (st === 'sins') return '<button type="button" class="tb-sc" id="tbTap" data-act="tap">' + sinsSvg() + '<span class="tb-scn">' + NUM + '</span></button>';
     if (st === 'bead3d') return '<div class="tb-ring tb-b3"><svg width="290" height="310" viewBox="0 0 290 310" id="tbB3">' +
       '<defs><radialGradient id="b3w" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#f6e8cd"/><stop offset=".6" stop-color="#d8bd8e"/><stop offset="1" stop-color="#b89562"/></radialGradient>' +
       '<radialGradient id="b3g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#4f9b7a"/><stop offset=".55" stop-color="#1a5c43"/><stop offset="1" stop-color="#0b2e21"/></radialGradient>' +
@@ -360,7 +367,7 @@
       '<b>شێوازی تەسبیح</b><div class="row">' + styles.map(function (s) { return chip('data-style', s[0], s[1], S.style === s[0]); }).join('') + '</div>' +
       '<b>ڕووکار</b><div class="row">' + chip('data-theme', 'light', '☀ ڕوون', S.theme === 'light') + chip('data-theme', 'dark', '🌙 تاریک', S.theme === 'dark') + '</div>' +
       '<b>باگراوند</b><div class="row">' + BGS.map(function (b) { return chip('data-bgset', b[0], b[1], S.bg === b[0], '<span class="tb-sw" style="background:' + swatch[b[0]] + '"></span>'); }).join('') + '</div>' +
-      '<b>تر</b><div class="row">' + chip('data-flag', 'vib', '📳 لەرزین', !!S.vib) + chip('data-flag', 'wake', '💡 شاشە نەکوژێتەوە', !!S.wake) + '</div>' +
+      '<b>تر</b><div class="row">' + chip('data-flag', 'vib', '📳 لەرزین', !!S.vib) + chip('data-flag', 'snd', '🔊 دەنگ', !!S.snd) + chip('data-flag', 'wake', '💡 شاشە نەکوژێتەوە', !!S.wake) + '</div>' +
       '</div>';
   }
 
@@ -397,6 +404,97 @@
   function nDots(t) { return (t > 0 && t <= 100) ? t : 33; }
   function filledOf(c, t, n) { return (t > 0 && c >= t) ? n : (c % n); }
   function unlit() { return S.theme === 'dark' ? '#3a4a43' : '#cfd9d4'; }
+  /* ---------- sins scene (animated + sound) ---------- */
+  function sinsSvg() {
+    var beads = '';
+    for (var i = 0; i < 11; i++) beads += '<circle cx="' + (10 + i * 12) + '" cy="' + (62 + i * 2.6) + '" r="4.2" fill="url(#snG)" stroke="#b07d1c" stroke-width=".5"/>';
+    return '<svg viewBox="0 0 300 330" id="tbSc"><defs>' +
+      '<linearGradient id="snSky" x1="0" y1="0" x2="0" y2="1"><stop id="snS1" offset="0" stop-color="#b8c4d6"/><stop id="snS2" offset="1" stop-color="#8d98ad"/></linearGradient>' +
+      '<radialGradient id="snG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe9a6"/><stop offset="1" stop-color="#d9a22b"/></radialGradient>' +
+      '<radialGradient id="snSun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fffbe8"/><stop offset=".55" stop-color="#ffe9a8" stop-opacity=".95"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient></defs>' +
+      '<rect width="300" height="330" fill="url(#snSky)"/>' +
+      '<circle id="snSun" cx="238" cy="236" r="26" fill="#fff4cc" opacity=".92"/><circle id="snGlow" cx="238" cy="236" r="60" fill="url(#snSun)" opacity="0"/>' +
+      '<path id="snD1" d="M0 262 Q70 238 140 258 T300 250 V330 H0Z" fill="#8f97a8"/><rect id="snGr" y="288" width="300" height="42" fill="#7c7f8c"/>' +
+      '<g id="snStr">' + beads + '</g><circle id="snDrop" cx="0" cy="0" r="5.5" fill="url(#snG)" opacity="0"/>' +
+      '<g id="snFig"></g><g id="snBowlFall" opacity="0"></g>' +
+      '<g id="snEnd" opacity="0"><text x="160" y="104" text-anchor="middle" font-size="23" fill="#3b2a08" font-family="Amiri,serif">تَقَبَّلَ اللَّهُ مِنَّا وَمِنْكُمْ</text></g></svg>';
+  }
+  function mix(a, b, p) { return a.map(function (v, i) { return Math.round(v + (b[i] - v) * p); }); }
+  function rgb(a) { return 'rgb(' + a.join(',') + ')'; }
+  var SKY = [[[184, 196, 214], [141, 152, 173]], [[246, 222, 170], [214, 190, 150]], [[255, 226, 140], [247, 188, 96]]];
+  function sinsFig(p, done) {
+    var b = done ? 0 : 1 - p, hipx = 118, hipy = 262, ang = 52 * b * Math.PI / 180, tl = 38;
+    var shx = hipx + tl * Math.sin(ang), shy = hipy - tl * Math.cos(ang), hx = shx + 12 * Math.sin(ang), hy = shy - 12 * Math.cos(ang) - 3;
+    var kx = hipx + 14 * b + 8, ky = hipy + 14, bowlY = hy - 20 - (done ? 0 : 2), g = '';
+    var col = '#16233f';
+    g += '<g stroke="' + col + '" stroke-width="5" stroke-linecap="round" fill="none">';
+    g += '<path d="M' + hipx + ' ' + hipy + ' L' + (kx - 12 * b - 8) + ' ' + (hipy + 16) + ' L' + (hipx - 18 * b - 6) + ' 288"/>';
+    g += '<path d="M' + hipx + ' ' + hipy + ' L' + (kx + 4) + ' ' + (hipy + 16) + ' L' + (hipx + 10 + 8 * b) + ' 288"/>';
+    g += '<path d="M' + hipx + ' ' + hipy + ' L' + shx.toFixed(1) + ' ' + shy.toFixed(1) + '"/>';
+    if (!done) g += '<path d="M' + shx.toFixed(1) + ' ' + shy.toFixed(1) + ' L' + (hx - 14).toFixed(1) + ' ' + (bowlY + 6).toFixed(1) + ' M' + shx.toFixed(1) + ' ' + shy.toFixed(1) + ' L' + (hx + 14).toFixed(1) + ' ' + (bowlY + 6).toFixed(1) + '"/>';
+    else g += '<path d="M' + shx.toFixed(1) + ' ' + shy.toFixed(1) + ' L' + (shx - 14) + ' ' + (shy + 18) + ' M' + shx.toFixed(1) + ' ' + shy.toFixed(1) + ' L' + (shx + 14) + ' ' + (shy + 18) + '"/>';
+    g += '</g><circle cx="' + hx.toFixed(1) + '" cy="' + hy.toFixed(1) + '" r="9" fill="' + col + '"/>';
+    if (!done) {
+      var bx = hx, n = Math.ceil(30 * (1 - p)), balls = '';
+      for (var i = 0; i < n; i++) { var row = Math.floor(i / 9), col2 = i % 9, x = bx - 20 + col2 * 5 + (row % 2) * 2.5, y = bowlY - 3 - row * 4.4; balls += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="#0c0e14"/>'; }
+      g += balls + '<path d="M' + (bx - 30) + ' ' + (bowlY - 2) + ' H' + (bx + 30) + ' C' + (bx + 28) + ' ' + (bowlY + 18) + ' ' + (bx - 28) + ' ' + (bowlY + 18) + ' ' + (bx - 30) + ' ' + (bowlY - 2) + 'Z" fill="#8a5a36"/><text x="' + bx + '" y="' + (bowlY + 12) + '" text-anchor="middle" font-size="11" fill="#fff" font-family="Amiri,serif">ذُنُوب</text>';
+      R_bowl = { x: bx, y: bowlY };
+    }
+    return g;
+  }
+  var R_bowl = { x: 118, y: 200 };
+  PXsins = function (c, t, p) {
+    var sc = $('tbSc'); if (!sc) return;
+    var done = !!t && c >= t, pp = t ? Math.min(1, p) : Math.min(1, (c % 100) / 100);
+    var k = pp < .5 ? pp / .5 : (pp - .5) / .5, A = pp < .5 ? SKY[0] : SKY[1], B = pp < .5 ? SKY[1] : SKY[2];
+    if (done) { A = SKY[1]; B = SKY[2]; k = 1; }
+    $('snS1').setAttribute('stop-color', rgb(mix(A[0], B[0], k))); $('snS2').setAttribute('stop-color', rgb(mix(A[1], B[1], k)));
+    var sun = $('snSun'), gl = $('snGlow'), sy = 236 - 70 * (done ? 1 : pp);
+    sun.setAttribute('cy', sy); sun.setAttribute('r', 26 + 12 * pp); gl.setAttribute('cy', sy); gl.setAttribute('opacity', done ? .9 : pp * .5);
+    $('snD1').setAttribute('fill', rgb(mix([143, 151, 168], [214, 168, 110], pp))); $('snGr').setAttribute('fill', rgb(mix([124, 127, 140], [190, 140, 86], pp)));
+    $('snFig').innerHTML = sinsFig(pp, done);
+    var bf = $('snBowlFall'); bf.setAttribute('opacity', done ? 1 : 0);
+    if (done) bf.innerHTML = '<path d="M20 286 H80 C78 300 24 300 20 286Z" fill="#8a5a36" transform="rotate(-14 50 290)"/>';
+    $('snEnd').setAttribute('opacity', done ? 1 : 0);
+    $('snStr').setAttribute('opacity', done ? .25 : 1);
+  };
+  function sinsDrop() {
+    var d = $('snDrop'); if (!d) return;
+    var x0 = 130, y0 = 66, bx = R_bowl.x, by = R_bowl.y - 6, t0 = null;
+    d.setAttribute('opacity', 1);
+    function step(ts) {
+      if (!t0) t0 = ts; var u = Math.min(1, (ts - t0) / 420), e = u * u;
+      d.setAttribute('cx', (x0 + (bx - x0) * e).toFixed(1)); d.setAttribute('cy', (y0 + (by - y0) * e).toFixed(1));
+      if (u < 1) requestAnimationFrame(step); else d.setAttribute('opacity', 0);
+    }
+    requestAnimationFrame(step);
+  }
+  /* sound: soft ambient pad that swells with progress + bell on each count */
+  var SND = { ctx: null, pad: null, p: 0 };
+  SND.ensure = function () {
+    if (!S.snd) return false;
+    try {
+      if (!SND.ctx) {
+        var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
+        var x = SND.ctx = new AC(), g = x.createGain(); g.gain.value = 0; g.connect(x.destination); SND.pad = g;
+        [110, 164.8, 220.5, 330].forEach(function (f, i) { var o = x.createOscillator(), og = x.createGain(); o.type = i % 2 ? 'triangle' : 'sine'; o.frequency.value = f; og.gain.value = [.5, .3, .25, .12][i]; o.connect(og); og.connect(g); o.start(); var l = x.createOscillator(), lg = x.createGain(); l.frequency.value = .08 + i * .05; lg.gain.value = 1.2; l.connect(lg); lg.connect(o.detune); l.start(); });
+        var nb = x.createBuffer(1, x.sampleRate * 2, x.sampleRate), d = nb.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        var ns = x.createBufferSource(); ns.buffer = nb; ns.loop = true; var lp = x.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; var ng = x.createGain(); ng.gain.value = .35; ns.connect(lp); lp.connect(ng); ng.connect(g); ns.start();
+      }
+      if (SND.ctx.state === 'suspended') SND.ctx.resume();
+      return true;
+    } catch (e) { return false; }
+  };
+  SND.level = function (p) { if (!SND.ctx || !SND.pad) return; SND.p = p; try { SND.pad.gain.setTargetAtTime(S.snd ? .02 + .07 * p : 0, SND.ctx.currentTime, .6); } catch (e) {} };
+  SND.bell = function (p, big) {
+    if (!SND.ensure()) return;
+    var x = SND.ctx, now = x.currentTime, base = (big ? [523.25, 659.25, 783.99, 1046.5] : [660 + 220 * p]);
+    base.forEach(function (f, i) { var o = x.createOscillator(), g = x.createGain(), o2 = x.createOscillator(); o.type = 'sine'; o2.type = 'sine'; o.frequency.value = f; o2.frequency.value = f * 2.01; g.gain.setValueAtTime(0, now + i * .18); g.gain.linearRampToValueAtTime(big ? .16 : .12, now + i * .18 + .01); g.gain.exponentialRampToValueAtTime(.0008, now + i * .18 + (big ? 1.6 : .7)); o.connect(g); o2.connect(g); g.connect(x.destination); o.start(now + i * .18); o2.start(now + i * .18); o.stop(now + i * .18 + 1.8); o2.stop(now + i * .18 + 1.8); });
+  };
+  SND.stop = function () { try { if (SND.ctx) { SND.pad.gain.setTargetAtTime(0, SND.ctx.currentTime, .15); setTimeout(function () { try { SND.ctx.suspend(); } catch (e) {} }, 700); } } catch (e) {} };
+  document.addEventListener('visibilitychange', function () { if (document.hidden) SND.stop(); });
+
+  var PXsins;
   var PX = {
     bead3d: function (c, t) {
       var g = $('tbB3g'); if (!g) return;
@@ -460,6 +558,7 @@
   }
 
   function paint() {
+    if (S.style === 'sins') PX.sins = PXsins; else if (S.style !== 'sins') SND.stop();
     var it = cur(), t = targetOf(it), c = S.counts[it.id] || 0;
     var ar = $('tbAr'), ku = $('tbKu'), stp = $('tbStep');
     if (!ar) return;
@@ -504,6 +603,7 @@
     else if (it.seq && stepOf(it, c).i !== prevStep && c > 1) { vibrate([40, 30, 40]); }
     else vibrate(12);
     paint();
+    if (S.style === 'sins') { var dn = !!t && c >= t; if (SND.ensure()) { SND.level(dn ? .2 : (t ? c / t : (c % 100) / 100)); SND.bell(t ? c / t : 0, dn); } if (!dn) sinsDrop(); if (dn) setTimeout(SND.stop, 6000); }
     if (S.style === 'ripple' && e && e.clientX !== undefined) {
       var tp = $('tbTap'); if (tp) {
         var rc = tp.getBoundingClientRect(), s = document.createElement('span');
@@ -518,7 +618,7 @@
     if (!el) return;
     var act = el.getAttribute('data-act');
     if (act === 'tap') return tap(e);
-    if (act === 'back') { setWake(false); if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
+    if (act === 'back') { setWake(false); SND.stop(); if (typeof showView === 'function') showView('startScreen', 'بەشەکان'); return; }
     if (act === 'reset') {
       var it = cur();
       if ((S.counts[it.id] || 0) > 0 && !confirm('ژمارەکە سفر بکرێتەوە؟')) return;
