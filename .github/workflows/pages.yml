@@ -72,6 +72,7 @@ jobs:
           test -f salah-places.json && cp salah-places.json dist/
           test -f salah-places-data.js && cp salah-places-data.js dist/
           test -f salah-settings.js && cp salah-settings.js dist/
+          test -f salah-themes.js && cp salah-themes.js dist/
           if [ -d madani-timing ]; then cp -r madani-timing dist/; fi
           bash tools/assemble_web.sh dist
           mkdir -p dist/mushaf/reciters; if ls reciter-photos/*.jpg >/dev/null 2>&1; then cp reciter-photos/*.jpg dist/mushaf/reciters/; fi
