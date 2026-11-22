@@ -80,7 +80,7 @@
   function css() {
     if ($('cqCss')) return; var s = document.createElement('style'); s.id = 'cqCss';
     s.textContent = '.phone:has(#cqView.active) .appbar,.phone:has(#cqView.active) .bottom,.phone:has(#cqView.active) .status{display:none!important}' +
-      '#cqView{direction:rtl;background:#f1f5ef;min-height:100%;display:flex;flex-direction:column;color:#1f2a24}' +
+      '#cqView{direction:rtl;background:#f1f5ef;min-height:100%;flex-direction:column;color:#1f2a24}#cqView.active{display:flex}#cqView:not(.active){display:none!important}' +
       '#cqView .top{display:flex;align-items:center;gap:10px;padding:14px;background:#2f5d46;color:#fff;position:sticky;top:0;z-index:3}' +
       '#cqView .top button{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:15px}#cqView .top b{font-size:17px}' +
       '#cqView .bd{flex:1;padding:14px 14px 40px}' +
