@@ -1,4 +1,4 @@
-/* salah-themes.js v1 — beautiful backgrounds for the Prayer section (all drawn with CSS + inline SVG: no images, work offline).
+/* salah-themes.js v2 — beautiful backgrounds for the Prayer section (all drawn with CSS + inline SVG: no images, work offline).
  * Pick one in Prayer ▸ Settings ▸ Backgrounds. The "Sky of the hour" background follows the current prayer
  * (dawn, sunrise, midday, afternoon, sunset, starry night). Stored in localStorage "salah_bg_v1"; empty = the classic themes. */
 (function () {
@@ -40,6 +40,25 @@
     },
     arch: function () {
       return svg("<svg " + NS + " width='70' height='90' viewBox='0 0 70 90'><g fill='none' stroke='#b88a3a' stroke-opacity='.55' stroke-width='1.6'><path d='M5 90V45C5 22 35 6 35 6s30 16 30 39v45'/><path d='M15 90V48C15 30 35 17 35 17s20 13 20 31v42'/></g><circle cx='35' cy='62' r='3' fill='#b88a3a' fill-opacity='.5'/></svg>");
+    },
+    pines: function (c1, c2, c3) {
+      function row(y, h, c, o, n, off) { var d = ''; for (var i = 0; i < n; i++) { var x = off + i * (800 / n); d += 'M' + x + ' ' + y + 'l' + (400 / n) + ' -' + h + 'l' + (400 / n) + ' ' + h + 'z'; } return "<path fill='" + c + "' fill-opacity='" + o + "' d='" + d + "'/>"; }
+      return svg("<svg " + NS + " viewBox='0 0 800 260' preserveAspectRatio='none'>" + row(260, 150, c1, .55, 14, -30) + row(260, 120, c2, .8, 11, -10) + row(260, 90, c3, 1, 8, -40) + "<rect y='240' width='800' height='20' fill='" + c3 + "'/></svg>");
+    },
+    dome: function (fill, gold) {
+      return svg("<svg " + NS + " viewBox='0 0 800 300' preserveAspectRatio='xMidYMax meet'><defs><linearGradient id='d' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='" + gold + "'/><stop offset='1' stop-color='" + fill + "'/></linearGradient></defs><g fill='url(#d)'><path d='M250 300v-70a150 150 0 0 1 300 0v70z'/><path d='M400 62v-30M392 44a10 10 0 1 0 12-14 8 8 0 0 1-12 14' stroke='" + gold + "' stroke-width='3' fill='none'/><rect x='110' y='90' width='18' height='210'/><path d='M110 90l9-34 9 34z'/><rect x='672' y='90' width='18' height='210'/><path d='M672 90l9-34 9 34z'/><rect x='60' y='250' width='680' height='50' fill='" + fill + "'/></g></svg>");
+    },
+    mihrab: function () {
+      return svg("<svg " + NS + " viewBox='0 0 300 420' preserveAspectRatio='xMidYMax meet'><defs><linearGradient id='m' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#f3d98b' stop-opacity='.38'/><stop offset='1' stop-color='#f3d98b' stop-opacity='.04'/></linearGradient></defs><path d='M20 420V190C20 100 150 20 150 20s130 80 130 170v230z' fill='url(#m)' stroke='#e6c76a' stroke-opacity='.7' stroke-width='2'/><path d='M44 420V196C44 122 150 52 150 52s106 70 106 144v224z' fill='none' stroke='#e6c76a' stroke-opacity='.5' stroke-width='1.4'/><path d='M70 420V204C70 146 150 88 150 88s80 58 80 116v216z' fill='none' stroke='#e6c76a' stroke-opacity='.35' stroke-width='1'/><circle cx='150' cy='150' r='6' fill='#f3d98b' fill-opacity='.7'/><g stroke='#e6c76a' stroke-opacity='.5'><path d='M150 156v40' stroke-width='1'/><path d='M150 20v-14' stroke-width='2'/></g></svg>");
+    },
+    iznik: function () {
+      return svg("<svg " + NS + " width='96' height='96' viewBox='0 0 96 96'><rect width='96' height='96' fill='#f7f3e8'/><g fill='none' stroke='#1d4e89' stroke-width='1.4'><rect x='6' y='6' width='84' height='84' stroke-opacity='.35'/></g><g transform='translate(48 48)'><g fill='#1e63b3' fill-opacity='.85'><ellipse rx='6' ry='17' cy='-17'/><ellipse rx='6' ry='17' cy='17'/><ellipse rx='17' ry='6' cx='-17'/><ellipse rx='17' ry='6' cx='17'/></g><g fill='#17a2b8' fill-opacity='.85'><ellipse rx='5' ry='13' cy='-13' transform='rotate(45)'/><ellipse rx='5' ry='13' cy='13' transform='rotate(45)'/><ellipse rx='13' ry='5' cx='-13' transform='rotate(45)'/><ellipse rx='13' ry='5' cx='13' transform='rotate(45)'/></g><circle r='6' fill='#c0392b'/><circle r='2.4' fill='#f7f3e8'/></g><g fill='#c0392b' fill-opacity='.8'><circle cx='6' cy='6' r='3'/><circle cx='90' cy='6' r='3'/><circle cx='6' cy='90' r='3'/><circle cx='90' cy='90' r='3'/></g></svg>");
+    },
+    peaks: function (c1, c2) {
+      return svg("<svg " + NS + " viewBox='0 0 800 260' preserveAspectRatio='none'><path fill='" + c1 + "' d='M0 170L110 70 190 140 300 30 420 150 520 80 640 160 720 100 800 150V260H0z'/><path fill='#fff' fill-opacity='.9' d='M110 70l-30 34 22-8 14 14 14-12 16 10zM300 30l-40 52 26-12 16 16 18-16 22 14zM520 80l-26 30 18-8 12 12 14-10 12 8z'/><path fill='" + c2 + "' d='M0 210C150 180 260 230 400 205S650 170 800 200V260H0z'/></svg>");
+    },
+    sun: function () {
+      return svg("<svg " + NS + " viewBox='0 0 800 200' preserveAspectRatio='none'><path fill='#0b2a4a' fill-opacity='.55' d='M0 60C100 40 200 80 300 60S500 40 600 60 700 80 800 60V200H0z'/><path fill='#06213d' fill-opacity='.75' d='M0 100C120 80 220 120 340 100S560 80 680 100 760 110 800 100V200H0z'/><path fill='#031528' d='M0 140C140 120 260 160 400 140S640 120 800 140V200H0z'/></svg>");
     },
     veins: function (c, op) {
       return svg("<svg " + NS + " width='600' height='600' viewBox='0 0 600 600'><g fill='none' stroke='" + c + "' stroke-opacity='" + op + "' stroke-width='1'><path d='M0 120C120 100 160 200 280 180S420 80 600 140'/><path d='M0 360C100 330 220 420 330 380S500 300 600 360' stroke-opacity='" + (op * .7) + "'/><path d='M120 0C140 120 100 220 180 330S260 500 240 600' stroke-opacity='" + (op * .55) + "'/><path d='M0 220C90 200 180 280 300 250S480 170 600 230' stroke-opacity='" + (op * .6) + "'/><path d='M300 0C280 100 360 180 340 300S420 480 400 600' stroke-opacity='" + (op * .5) + "'/></g></svg>");
@@ -111,6 +130,36 @@
     ramadan: function () {
       return mk(DARK, { base: '#1a1040', layers: [A.crescent() + ' right 8% top 112px/74px 74px no-repeat', 'radial-gradient(circle at 50% 100%,rgba(255,200,90,.22),transparent 50%)', 'linear-gradient(#1a1040,#2d1b69 55%,#3f2a85)'], before: STARS_BG(.8), after: 'left:0;right:0;top:0;height:130px;background:' + A.lanterns() + ' repeat-x top left/200px 130px;transform-origin:top center;animation:slsw 5s ease-in-out infinite alternate;' });
     },
+    onyx: function () {
+      return mk(DARK, { base: '#07070a', layers: [A.star8(.2) + ' 0 0/90px 90px repeat', 'radial-gradient(circle at 50% -10%,rgba(230,199,106,.28),transparent 55%)', 'linear-gradient(#0b0b10,#050507)'], accent: '#f3d98b', ring: 'rgba(243,217,139,.4)' });
+    },
+    galaxy: function () {
+      return mk(DARK, { base: '#05030f', layers: ['radial-gradient(ellipse 70% 40% at 25% 25%,rgba(168,85,247,.5),transparent 70%)', 'radial-gradient(ellipse 60% 40% at 80% 60%,rgba(59,130,246,.42),transparent 70%)', 'radial-gradient(ellipse 50% 35% at 30% 90%,rgba(236,72,153,.3),transparent 70%)', 'linear-gradient(#05030f,#0c0826)'], before: STARS_BG(.95), after: STARS_B(.7) });
+    },
+    bluehour: function () {
+      return mk(DARK, { base: '#0d1b3e', layers: [A.skyline('#070d22') + ' bottom center/100% min(20%,190px) no-repeat', 'radial-gradient(ellipse 80% 22% at 50% 100%,rgba(255,170,120,.55),transparent 70%)', 'linear-gradient(#0d1b3e 0%,#1f4a86 45%,#3d86a8 75%,#e8a27c 100%)'], before: STARS_BG(.4) + TOPMASK });
+    },
+    mihrab: function () {
+      return mk(DARK, { base: '#2a1a0e', layers: [A.mihrab() + ' bottom center/min(86%,430px) auto no-repeat', 'radial-gradient(circle at 50% 70%,rgba(243,217,139,.3),transparent 55%)', 'linear-gradient(#1d1209,#3b2614 60%,#4d3319)'], accent: '#f3d98b' });
+    },
+    iznik: function () {
+      return mk(LIGHT, { text: '#12304f', hero: 'linear-gradient(145deg,#1e63b3,#154a8a)', base: '#f7f3e8', layers: ['linear-gradient(rgba(247,243,232,.82),rgba(247,243,232,.7) 50%,rgba(247,243,232,.85))', A.iznik() + ' 0 0/96px 96px repeat'], ok: '#154a8a', tabon: 'rgba(30,99,179,.16)', tabontxt: '#154a8a' });
+    },
+    snow: function () {
+      return mk(LIGHT, { text: '#1c3550', hero: 'linear-gradient(145deg,#2c5d8f,#1b3f66)', base: '#dcebf7', layers: [A.peaks('#8fb0cf', '#f4f9ff') + ' bottom center/100% min(32%,300px) no-repeat', 'radial-gradient(circle at 80% 8%,rgba(255,255,255,.9),transparent 40%)', 'linear-gradient(#bcd8ee,#e8f2fb 70%)'], ok: '#1b3f66', tabon: 'rgba(44,93,143,.16)', tabontxt: '#1b3f66' });
+    },
+    forest: function () {
+      return mk(DARK, { base: '#0a2418', layers: [A.pines('#2f6b4a', '#1c4a33', '#0b2a1c') + ' bottom center/100% min(34%,320px) no-repeat', 'radial-gradient(circle at 70% 12%,rgba(220,255,200,.32),transparent 42%)', 'linear-gradient(#10382a,#1d5a40 55%,#2c7a55)'] });
+    },
+    seasun: function () {
+      return mk(DARK, { base: '#1c1f4d', layers: [A.sun() + ' bottom center/100% min(24%,230px) no-repeat', 'radial-gradient(circle at 50% 70%,rgba(255,226,150,.95) 0,rgba(255,150,80,.5) 8%,transparent 30%)', 'linear-gradient(#1c1f4d 0%,#8b3a6e 40%,#f0803c 72%,#f6b25b 100%)'], before: STARS_BG(.3) + TOPMASK });
+    },
+    golddome: function () {
+      return mk(DARK, { base: '#0a1530', layers: [A.dome('#050b1c', '#e6c76a') + ' bottom center/min(100%,720px) auto no-repeat', 'radial-gradient(circle at 50% 80%,rgba(230,199,106,.35),transparent 50%)', 'linear-gradient(#0a1530,#142a58)'], before: STARS_BG(.7) + TOPMASK, accent: '#f3d98b' });
+    },
+    lavender: function () {
+      return mk(LIGHT, { text: '#3a2a5a', hero: 'linear-gradient(145deg,#6b4fa8,#4a3380)', base: '#ece4f7', layers: ['radial-gradient(circle at 10% 5%,rgba(255,214,235,.8),transparent 45%)', 'radial-gradient(circle at 95% 90%,rgba(186,170,240,.55),transparent 50%)', 'linear-gradient(#f6f0ff,#e2d6f5)'], ok: '#4a3380', tabon: 'rgba(107,79,168,.16)', tabontxt: '#4a3380' });
+    },
     marble: function () {
       return mk(LIGHT, { text: '#25303a', hero: 'linear-gradient(145deg,#1a365d,#0f2547)', base: '#f4f5f8', layers: [A.veins('#b9a36a', .5) + ' 0 0/600px 600px repeat', 'radial-gradient(circle at 80% 0,#fff,transparent 50%)', 'linear-gradient(#f8f9fc,#e8ebf2)'], ok: '#176b4b' });
     },
@@ -118,12 +167,12 @@
       return mk(LIGHT, { text: '#3b2c14', hero: 'linear-gradient(145deg,#7a5a1c,#4f3a10)', base: '#e8d6a8', layers: ['radial-gradient(ellipse at center,rgba(255,250,235,.7),transparent 70%)', 'linear-gradient(#f3e6c4,#e0c98f)'], extra: 'box-shadow:inset 0 0 90px rgba(120,80,20,.28);', ok: '#6b4f12', tabon: 'rgba(122,90,28,.2)', tabontxt: '#5a4010' });
     }
   };
-  var IDS = ['auto', 'night', 'kurdistan', 'desert', 'medina', 'geo', 'zellige', 'arch', 'emerald', 'rose', 'aurora', 'ocean', 'royal', 'ramadan', 'marble', 'sand'];
-  var EMOJI = { auto: '🌤', night: '🌌', kurdistan: '🏔', desert: '🏜', medina: '🕌', geo: '✦', zellige: '◈', arch: '🏛', emerald: '💚', rose: '🌹', aurora: '✨', ocean: '🌊', royal: '👑', ramadan: '🏮', marble: '🤍', sand: '📜' };
+  var IDS = ['auto', 'night', 'kurdistan', 'desert', 'medina', 'geo', 'zellige', 'arch', 'emerald', 'rose', 'aurora', 'ocean', 'royal', 'ramadan', 'marble', 'sand', 'onyx', 'galaxy', 'bluehour', 'mihrab', 'iznik', 'snow', 'forest', 'seasun', 'golddome', 'lavender'];
+  var EMOJI = { auto: '🌤', night: '🌌', kurdistan: '🏔', desert: '🏜', medina: '🕌', geo: '✦', zellige: '◈', arch: '🏛', emerald: '💚', rose: '🌹', aurora: '✨', ocean: '🌊', royal: '👑', ramadan: '🏮', marble: '🤍', sand: '📜', onyx: '🖤', galaxy: '🌠', bluehour: '🌆', mihrab: '🕋', iznik: '🔷', snow: '🏔', forest: '🌲', seasun: '🌅', golddome: '🌙', lavender: '💜' };
   var TN = {
-    ckb: ['ئاسمانی کاتەکە', 'شەوی ئەستێرەدار', 'چیای کوردستان', 'گردی بیابان', 'گومبەدی سەوز', 'ئەستێرەی زێڕین', 'کاشیی زەلیج', 'کەوانەی ئەندەلوس', 'مەڕمەڕی زمرد', 'زێڕی گوڵاوی', 'ئۆرۆرا', 'قووڵایی دەریا', 'مۆری شاهانە', 'فانووسی ڕەمەزان', 'مەڕمەڕی سپی', 'پەڕۆی کۆن'],
-    en: ['Sky of the hour', 'Starry night', 'Kurdistan mountains', 'Desert dunes', 'Green dome', 'Golden star', 'Zellige tiles', 'Andalusian arches', 'Emerald marble', 'Rose gold', 'Aurora', 'Deep sea', 'Royal purple', 'Ramadan lanterns', 'White marble', 'Parchment'],
-    ar: ['سماء الوقت', 'ليل مرصّع بالنجوم', 'جبال كردستان', 'كثبان الصحراء', 'القبة الخضراء', 'النجمة الذهبية', 'زليج', 'أقواس الأندلس', 'رخام زمردي', 'ذهب وردي', 'شفق قطبي', 'أعماق البحر', 'بنفسجي ملكي', 'فوانيس رمضان', 'رخام أبيض', 'رقّ قديم'],
+    ckb: ['ئاسمانی کاتەکە', 'شەوی ئەستێرەدار', 'چیای کوردستان', 'گردی بیابان', 'گومبەدی سەوز', 'ئەستێرەی زێڕین', 'کاشیی زەلیج', 'کەوانەی ئەندەلوس', 'مەڕمەڕی زمرد', 'زێڕی گوڵاوی', 'ئۆرۆرا', 'قووڵایی دەریا', 'مۆری شاهانە', 'فانووسی ڕەمەزان', 'مەڕمەڕی سپی', 'پەڕۆی کۆن', 'ڕەشی زێڕین', 'گەلاکسی', 'کاتژمێری شین', 'مێحرابی زێڕین', 'کاشیی ئیزنیک', 'بەفری چیا', 'دارستانی سەوز', 'ئاوابوونی دەریا', 'گومبەدی شەو', 'نیلۆفەری'],
+    en: ['Sky of the hour', 'Starry night', 'Kurdistan mountains', 'Desert dunes', 'Green dome', 'Golden star', 'Zellige tiles', 'Andalusian arches', 'Emerald marble', 'Rose gold', 'Aurora', 'Deep sea', 'Royal purple', 'Ramadan lanterns', 'White marble', 'Parchment', 'Black & gold', 'Galaxy', 'Blue hour', 'Golden mihrab', 'Iznik tiles', 'Snowy peaks', 'Green forest', 'Sea sunset', 'Night dome', 'Lavender'],
+    ar: ['سماء الوقت', 'ليل مرصّع بالنجوم', 'جبال كردستان', 'كثبان الصحراء', 'القبة الخضراء', 'النجمة الذهبية', 'زليج', 'أقواس الأندلس', 'رخام زمردي', 'ذهب وردي', 'شفق قطبي', 'أعماق البحر', 'بنفسجي ملكي', 'فوانيس رمضان', 'رخام أبيض', 'رقّ قديم', 'أسود وذهبي', 'مجرّة', 'الساعة الزرقاء', 'محراب ذهبي', 'بلاط إزنيق', 'قمم ثلجية', 'غابة خضراء', 'غروب البحر', 'قبة الليل', 'خزامى'],
     tr: ['Vaktin Göğü', 'Yıldızlı Gece', 'Kürdistan Dağları', 'Çöl Kumulları', 'Yeşil Kubbe', 'Altın Yıldız', 'Zellij Çini', 'Endülüs Kemerleri', 'Zümrüt Mermer', 'Gül Altını', 'Aurora', 'Derin Deniz', 'Kraliyet Moru', 'Ramazan Fenerleri', 'Beyaz Mermer', 'Parşömen'],
     fa: ['آسمان وقت', 'شب پرستاره', 'کوه‌های کردستان', 'تپه‌های بیابان', 'گنبد سبز', 'ستاره زرین', 'زلیج', 'طاق‌های اندلس', 'مرمر زمرد', 'طلای صورتی', 'شفق قطبی', 'اعماق دریا', 'بنفش سلطنتی', 'فانوس‌های رمضان', 'مرمر سفید', 'پوست‌نوشته'],
     ur: ['وقت کا آسمان', 'ستاروں بھری رات', 'کردستان کے پہاڑ', 'صحرائی ٹیلے', 'سبز گنبد', 'سنہری ستارہ', 'زلیج ٹائلیں', 'اندلسی محرابیں', 'زمردی سنگ مرمر', 'گلابی سونا', 'قطبی روشنی', 'گہرا سمندر', 'شاہی بنفشی', 'رمضان کے فانوس', 'سفید سنگ مرمر', 'قدیم ورق'],
@@ -135,7 +184,7 @@
   var CLASSIC = { green: '#176b4b', navy: '#1a365d', gold: '#8a6d3b', dark: '#111827', teal: '#0f766e' };
 
   function lang() { var l = window.appLang || ''; try { if (!l) l = localStorage.getItem('app_language') || ''; } catch (e) {} if (l === 'bad' || l === 'ku' || !l) l = 'ckb'; return TN[l] ? l : 'en'; }
-  function nameOf(id) { return (TN[lang()] || TN.en)[IDS.indexOf(id)]; }
+  function nameOf(id) { var i = IDS.indexOf(id); return (TN[lang()] || TN.en)[i] || TN.en[i]; }
 
   /* ---------- building the CSS ---------- */
   function bgOf(th) {
