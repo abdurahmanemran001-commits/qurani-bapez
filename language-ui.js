@@ -158,6 +158,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';
       s8.async = true;
+      s8.onload = function () { var s9 = document.createElement('script'); s9.src = 'salah-themes.js?v=2'; document.head.appendChild(s9); };
       document.head.appendChild(s8);
     };
     s7.async = true;
@@ -169,6 +170,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
     s7.onload = function () {
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';
+      s8.onload = function () { var s9 = document.createElement('script'); s9.src = 'salah-themes.js?v=2'; document.head.appendChild(s9); };
       document.head.appendChild(s8);
     };
     document.head.appendChild(s7);
