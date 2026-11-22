@@ -177,6 +177,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   };
   document.head.appendChild(sp);
 
+  var dn = document.createElement('script');
+  dn.src = 'donate.js?v=1';
+  dn.async = true;
+  document.head.appendChild(dn);
+
   var st = document.createElement('style');
   st.textContent = [
     '.phone:has(#reader.active) .appbar,',
