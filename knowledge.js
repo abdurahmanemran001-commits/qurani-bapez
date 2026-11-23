@@ -166,6 +166,7 @@
       +'#knowledgeView .kn-chip.on{background:#C6A15B;color:#071410;border-color:#C6A15B}'
       +'#knowledgeView .kn-ask{width:100%;box-sizing:border-box;border:1px solid rgba(198,161,91,.35);background:#0c1c16;color:#F4EFE4;border-radius:8px;padding:12px;font-size:14px;font-family:inherit}'
       +'#knowledgeView .kn-sheet{border-top:1px solid rgba(198,161,91,.3);padding-top:8px}'
+      +'#knowledgeView .kn-tabs{display:flex;gap:6px;margin:0 0 14px;padding:4px;border-radius:14px;background:rgba(16,35,28,.66);border:1px solid rgba(198,161,91,.25);position:sticky;top:0;z-index:2}#knowledgeView .kn-tab{flex:1;border:0;border-radius:10px;padding:8px 2px;background:transparent;color:inherit;font:inherit;font-size:12.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;opacity:.75}#knowledgeView .kn-tab span{font-size:18px}#knowledgeView .kn-tab.on{background:rgba(198,161,91,.22);opacity:1;font-weight:700;color:#e8cf8f}#knowledgeView .kn-gh{margin:14px 2px 8px;font-weight:700;font-size:13.5px;color:#C6A15B}'
       +'#knowledgeView .kn-modebar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}'
       +'#knowledgeView .kn-stat{border:1px solid rgba(198,161,91,.35);border-radius:8px;padding:10px;background:#10231c;color:#F4EFE4;text-align:center;font-size:13px}'
       +'#knowledgeView .kn-celebrate{position:fixed;inset:0;pointer-events:none;z-index:100000;overflow:hidden}'
@@ -203,18 +204,25 @@
       var sample=itemsFor('spark')[0];
       html+=head('ناوەندی زانیاری','تەنها خوێندن · '+rankName(days));
       html+='<div class="kn-body">';
+      var HT=state.hTab||'day';
+      var TABS=[['day','⭐',kl('Daily','اليوم','ڕۆژانە')],['topics','📚',kl('Topics','المواضيع','بابەتەکان')],['ai','🤖',kl('AI quiz','اختبار AI','پرسیاری AI')],['ask','🔎',kl('Search','بحث','گەڕان')]];
+      html+='<div class="kn-tabs">'+TABS.map(function(t){return '<button type="button" class="kn-tab'+(HT===t[0]?' on':'')+'" data-k="htab" data-tab="'+t[0]+'"><span>'+t[1]+'</span>'+t[2]+'</button>';}).join('')+'</div>';
+      if(HT==='day'){
       html+='<div class="kn-spark"><div class="kn-kicker">'+kl('Today · '+days+' day streak','اليوم · '+days+' يوم متتالٍ','ئەمڕۆ · '+days+' ڕۆژی پریشکە')+'</div>';
       if(sample){
         html+='<div class="kn-ar">'+esc(sample.ar)+'</div><div class="kn-ref">'+esc(sample.ref)+'</div>';
       }
       html+='<button type="button" class="kn-primary" data-k="start" data-path="spark">دەستپێکردن · ٣ خولەک</button></div>';
       html+='<div class="kn-modebar"><button type="button" class="kn-btn" data-k="lightning">⚡ تاقیکردنەوەی ٣ خولەک</button><button type="button" class="kn-btn" data-k="review">'+kl('📚 Review vault (','📚 خزانة المراجعة (','📚 گەنجینەی پێداچوونەوە (')+((p.revisit||[]).length)+')</button></div>';
+      }
+      if(HT==='ai'){
       html+='<div class="kn-spark"><div class="kn-kicker">پرسیاری نوێی زیرەک · AI</div><p style="font-size:13px;color:#9AAB9F;line-height:1.6">بابەتێک بنووسە یان بەتاڵی بهێڵە بۆ پرسیاری جۆراوجۆر. پرسیارەکە لەسەر سەرچاوەی قورئان و حەدیث دروست دەکرێت.</p><input id="knAiTopic" class="kn-ask" placeholder="بابەت: تەوحید، نوێژ، سیرە، ڕۆژوو..." value="'+esc(state.aiTopic||'')+'"><button type="button" class="kn-primary" data-k="aiGenerate">دروستکردنی پرسیاری نوێ</button></div>';
-      html+='<div class="kn-grid">';
-      PATHS.forEach(function(x){
-        html+='<button type="button" class="kn-card" data-k="path" data-path="'+x.id+'"><span class="kn-rule"></span><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></button>';
-      });
-      html+='</div>';
+      }
+      if(HT==='topics'){
+      var GR=[[kl('Reading & reflection','القراءة والتدبر','خوێندنەوە و تەدەببور'),['spark','tadabbur','narrative','signs','comfort']],[kl('Sciences & beliefs','العلوم والعقيدة','زانست و باوەڕ'),['quranic','fiqh','aqeedah']],[kl('Seerah & ethics','السيرة والأخلاق','سیرە و ئەخلاق'),['jihad','seerah']]];
+      GR.forEach(function(g){html+='<div class="kn-gh">'+esc(g[0])+'</div><div class="kn-grid">';g[1].forEach(function(id){var x=PATHS.filter(function(p){return p.id===id;})[0];if(!x)return;html+='<button type="button" class="kn-card" data-k="path" data-path="'+x.id+'"><span class="kn-rule"></span><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></button>';});html+='</div>';});
+      }
+      if(HT==='ask'){
       html+='<div class="kn-spark" style="margin-top:16px"><div class="kn-kicker">لە قورئان بپرسە</div>';
       html+='<p style="font-size:13px;color:#9AAB9F;line-height:1.6">وەڵام تەنها لە ئایەتە پێداچوونەوەکراوەکانی ئەم بەشەدایە. حوکم و فەتوا نییە.</p>';
       html+='<input id="knAsk" class="kn-ask" placeholder="بۆ نموونە: نائومێدی، سوپاس، یوسف" value="'+esc(state.askQ)+'">';
@@ -224,7 +232,9 @@
         localizeSearchHit(q);
         html+='<div class="kn-note" style="margin-top:10px"><h3>'+esc(q.ref)+'</h3><div class="kn-ar" style="font-size:18px">'+esc(q.ar)+'</div><p>'+esc(q.why)+'</p><div class="kn-src">'+esc(q.src)+' · خوێندنەوەیە، فەتوا نییە</div></div>';
       });
-      html+='</div></div>';
+      html+='</div>';
+      }
+      html+='</div>';
     } else if(state.view==='aiQuiz'){
       var aq=state.aiQuiz, tmo=aq.picked==='__timeout'; html+=head('پرسیاری زیرەکی','پرسیارێکی نوێ لەسەر بەڵگە'); html+='<div class="kn-body">';
       if(!aq.picked) html+='<div class="kn-ringwrap">'+ringHtml(Math.max(0,(aq.deadline-Date.now())/1000),'knAiRing')+'</div>';
@@ -423,6 +433,7 @@
     var el=e.target.closest('[data-k]'); if(!el||!root.contains(el)) return;
     var k=el.getAttribute('data-k');
     if(k==='home'){ aiStopTimer(); if(state.timerId)clearInterval(state.timerId);state.timerId=null;root.classList.remove('active'); if(typeof showView==='function') showView('startScreen','بەشەکان'); return; }
+    if(k==='htab'){ state.hTab=el.getAttribute('data-tab')||'day'; render(); return; }
     if(k==='back'){ aiStopTimer(); state.view='home'; state.picked=null; render(); return; }
     if(k==='start' || k==='path'){
       var path=el.getAttribute('data-path');
