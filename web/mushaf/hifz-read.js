@@ -20,7 +20,7 @@
   function savePageMarks() { try { localStorage.setItem(BM_KEY, JSON.stringify(pageMarks)); } catch (e) {} }
   function pageMarked(p) { return pageMarks.indexOf(+p) >= 0; }
   function togglePageMark(p) { p = +p; var i = pageMarks.indexOf(p); if (i >= 0) pageMarks.splice(i, 1); else pageMarks.push(p); pageMarks.sort(function(a,b){return a-b;}); savePageMarks(); paintPageMark(); }
-  function loadStarts() { if (startPages) return Promise.resolve(startPages); return fetch('starts.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){startPages=a;return a;}).catch(function(){startPages=[1];return startPages;}); }
+  function loadStarts() { if (startPages && startPages.length > 100) return Promise.resolve(startPages); function g(u){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(a){if(!a||a.length<114)throw 0;return a;});} return g('mushaf/starts.json').catch(function(){return g('starts.json');}).then(function(a){startPages=a;return a;}).catch(function(){startPages=startPages||[1];return startPages;}); }
   try { var j = JSON.parse(localStorage.getItem(K) || '{}'); for (var k in j) if (k in Q) Q[k] = j[k]; if (!j.qcfv) { Q.taj = 0; Q.qcfv = 1; saveQ(); } } catch (e) {}
   function saveQ() { try { localStorage.setItem(K, JSON.stringify(Q)); } catch (e) {} }
 
