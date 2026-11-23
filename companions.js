@@ -4,7 +4,7 @@
   window.__companionsV1 = true;
 
   var BM_KEY = 'companions_bm_v1';
-  var state = { view: 'home', chapter: null, period: 'all', query: '' }; window.__COMP_STATE = state;
+  var state = { view: 'home', chapter: null, period: null, query: '' }; window.__COMP_STATE = state;
 
   function data() {
     return window.__COMPANIONS_DATA || { periods: [], chapters: [] };
@@ -61,6 +61,7 @@
       '#companionsView .cp-actions button{border:1px solid #d0ddd4;background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;color:#1a3a2a}',
       '#companionsView .cp-empty{text-align:center;color:#5a7a6a;padding:30px 10px;font-size:14px}',
       '#companionsView .cp-stat{font-size:12px;color:#5a7a6a;margin-bottom:8px}',
+      '#companionsView .cp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}#companionsView .cp-sec{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:112px;border:1px solid #d0ddd4;background:linear-gradient(135deg,#fff,#eef5f0);border-radius:16px;padding:12px;cursor:pointer;color:#1a3a2a;font:inherit}#companionsView .cp-sec span{font-size:30px}#companionsView .cp-sec b{font-size:14.5px;text-align:center}#companionsView .cp-sec small{font-size:12px;color:#5a7a6a}#companionsView .cp-sec-all{grid-column:1/-1;min-height:84px;background:linear-gradient(135deg,#2f5d46,#1f4132);color:#fff}#companionsView .cp-sec-all small{color:#cfe3d6}',
       '.section-choice.companions-choice{border-color:#d0ddd4;background:linear-gradient(135deg,#fff,#eef5f0)}',
       '.section-choice.companions-choice .choice-icon{background:#d8e8dc;color:#3d6b52}'
     ].join('\n');
@@ -107,7 +108,7 @@
     var head =
       '<div class="cp-head"><div><h2>☪ ' + esc(title()) + '</h2><div class="cp-sub">هاوەڵانی پێغەمبەر · ' + (d.chapters || []).length + ' کەس · کوردی و عەرەبی</div></div>' +
       '<div style="display:flex;gap:6px">' +
-      (state.view !== 'home' ? '<button type="button" class="cp-btn" data-act="back">‹ گەڕانەوە</button>' : '') +
+      ((state.view !== 'home' || state.period || state.query) ? '<button type="button" class="cp-btn" data-act="back">‹ گەڕانەوە</button>' : '') +
       '<button type="button" class="cp-btn" data-act="bm">★</button>' +
       '<button type="button" class="cp-btn" data-act="home">بەشەکان</button></div></div>';
 
@@ -128,12 +129,28 @@
       });
     } else {
       body += '<div class="cp-search"><input id="cpQ" type="search" placeholder="گەڕان لە هاوەڵان..." value="' + esc(state.query) + '"><button type="button" data-act="searchGo">گەڕان</button></div>';
-      body += '<div class="cp-chips">';
-      body += '<button type="button" class="cp-chip' + (state.period === 'all' ? ' on' : '') + '" data-period="all">هەموو</button>';
-      (d.periods || []).forEach(function (p) {
-        body += '<button type="button" class="cp-chip' + (state.period === p.id ? ' on' : '') + '" data-period="' + esc(p.id) + '">' + esc(p.ku) + '</button>';
-      });
-      body += '</div>';
+      var ICO = { khulafa: '👑', ashara: '🌟', muhajir: '🧭', ansar: '🤝', women: '🌸', other: '📖', all: '👥' };
+      var showList = !!(state.period || (state.query || '').trim());
+      if (!showList) {
+        body += '<div class="cp-grid">';
+        var cntAll = (d.chapters || []).length;
+        body += '<button type="button" class="cp-sec cp-sec-all" data-period="all"><span>' + ICO.all + '</span><b>هەموو هاوەڵان</b><small>' + cntAll + ' کەس</small></button>';
+        (d.periods || []).forEach(function (p) {
+          var n = (d.chapters || []).filter(function (c) { return c.period === p.id; }).length;
+          body += '<button type="button" class="cp-sec" data-period="' + esc(p.id) + '"><span>' + (ICO[p.id] || '📖') + '</span><b>' + esc(p.ku) + '</b><small>' + n + ' کەس</small></button>';
+        });
+        body += '</div></div>';
+        v.innerHTML = head + body;
+        return;
+      }
+      if (state.period) {
+        body += '<div class="cp-chips">';
+        body += '<button type="button" class="cp-chip' + (state.period === 'all' ? ' on' : '') + '" data-period="all">هەموو</button>';
+        (d.periods || []).forEach(function (p) {
+          body += '<button type="button" class="cp-chip' + (state.period === p.id ? ' on' : '') + '" data-period="' + esc(p.id) + '">' + esc(p.ku) + '</button>';
+        });
+        body += '</div>';
+      }
       var list = filtered();
       body += '<div class="cp-stat">' + list.length + ' هاوەڵ</div>';
       if (!list.length) body += '<div class="cp-empty">هیچ کەسێک نەدۆزرایەوە</div>';
@@ -158,7 +175,7 @@
       if (typeof showView === 'function') showView('startScreen', 'بەشەکان');
       return;
     }
-    if (act === 'back') { state.view = 'home'; state.chapter = null; render(); return; }
+    if (act === 'back') { if (state.view === 'home') { state.period = null; state.query = ''; } state.view = 'home'; state.chapter = null; render(); return; }
     if (act === 'bm') { state.view = 'bookmarks'; render(); return; }
     if (act === 'searchGo') {
       var inp = $('cpQ');
@@ -178,7 +195,7 @@
   window.enterCompanions = function () {
     injectCss();
     if (!ensureView()) return;
-    state.view = 'home';
+    state.view = 'home'; state.period = null; state.query = ''; 
     if (typeof showView === 'function') showView('companionsView', 'سیرەی هاوەڵان');
     render();
   };
