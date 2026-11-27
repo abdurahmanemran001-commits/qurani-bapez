@@ -218,7 +218,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   document.head.appendChild(sp);
 
   var hcv = document.createElement('script');
-  hcv.src = 'home-cover.js?v=5';
+  hcv.src = 'home-cover.js?v=6';
   hcv.async = true;
   document.head.appendChild(hcv);
 
