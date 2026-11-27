@@ -1,4 +1,44 @@
 document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=4"><\/script><script src="ruqyah-i18n2.js?v=1"><\/script><script src="ai-i18n.js?v=1"><\/script><script src="lang-shell.js?v=1"><\/script>');
+/* :has() polyfill — old Android WebViews (Chrome < 105) ignore every ".phone:has(#view.active) ..." rule, so section
+ * screens keep the app bar / bottom bar and look broken. Rewrites those rules to ".pf-<id>" classes and keeps the classes in sync. */
+(function () {
+  try { if (window.CSS && CSS.supports && CSS.supports('selector(:has(*))')) return; } catch (e) {}
+  var watch = {}, RE = /:has\(\s*#([\w-]+)\.active((?:\[[^\]]*\])*)\s*\)/g;
+  function cls(id, attrs) { return 'pf-' + id + (attrs ? '_' + attrs.replace(/[^\w]+/g, '_').replace(/^_+|_+$/g, '') : ''); }
+  function fix(el) {
+    var t = el.textContent; if (!t || t.indexOf(':has(') < 0) return;
+    var out = t.replace(RE, function (m, id, attrs) {
+      var list = []; (attrs || '').replace(/\[\s*([\w-]+)\s*=\s*"([^"]*)"\s*\]/g, function (x, k, v) { list.push([k, v]); });
+      var c = cls(id, list.map(function (p) { return p[0] + '_' + p[1]; }).join('_')); watch[c] = { id: id, attrs: list };
+      return '.' + c;
+    });
+    if (out !== t) el.textContent = out;
+  }
+  var pend = false;
+  function sync() {
+    pend = false;
+    var host = [document.body, document.querySelector('.phone')];
+    for (var c in watch) {
+      var w = watch[c], e = document.getElementById(w.id), on = !!(e && e.classList.contains('active'));
+      if (on) for (var i = 0; i < w.attrs.length; i++) if (e.getAttribute(w.attrs[i][0]) !== w.attrs[i][1]) on = false;
+      for (var j = 0; j < host.length; j++) if (host[j]) host[j].classList.toggle(c, on);
+    }
+  }
+  function later() { if (!pend) { pend = true; (window.requestAnimationFrame || setTimeout)(sync); } }
+  function scan() { var s = document.querySelectorAll('style'); for (var i = 0; i < s.length; i++) fix(s[i]); later(); }
+  new MutationObserver(function (ms) {
+    for (var i = 0; i < ms.length; i++) {
+      var m = ms[i], n = m.target;
+      if (m.type === 'attributes') continue;
+      if (n.nodeType === 1 && n.tagName === 'STYLE') fix(n);
+      else if (n.parentNode && n.parentNode.tagName === 'STYLE') fix(n.parentNode);
+      for (var k = 0; k < m.addedNodes.length; k++) { var a = m.addedNodes[k]; if (a.tagName === 'STYLE') fix(a); }
+    }
+    later();
+  }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  new MutationObserver(later).observe(document.documentElement, { attributes: true, subtree: true, attributeFilter: ['class', 'data-bg', 'data-theme'] });
+  document.addEventListener('DOMContentLoaded', scan); scan();
+})();
 window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 (function () {
   var s = document.createElement('script');
