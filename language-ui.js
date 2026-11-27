@@ -184,6 +184,13 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
 
   var st = document.createElement('style');
   st.textContent = [
+    '#startScreen .section-choices{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}',
+    '#startScreen .section-choices>*:not(.section-choice){grid-column:1/-1}',
+    '#startScreen .section-choices>.section-choice{display:flex!important;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;min-height:128px;padding:14px 8px;margin:0!important;width:auto!important;min-width:0}',
+    '#startScreen .section-choices>.section-choice .choice-copy{width:100%;min-width:0;text-align:center}',
+    '#startScreen .section-choices>.section-choice .choice-copy b{display:block;font-size:14.5px;line-height:1.35}',
+    '#startScreen .section-choices>.section-choice .choice-copy small{display:block;font-size:11.5px;line-height:1.4;margin-top:3px;opacity:.8;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '#startScreen .section-choices>.section-choice .choice-arrow{display:none!important}',
     '.phone:has(#reader.active) .appbar,',
     '.phone:has(#reader.active) .readerhead,',
     '.phone:has(#reader.active) .readerbar,',
