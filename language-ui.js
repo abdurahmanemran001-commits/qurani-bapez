@@ -177,6 +177,11 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   };
   document.head.appendChild(sp);
 
+  var hcv = document.createElement('script');
+  hcv.src = 'home-cover.js?v=1';
+  hcv.async = true;
+  document.head.appendChild(hcv);
+
   var dn = document.createElement('script');
   dn.src = 'donate.js?v=1';
   dn.async = true;
