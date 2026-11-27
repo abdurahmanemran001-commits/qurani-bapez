@@ -2,7 +2,7 @@
 (function () {
   if (window.__homeCoverV1) return; window.__homeCoverV1 = true;
   var st = document.createElement('style');
-  st.textContent = '#zikr .zikr-item .muted,#zikr .zikr-item small{color:rgba(255,255,255,.72)!important}.phone:has(#zikr.active) .main,.phone:has(#detail.active) .main{height:100%!important}#home .tabs{display:flex!important;flex-wrap:nowrap!important;gap:4px;overflow-x:auto;scrollbar-width:none;position:sticky;top:-12px;z-index:3;padding:8px 2px;margin:0 -2px 8px;background:rgba(244,247,245,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#home .tabs::-webkit-scrollbar{display:none}#home .tabs .tab{flex:1 1 auto;white-space:nowrap;padding:9px 5px;font-size:11.5px;line-height:1.3;border-radius:12px;text-align:center}#home .surah{min-height:58px}#startScreen .hc-h{grid-column:1/-1;margin:10px 4px 0;font-weight:800;font-size:13px;color:#2f6b4f}.phone .main{height:100%;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}#startScreen .hc-cover{margin-top:2px}#startScreen .welcome,#startScreen .welcome-note{display:none!important}#startScreen .hc-cover{position:relative;margin:0 0 14px;border-radius:24px;overflow:hidden;background:#0f5a3a;box-shadow:0 10px 26px rgba(10,60,40,.28);aspect-ratio:1/.74}#startScreen .hc-cover img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;display:block}#startScreen .hc-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 62%,rgba(8,50,34,.55));pointer-events:none}';
+  st.textContent = '#startScreen .hc-ios{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;padding:12px 14px;border-radius:16px;background:#fff8e1;border:1px solid #f0d98a;color:#4a3b0c;font-size:13px;line-height:1.7}#startScreen .hc-ios b{font-size:14px}#startScreen .hc-ios button{align-self:flex-start;border:0;border-radius:10px;background:#176b4b;color:#fff;padding:7px 18px;font:inherit}#zikr .zikr-item .muted,#zikr .zikr-item small{color:rgba(255,255,255,.72)!important}.phone:has(#zikr.active) .main,.phone:has(#detail.active) .main{height:100%!important}#home .tabs{display:flex!important;flex-wrap:nowrap!important;gap:4px;overflow-x:auto;scrollbar-width:none;position:sticky;top:-12px;z-index:3;padding:8px 2px;margin:0 -2px 8px;background:rgba(244,247,245,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}#home .tabs::-webkit-scrollbar{display:none}#home .tabs .tab{flex:1 1 auto;white-space:nowrap;padding:9px 5px;font-size:11.5px;line-height:1.3;border-radius:12px;text-align:center}#home .surah{min-height:58px}#startScreen .hc-h{grid-column:1/-1;margin:10px 4px 0;font-weight:800;font-size:13px;color:#2f6b4f}.phone .main{height:100%;padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}#startScreen .hc-cover{margin-top:2px}#startScreen .welcome,#startScreen .welcome-note{display:none!important}#startScreen .hc-cover{position:relative;margin:0 0 14px;border-radius:24px;overflow:hidden;background:#0f5a3a;box-shadow:0 10px 26px rgba(10,60,40,.28);aspect-ratio:1/.74}#startScreen .hc-cover img{width:100%;height:100%;object-fit:cover;object-position:50% 34%;display:block}#startScreen .hc-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 62%,rgba(8,50,34,.55));pointer-events:none}';
   document.head.appendChild(st);
   function put() {
     var s = document.getElementById('startScreen');
@@ -34,6 +34,17 @@
     busy = false; watch(box);
   }
   function watch(box) { if (!window.MutationObserver) return; mo = mo || new MutationObserver(function () { setTimeout(arrange, 50); }); mo.observe(box, { childList: true }); }
-  var n = 0, iv = setInterval(function () { put(); arrange(); if (++n > 30) clearInterval(iv); }, 300);
+  var IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var T = { ckb: ['ئەپەکە دابمەزرێنە لەسەر ئایفۆن', 'لە Safari دوگمەی هاوبەشکردن (□↑) دابگرە، پاشان «Add to Home Screen» هەڵبژێرە.', 'باشە'], en: ['Install the app on your iPhone', 'In Safari tap Share (□↑), then choose "Add to Home Screen".', 'OK'], ar: ['ثبّت التطبيق على الآيفون', 'في Safari اضغط مشاركة (□↑) ثم «إضافة إلى الشاشة الرئيسية».', 'حسناً'] };
+  function iosHint() {
+    var s = document.getElementById('startScreen');
+    if (!IOS || navigator.standalone || !s || s.querySelector('.hc-ios')) return;
+    try { if (localStorage.getItem('ios_hint_v1')) return; } catch (e) {}
+    var t = T[lg()] || T.en, d = document.createElement('div'); d.className = 'hc-ios';
+    d.innerHTML = '<b>📲 ' + t[0] + '</b><span>' + t[1] + '</span><button type="button">' + t[2] + '</button>';
+    d.querySelector('button').onclick = function () { try { localStorage.setItem('ios_hint_v1', '1'); } catch (e) {} d.remove(); };
+    s.insertBefore(d, s.firstChild);
+  }
+  var n = 0, iv = setInterval(function () { put(); arrange(); iosHint(); if (++n > 30) clearInterval(iv); }, 300);
   document.addEventListener('DOMContentLoaded', put);
 })();
