@@ -378,8 +378,9 @@
     try{var bottom=document.querySelector('.bottom');if(bottom)bottom.classList.add('hidden');}catch(e){}
     var cityInput=document.getElementById('salahCity');if(cityInput)cityInput.value=LC(S.city)||'';
     loadPlaces();
-    try{await useGPSAndLoad();if(cityInput)cityInput.value=LC(S.city);}catch(e){try{if(!times)await fetchTimes();}catch(e2){}}
     setTab(S.tab||'times');startTick();
+    try{await useGPSAndLoad();if(cityInput)cityInput.value=LC(S.city);}catch(e){try{if(!times)await fetchTimes();}catch(e2){}}
+    setTab(S.tab||'times');
   }
   window.enterSalah=function(){loadAndShow();};
   function injectStartCard(){
