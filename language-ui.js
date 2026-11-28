@@ -1,4 +1,4 @@
-document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=4"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=4"><\/script><script src="ruqyah-i18n2.js?v=1"><\/script><script src="ai-i18n.js?v=1"><\/script><script src="lang-shell.js?v=1"><\/script>');
+document.write('<script src="lang-extra.js?v=3"><\/script><script src="lang-tt.js?v=4"><\/script><script src="lang-tt2.js?v=3"><\/script><script src="lang-ui-more.js?v=8"><\/script><script src="ruqyah-i18n.js?v=4"><\/script><script src="ruqyah-i18n2.js?v=1"><\/script><script src="ai-i18n.js?v=1"><\/script><script src="lang-shell.js?v=1"><\/script>');
 /* :has() polyfill — old Android WebViews (Chrome < 105) ignore every ".phone:has(#view.active) ..." rule, so section
  * screens keep the app bar / bottom bar and look broken. Rewrites those rules to ".pf-<id>" classes and keeps the classes in sync. */
 (function () {
@@ -193,7 +193,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   sp.src = 'salah-places-data.js?v=1';
   sp.onload = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=23';
+    s7.src = 'salah.js?v=24';
     s7.onload = function () {
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';
@@ -206,7 +206,7 @@ window.LANG_EXTRA = window.LANG_EXTRA || { ar: {}, en: {} };
   };
   sp.onerror = function () {
     var s7 = document.createElement('script');
-    s7.src = 'salah.js?v=23';
+    s7.src = 'salah.js?v=24';
     s7.onload = function () {
       var s8 = document.createElement('script');
       s8.src = 'salah-settings.js?v=5';

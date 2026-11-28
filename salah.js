@@ -137,6 +137,8 @@
   function norm(x){return String(x||'').toLowerCase().replace(/[\u064b-\u065f\u0670]/g,'').replace(/[كڪ]/g,'ک').replace(/[يىێ]/g,'ی').replace(/[ڵ]/g,'ل').replace(/[ڕ]/g,'ر').replace(/[ۆۊ]/g,'و').replace(/[ەهۀة]/g,'ه').replace(/[أإآ]/g,'ا').replace(/\s+/g,' ').trim();}
   var TXT={en:{tk_t:'My prayer log',tk_today:'Today',tk_streak:'Streak',tk_days:'days',tk_week:'This week',tk_hint:'Tap ✓ when you have prayed.',home:'Home',title:'Prayer times',ph:'Search: city, town…',t_times:'Times',t_virt:'Virtues',t_qibla:'Qibla',left:'Time left',since:'since the call to prayer',ago:'{0} since the adhan of {1}',until:'{0} left until {1}',now:'Now',h:'h',m:'min',srch:'Searching online…',nores:'No place found',net:'Search needs internet',gpsErr:'Could not get your location. Allow Location for this app/browser in the phone settings, or search for your town above.',cur:'Current location'},ar:{tk_t:'سجل صلواتي',tk_today:'اليوم',tk_streak:'التتابع',tk_days:'أيام',tk_week:'هذا الأسبوع',tk_hint:'اضغط ✓ عند أداء الصلاة.',home:'الرئيسية',title:'مواقيت الصلاة',ph:'ابحث: مدينة، بلدة…',t_times:'المواقيت',t_virt:'الفضائل',t_qibla:'القبلة',left:'الوقت المتبقي',since:'منذ الأذان',ago:'مضى {0} على أذان {1}',until:'متبقٍّ {0} حتى {1}',now:'الآن',h:'س',m:'د',srch:'جارٍ البحث عبر الإنترنت…',nores:'لم يتم العثور على مكان',net:'البحث يحتاج إلى اتصال بالإنترنت',gpsErr:'تعذّر تحديد موقعك. فعّل إذن الموقع للتطبيق/المتصفح من إعدادات الهاتف، أو ابحث عن مدينتك أعلاه.',cur:'الموقع الحالي'},ckb:{tk_t:'تۆماری نوێژەکانم',tk_today:'ئەمڕۆ',tk_streak:'زنجیرە',tk_days:'ڕۆژ',tk_week:'ئەم حەفتەیە',tk_hint:'دوگمەی ✓ بدە کاتێک نوێژەکەت کرد.',home:'سەرەتا',title:'نوێژەکانم',ph:'گەڕان: شار، ناحیە...',t_times:'کاتەکان',t_virt:'فەزڵ',t_qibla:'قیبلە',left:'کاتی ماوە',ago:'{0} بانگی {1} دراوە',until:'{0} ماوە بۆ {1}',now:'ئێستا',h:'کاتژمێر',m:'خولەک',srch:'گەڕان لە ئینتەرنێت…',nores:'هیچ شوێنێک نەدۆزرایەوە',net:'گەڕان پێویستی بە ئینتەرنێت هەیە',gpsErr:'نەتوانرا شوێنەکەت بدۆزرێتەوە. لە ڕێکخستنی مۆبایل/براوزەر ڕێگە بە شوێن (Location) بدە، یان لە سەرەوە ناوی شارۆچکەکەت بگەڕێ.',cur:'شوێنی ئێستا'}};
   var PN_EN={Fajr:'Fajr',Sunrise:'Sunrise',Dhuhr:'Dhuhr',Asr:'Asr',Maghrib:'Maghrib',Isha:'Isha'};
+  function cn(p){var l=window.appLang||'ckb';if(l==='ckb'||l==='bad')return p.ku;if(l==='ar')return p.ar||p.ku;return p.en||p.ar||p.ku;}
+  function LC(n){var a=window.__SALAH_PLACES||[];for(var i=0;i<a.length;i++)if(a[i].ku===n)return cn(a[i]);return n;}
   function pn(x){var l=window.appLang||'ckb';if(l==='ar')return x.ar;if(l==='ckb'||l==='bad')return x.ku;return PN_EN[x.id]||x.ar;}
   function pn2(x){var l=window.appLang||'ckb';return l==='ar'?'':x.ar;}
   function durW(ms){if(ms<0)ms=0;var t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),sc=t%60,l=window.appLang||'ckb';
@@ -191,7 +193,7 @@
       list.querySelectorAll('.salah-prov-item').forEach(function(el){
         el.onclick=async function(){
           var p=arr[+el.getAttribute('data-o')];if(!p)return;list.classList.remove('open');
-          var input=document.getElementById('salahCity');if(input)input.value=p.ku;
+          var input=document.getElementById('salahCity');if(input)input.value=cn(p);
           try{await applyPlace(p);var sv=document.getElementById('salahView');if(sv)sv.classList.remove('loc-open');setTab('times');startTick();}catch(e){alert('نەتوانرا کاتەکان بهێنرێن.');}
         };
       });
@@ -229,7 +231,7 @@
     var hero='<div class="salah-hero"><div class="salah-ring"><div class="now-name">'+(focus?pn(focus):'—')+'</div><div class="now-clock" id="salahLiveClock">'+clock+'</div><div class="now-label">'+(next?tx('left'):tx('since'))+'</div></div>'+
       (cur?'<div class="now-since" id="salahSinceLine">'+tx('ago').replace('{0}',durW(since)).replace('{1}','<b>'+pn(cur)+'</b>')+'</div>':'')+
       (next&&cur?'<div class="now-since" id="salahUntilLine">'+tx('until').replace('{0}',durW(until)).replace('{1}','<b>'+pn(next)+'</b>')+'</div>':'')+
-      '<div class="now-loc"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg> '+(S.city||'')+(S.country?' · '+S.country:'')+'<br dir="ltr">'+S.lat.toFixed(4)+', '+S.lng.toFixed(4)+'</div></div>';
+      '<div class="now-loc"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg> '+(LC(S.city)||'')+(S.country?' · '+S.country:'')+'<br dir="ltr">'+S.lat.toFixed(4)+', '+S.lng.toFixed(4)+'</div></div>';
     var rows=tl.list.map(function(x){
       var isCur=cur&&x.id===cur.id&&!cur.yesterday;var past=x.date<tl.now&&!isCur;
       return '<div class="salah-row'+(isCur?' current':'')+(past?' past':'')+'"><div><div class="nm">'+pn(x)+(isCur?' · '+tx('now'):'')+'</div><div class="ar">'+pn2(x)+'</div></div><div style="display:flex;align-items:center;gap:10px">'+(x.id!=='Sunrise'?'<button type="button" class="trk-b" data-trk="'+x.id+'" aria-label="✓" style="width:30px;height:30px;border-radius:50%;border:2px solid '+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'#176b4b':'#b9c8c1')+';background:'+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'#176b4b':'transparent')+';color:#fff;font-size:15px;line-height:1;padding:0">'+(trkAll()[dkey(placeNow())]&&trkAll()[dkey(placeNow())][x.id]?'✓':'')+'</button>':'')+'<div class="tm">'+fmtHM(x.date)+'</div></div></div>';
@@ -262,7 +264,7 @@
   function renderQibla(){
     var box=document.getElementById('salahBody');if(!box)return;stopQibla();
     var bearing=qiblaBearing(S.lat,S.lng);
-    box.innerHTML='<div class="salah-card" style="text-align:center"><b>قیبلەنما</b><div>📍 '+(S.city||'')+' · <b dir="ltr">'+bearing.toFixed(1)+'°</b></div><div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div><div class="qibla-deg" id="qiblaDeg">'+bearing.toFixed(0)+'°</div><div id="qiblaMsg" style="font-size:12px;opacity:.75;margin-top:6px"></div><button type="button" id="qiblaCalib" style="margin-top:12px;padding:10px 16px;border:0;border-radius:10px;background:#176b4b;color:#fff">'+tq('start')+'</button></div>';
+    box.innerHTML='<div class="salah-card" style="text-align:center"><b>قیبلەنما</b><div>📍 '+(LC(S.city)||'')+' · <b dir="ltr">'+bearing.toFixed(1)+'°</b></div><div class="qibla-compass"><div class="qibla-kaaba">🕋</div><div class="qibla-needle" id="qiblaNeedle"></div></div><div class="qibla-deg" id="qiblaDeg">'+bearing.toFixed(0)+'°</div><div id="qiblaMsg" style="font-size:12px;opacity:.75;margin-top:6px"></div><button type="button" id="qiblaCalib" style="margin-top:12px;padding:10px 16px;border:0;border-radius:10px;background:#176b4b;color:#fff">'+tq('start')+'</button></div>';
     var needle=document.getElementById('qiblaNeedle'),degEl=document.getElementById('qiblaDeg');
     var sm=null,got=false,lastT=0;
     function decl(){return inIraq(S.lat,S.lng)?5:0;} /* magnetic declination: about +5° east in Iraq */
@@ -366,7 +368,7 @@
     cityInput.addEventListener('focus',function(){renderProvList(cityInput.value);});
     cityInput.addEventListener('input',function(){renderProvList(cityInput.value);});
     document.getElementById('salahGps').onclick=async function(){
-      try{await useGPSAndLoad();cityInput.value=S.city;v.classList.remove('loc-open');setTab('times');startTick();}catch(e){alert(tx('gpsErr'));}
+      try{await useGPSAndLoad();cityInput.value=LC(S.city);v.classList.remove('loc-open');setTab('times');startTick();}catch(e){alert(tx('gpsErr'));}
     };
     document.querySelectorAll('.salah-tabs button').forEach(function(b){b.onclick=function(){setTab(b.getAttribute('data-tab'));};});
     return v;
@@ -374,9 +376,9 @@
   async function loadAndShow(){
     ensureView();if(typeof showView==='function')showView('salahView','نوێژەکانم');
     try{var bottom=document.querySelector('.bottom');if(bottom)bottom.classList.add('hidden');}catch(e){}
-    var cityInput=document.getElementById('salahCity');if(cityInput)cityInput.value=S.city||'';
+    var cityInput=document.getElementById('salahCity');if(cityInput)cityInput.value=LC(S.city)||'';
     loadPlaces();
-    try{await useGPSAndLoad();if(cityInput)cityInput.value=S.city;}catch(e){try{if(!times)await fetchTimes();}catch(e2){}}
+    try{await useGPSAndLoad();if(cityInput)cityInput.value=LC(S.city);}catch(e){try{if(!times)await fetchTimes();}catch(e2){}}
     setTab(S.tab||'times');startTick();
   }
   window.enterSalah=function(){loadAndShow();};
