@@ -45,6 +45,23 @@
     d.querySelector('button').onclick = function () { try { localStorage.setItem('ios_hint_v1', '1'); } catch (e) {} d.remove(); };
     s.insertBefore(d, s.firstChild);
   }
-  var n = 0, iv = setInterval(function () { put(); arrange(); iosHint(); if (++n > 30) clearInterval(iv); }, 300);
+  var SOON = { ckb: 'بەم زووانە بەردەست دەبێت 🌙', en: 'Coming soon 🌙', ar: 'قريباً بإذن الله 🌙', tr: 'Çok yakında 🌙', fa: 'به‌زودی 🌙', ur: 'جلد آ رہا ہے 🌙', fr: 'Bientôt disponible 🌙', ru: 'Скоро будет доступно 🌙', id: 'Segera hadir 🌙' };
+  var BADGE = { ckb: 'بەم زووانە', en: 'Soon', ar: 'قريباً', tr: 'Yakında', fa: 'به‌زودی', ur: 'جلد', fr: 'Bientôt', ru: 'Скоро', id: 'Segera' };
+  function toast(msg) {
+    var t = document.getElementById('hcToast');
+    if (!t) { t = document.createElement('div'); t.id = 'hcToast'; t.style.cssText = 'position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99999;background:rgba(20,40,30,.94);color:#fff;padding:12px 22px;border-radius:14px;font-size:14.5px;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:86%;text-align:center;transition:opacity .25s'; document.body.appendChild(t); }
+    t.textContent = msg; t.style.opacity = '1'; clearTimeout(t._h); t._h = setTimeout(function () { t.style.opacity = '0'; }, 2400);
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.scholars-choice'); if (!b) return;
+    e.stopPropagation(); e.preventDefault(); toast(SOON[lg()] || SOON.en);
+  }, true);
+  function badge() {
+    var b = document.querySelector('#startScreen .scholars-choice'); if (!b) return;
+    b.style.opacity = '.62';
+    var x = b.querySelector('.hc-soon'); if (!x) { x = document.createElement('i'); x.className = 'hc-soon'; x.style.cssText = 'position:absolute;top:8px;left:8px;font-style:normal;font-size:10.5px;background:#c6a15b;color:#fff;border-radius:8px;padding:2px 8px'; b.style.position = 'relative'; b.appendChild(x); }
+    x.textContent = BADGE[lg()] || BADGE.en;
+  }
+  var n = 0, iv = setInterval(function () { put(); arrange(); iosHint(); badge(); if (++n > 30) clearInterval(iv); }, 300);
   document.addEventListener('DOMContentLoaded', put);
 })();
